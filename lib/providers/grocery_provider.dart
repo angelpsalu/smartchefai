@@ -24,22 +24,16 @@ class GroceryListProvider extends ChangeNotifier {
 
     try {
       final newList = GroceryList(
-        id: DateTime.now().toString(),
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: userId,
         name: name,
         items: [],
+        byCategory: {},
+        totalItems: 0,
+        recipes: [],
         createdAt: DateTime.now(),
+        status: 'active',
       );
-        final newList = GroceryList(
-          id: DateTime.now().toString(),
-          userId: userId,
-          items: [],
-          byCategory: {},
-          totalItems: 0,
-          recipes: [],
-          createdAt: DateTime.now(),
-          status: 'active',
-        );
       _lists.add(newList);
       notifyListeners();
     } catch (e) {
@@ -67,13 +61,35 @@ class GroceryListProvider extends ChangeNotifier {
   /// Add item to list
   Future<void> addItemToList(String listId, String itemName, String category) async {
     try {
-      final list = _lists.firstWhere((l) => l.id == listId);
+      final listIndex = _lists.indexWhere((l) => l.id == listId);
+      if (listIndex == -1) return;
+      
+      final list = _lists[listIndex];
       final newItem = GroceryItem(
         name: itemName,
+        quantity: 1.0,
+        unit: '',
         category: category,
-        isChecked: false,
+        checked: false,
+        recipes: [],
       );
-      list.items.add(newItem);
+      
+      // Create updated list with new item
+      final updatedItems = [...list.items, newItem];
+      final updatedByCategory = Map<String, List<GroceryItem>>.from(list.byCategory);
+      updatedByCategory.putIfAbsent(category, () => []).add(newItem);
+      
+      _lists[listIndex] = GroceryList(
+        id: list.id,
+        userId: list.userId,
+        name: list.name,
+        items: updatedItems,
+        byCategory: updatedByCategory,
+        totalItems: updatedItems.length,
+        recipes: list.recipes,
+        createdAt: list.createdAt,
+        status: list.status,
+      );
       notifyListeners();
     } catch (e) {
       _setError('Failed to add item: $e');
@@ -83,9 +99,14 @@ class GroceryListProvider extends ChangeNotifier {
   /// Toggle item checked state
   Future<void> toggleItem(String listId, String itemName) async {
     try {
-      final list = _lists.firstWhere((l) => l.id == listId);
-      final item = list.items.firstWhere((i) => i.name == itemName);
-      item.isChecked = !item.isChecked;
+      final listIndex = _lists.indexWhere((l) => l.id == listId);
+      if (listIndex == -1) return;
+      
+      final list = _lists[listIndex];
+      final itemIndex = list.items.indexWhere((i) => i.name == itemName);
+      if (itemIndex == -1) return;
+      
+      list.items[itemIndex].checked = !list.items[itemIndex].checked;
       notifyListeners();
     } catch (e) {
       _setError('Failed to toggle item: $e');

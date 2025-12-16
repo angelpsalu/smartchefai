@@ -22,7 +22,21 @@ class UserProvider extends ChangeNotifier {
     _setError(null);
 
     try {
-      _currentUser = await _apiService.createUser(name, email);
+      final userId = await _apiService.createUser({
+        'name': name,
+        'email': email,
+        'dietary_preferences': [],
+        'allergies': [],
+      });
+      _currentUser = User(
+        id: userId,
+        name: name,
+        email: email,
+        dietaryPreferences: [],
+        allergies: [],
+        favoriteRecipes: [],
+        searchHistory: [],
+      );
       notifyListeners();
     } catch (e) {
       _setError('Failed to create user: $e');
@@ -60,6 +74,8 @@ class UserProvider extends ChangeNotifier {
         email: _currentUser!.email,
         dietaryPreferences: dietaryPrefs,
         allergies: allergies,
+        favoriteRecipes: _currentUser!.favoriteRecipes,
+        searchHistory: _currentUser!.searchHistory,
       );
       notifyListeners();
     } catch (e) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartchefai/models/models.dart';
 import 'package:smartchefai/services/api_service.dart';
 
@@ -7,6 +8,7 @@ class RecipeProvider extends ChangeNotifier {
 
   List<Recipe> _recipes = [];
   List<Recipe> _favorites = [];
+  Set<String> _favoriteIds = {};
   Recipe? _currentRecipe;
   bool _isLoading = false;
   String? _error;
@@ -14,9 +16,43 @@ class RecipeProvider extends ChangeNotifier {
   // Getters
   List<Recipe> get recipes => _recipes;
   List<Recipe> get favorites => _favorites;
+  List<Recipe> get favoriteRecipes => _favorites;
   Recipe? get currentRecipe => _currentRecipe;
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  RecipeProvider() {
+    _loadFavoriteIds();
+  }
+
+  Future<void> _loadFavoriteIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = prefs.getStringList('favorite_ids') ?? [];
+    _favoriteIds = ids.toSet();
+    notifyListeners();
+  }
+
+  Future<void> _saveFavoriteIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('favorite_ids', _favoriteIds.toList());
+  }
+
+  // Load recipes (initial load)
+  Future<void> loadRecipes() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _recipes = await _apiService.getAllRecipes();
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   // Search recipes
   Future<List<Recipe>> searchRecipes(
@@ -40,6 +76,29 @@ class RecipeProvider extends ChangeNotifier {
     }
   }
 
+  // Toggle favorite
+  void toggleFavorite(String recipeId) {
+    if (_favoriteIds.contains(recipeId)) {
+      _favoriteIds.remove(recipeId);
+      _favorites.removeWhere((r) => r.id == recipeId);
+    } else {
+      _favoriteIds.add(recipeId);
+      final recipe = _recipes.firstWhere(
+        (r) => r.id == recipeId,
+        orElse: () => _currentRecipe!,
+      );
+      if (!_favorites.any((r) => r.id == recipeId)) {
+        _favorites.add(recipe);
+      }
+    }
+    _saveFavoriteIds();
+    notifyListeners();
+  }
+
+  bool isFavorite(String recipeId) {
+    return _favoriteIds.contains(recipeId);
+  }
+
   // Search by ingredients
   Future<List<Recipe>> searchByIngredients(List<String> ingredients) async {
     _isLoading = true;
@@ -48,139 +107,6 @@ class RecipeProvider extends ChangeNotifier {
 
     try {
       _recipes = await _apiService.searchByIngredients(ingredients);
-      /// Recipe Provider with improved state management
-      class RecipeProvider extends ChangeNotifier {
-        final ApiService _apiService = ApiService();
-
-        List<Recipe> _recipes = [];
-        List<Recipe> _favorites = [];
-        Recipe? _currentRecipe;
-        bool _isLoading = false;
-        String? _error;
-        List<String> _searchHistory = [];
-
-        // Getters
-        List<Recipe> get recipes => _recipes;
-        List<Recipe> get favorites => _favorites;
-        Recipe? get currentRecipe => _currentRecipe;
-        bool get isLoading => _isLoading;
-        String? get error => _error;
-        List<String> get searchHistory => _searchHistory;
-
-        /// Search recipes by query
-        Future<void> searchRecipes(String query) async {
-          if (query.isEmpty) return;
-    
-          _setLoading(true);
-          _setError(null);
-          _addToSearchHistory(query);
-
-          try {
-            _recipes = await _apiService.searchRecipes(query);
-            notifyListeners();
-          } catch (e) {
-            _setError('Failed to search recipes: $e');
-          } finally {
-            _setLoading(false);
-          }
-        }
-
-        /// Search recipes by ingredients
-        Future<void> searchByIngredients(List<String> ingredients) async {
-          _setLoading(true);
-          _setError(null);
-
-          try {
-            _recipes = await _apiService.searchByIngredients(ingredients);
-            notifyListeners();
-          } catch (e) {
-            _setError('Failed to search by ingredients: $e');
-          } finally {
-            _setLoading(false);
-          }
-        }
-
-        /// Get all recipes
-        Future<void> getAllRecipes() async {
-          _setLoading(true);
-          _setError(null);
-
-          try {
-            _recipes = await _apiService.getAllRecipes();
-            notifyListeners();
-          } catch (e) {
-            _setError('Failed to load recipes: $e');
-          } finally {
-            _setLoading(false);
-          }
-        }
-
-        /// Get single recipe by ID
-        Future<void> getRecipe(String id) async {
-          _setLoading(true);
-          _setError(null);
-
-          try {
-            _currentRecipe = await _apiService.getRecipe(id);
-            notifyListeners();
-          } catch (e) {
-            _setError('Failed to load recipe: $e');
-          } finally {
-            _setLoading(false);
-          }
-        }
-
-        /// Add recipe to favorites
-        Future<void> addFavorite(String userId, String recipeId) async {
-          try {
-            final recipe = _recipes.firstWhere((r) => r.id == recipeId);
-            if (!_favorites.any((r) => r.id == recipeId)) {
-              _favorites.add(recipe);
-              notifyListeners();
-            }
-          } catch (e) {
-            _setError('Failed to add favorite: $e');
-          }
-        }
-
-        /// Remove recipe from favorites
-        Future<void> removeFavorite(String recipeId) async {
-          try {
-            _favorites.removeWhere((r) => r.id == recipeId);
-            notifyListeners();
-          } catch (e) {
-            _setError('Failed to remove favorite: $e');
-          }
-        }
-
-        /// Check if recipe is favorite
-        bool isFavorite(String recipeId) {
-          return _favorites.any((r) => r.id == recipeId);
-        }
-
-        /// Clear search history
-        void clearSearchHistory() {
-          _searchHistory.clear();
-          notifyListeners();
-        }
-
-        // Private helpers
-        void _setLoading(bool value) {
-          _isLoading = value;
-        }
-
-        void _setError(String? error) {
-          _error = error;
-        }
-
-        void _addToSearchHistory(String query) {
-          if (!_searchHistory.contains(query)) {
-            _searchHistory.insert(0, query);
-            if (_searchHistory.length > 10) {
-              _searchHistory.removeLast();
-            }
-          }
-        }
       _isLoading = false;
       notifyListeners();
       return _recipes;
@@ -270,10 +196,6 @@ class RecipeProvider extends ChangeNotifier {
       return false;
     }
   }
-
-  bool isFavorite(String recipeId) {
-    return _favorites.any((r) => r.id == recipeId);
-  }
 }
 
 class UserProvider extends ChangeNotifier {
@@ -358,6 +280,23 @@ class UserProvider extends ChangeNotifier {
     _currentUser = null;
     notifyListeners();
   }
+
+  // Dark mode support
+  bool _isDarkMode = false;
+  bool get isDarkMode => _isDarkMode;
+
+  Future<void> loadThemePreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isDarkMode = prefs.getBool('dark_mode') ?? false;
+    notifyListeners();
+  }
+
+  void toggleDarkMode() async {
+    _isDarkMode = !_isDarkMode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('dark_mode', _isDarkMode);
+    notifyListeners();
+  }
 }
 
 class GroceryListProvider extends ChangeNotifier {
@@ -365,14 +304,64 @@ class GroceryListProvider extends ChangeNotifier {
 
   List<GroceryList> _lists = [];
   GroceryList? _currentList;
+  List<GroceryItem> _items = [];
   bool _isLoading = false;
   String? _error;
 
   // Getters
   List<GroceryList> get lists => _lists;
   GroceryList? get currentList => _currentList;
+  List<GroceryItem> get items => _items;
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  GroceryListProvider() {
+    _loadLocalItems();
+  }
+
+  Future<void> _loadLocalItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    final itemsJson = prefs.getStringList('grocery_items') ?? [];
+    // Parse saved items (simplified - in production use Hive)
+    notifyListeners();
+  }
+
+  Future<void> _saveLocalItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    final itemsJson = _items.map((e) => '${e.name}|${e.checked}').toList();
+    await prefs.setStringList('grocery_items', itemsJson);
+  }
+
+  // Add item locally
+  void addItem(GroceryItem item) {
+    _items.add(item);
+    _saveLocalItems();
+    notifyListeners();
+  }
+
+  // Remove item
+  void removeItem(String id) {
+    _items.removeWhere((item) => item.name == id);
+    _saveLocalItems();
+    notifyListeners();
+  }
+
+  // Toggle item checked state
+  void toggleItem(String id) {
+    final index = _items.indexWhere((item) => item.name == id);
+    if (index != -1) {
+      _items[index].checked = !_items[index].checked;
+      _saveLocalItems();
+      notifyListeners();
+    }
+  }
+
+  // Clear checked items
+  void clearCheckedItems() {
+    _items.removeWhere((item) => item.checked);
+    _saveLocalItems();
+    notifyListeners();
+  }
 
   // Create grocery list
   Future<String?> createGroceryList(
@@ -430,8 +419,8 @@ class GroceryListProvider extends ChangeNotifier {
     }
   }
 
-  // Toggle item
-  Future<bool> toggleItem(String listId, String itemName) async {
+  // Toggle item (API - for cloud lists)
+  Future<bool> toggleListItem(String listId, String itemName) async {
     try {
       await _apiService.toggleGroceryItem(listId, itemName);
       await getGroceryList(listId);
