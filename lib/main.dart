@@ -1,20 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:smartchefai/providers/recipes_provider.dart';
-import 'package:smartchefai/providers/user_provider.dart';
-import 'package:smartchefai/providers/grocery_provider.dart';
-import 'package:smartchefai/screens/home_screen.dart';
-import 'package:smartchefai/screens/search_screen.dart';
-import 'package:smartchefai/screens/favorites_screen.dart';
-import 'package:smartchefai/screens/grocery_list_screen.dart';
-import 'package:smartchefai/screens/profile_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const SmartChefApp());
+import 'app/theme/theme.dart';
+import 'app/routes.dart';
+import 'providers/app_providers.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set preferred orientations
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // Check if onboarding is completed
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+
+  runApp(SmartChefApp(showOnboarding: !onboardingComplete));
 }
 
 class SmartChefApp extends StatelessWidget {
-  const SmartChefApp({super.key});
+  final bool showOnboarding;
+
+  const SmartChefApp({
+    super.key,
+    this.showOnboarding = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,76 +39,21 @@ class SmartChefApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => GroceryListProvider()),
       ],
-      child: MaterialApp(
-        title: 'SmartChef AI',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
-          useMaterial3: true,
-          // Using default font. Custom font removed from pubspec to avoid missing asset error.
-        ),
-        home: const MainScaffold(),
-      ),
-    );
-  }
-}
-
-class MainScaffold extends StatefulWidget {
-  const MainScaffold({super.key});
-
-  @override
-  State<MainScaffold> createState() => _MainScaffoldState();
-}
-
-class _MainScaffoldState extends State<MainScaffold> {
-  int _selectedIndex = 0;
-
-  late final List<Widget> _screens;
-
-  @override
-  void initState() {
-    super.initState();
-    _screens = [
-      const HomeScreen(),
-      const SearchScreen(),
-      const FavoritesScreen(),
-      const GroceryListScreen(),
-      const ProfileScreen(),
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+      child: Consumer<UserProvider>(
+        builder: (context, userProvider, child) {
+          return MaterialApp.router(
+            title: 'SmartChef AI',
+            debugShowCheckedModeBanner: false,
+            
+            // Theme Configuration
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: userProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            
+            // Router Configuration
+            routerConfig: appRouter,
+          );
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Grocery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

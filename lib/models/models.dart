@@ -15,6 +15,14 @@ class Recipe {
   final int servings;
   final String imageUrl;
   final double? similarityScore;
+  final double? rating;
+
+  // Convenience getters for int time values
+  int get prepTimeInt => int.tryParse(prepTime.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+  int get cookTimeInt => int.tryParse(cookTime.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+  
+  // Aliases for compatibility
+  List<String> get instructions => steps;
 
   Recipe({
     required this.id,
@@ -30,24 +38,58 @@ class Recipe {
     required this.servings,
     required this.imageUrl,
     this.similarityScore,
+    this.rating,
   });
 
   factory Recipe.fromJson(Map<String, dynamic> json) {
     return Recipe(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      ingredients: List<String>.from(json['ingredients'] ?? []),
-      steps: List<String>.from(json['steps'] ?? []),
-      prepTime: json['prep_time'] ?? '',
-      cookTime: json['cook_time'] ?? '',
-      difficulty: json['difficulty'] ?? 'medium',
-      cuisine: json['cuisine'] ?? '',
-      dietaryTags: List<String>.from(json['dietary_tags'] ?? []),
+      id: json['id']?.toString() ?? json['idMeal']?.toString() ?? '',
+      name: json['name'] ?? json['strMeal'] ?? '',
+      ingredients: _parseIngredients(json),
+      steps: _parseSteps(json),
+      prepTime: json['prep_time'] ?? json['prepTime'] ?? '15 min',
+      cookTime: json['cook_time'] ?? json['cookTime'] ?? '30 min',
+      difficulty: json['difficulty'] ?? 'Medium',
+      cuisine: json['cuisine'] ?? json['strArea'] ?? '',
+      dietaryTags: List<String>.from(json['dietary_tags'] ?? json['strTags']?.split(',') ?? []),
       nutrition: Nutrition.fromJson(json['nutrition'] ?? {}),
-      servings: json['servings'] ?? 1,
-      imageUrl: json['image_url'] ?? '',
+      servings: json['servings'] ?? 4,
+      imageUrl: json['image_url'] ?? json['strMealThumb'] ?? '',
       similarityScore: (json['similarity_score'] as num?)?.toDouble(),
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.5,
     );
+  }
+
+  static List<String> _parseIngredients(Map<String, dynamic> json) {
+    if (json['ingredients'] != null) {
+      return List<String>.from(json['ingredients']);
+    }
+    // Parse TheMealDB format
+    final ingredients = <String>[];
+    for (int i = 1; i <= 20; i++) {
+      final ingredient = json['strIngredient$i'];
+      final measure = json['strMeasure$i'];
+      if (ingredient != null && ingredient.toString().trim().isNotEmpty) {
+        final measureStr = measure?.toString().trim() ?? '';
+        ingredients.add(measureStr.isNotEmpty ? '$measureStr $ingredient' : ingredient);
+      }
+    }
+    return ingredients;
+  }
+
+  static List<String> _parseSteps(Map<String, dynamic> json) {
+    if (json['steps'] != null) {
+      return List<String>.from(json['steps']);
+    }
+    // Parse TheMealDB format
+    final instructions = json['strInstructions'] as String?;
+    if (instructions != null && instructions.isNotEmpty) {
+      return instructions
+          .split(RegExp(r'\r?\n'))
+          .where((s) => s.trim().isNotEmpty)
+          .toList();
+    }
+    return [];
   }
 
   Map<String, dynamic> toJson() => {
@@ -63,6 +105,7 @@ class Recipe {
     'nutrition': nutrition.toJson(),
     'servings': servings,
     'image_url': imageUrl,
+    'rating': rating,
   };
 }
 
@@ -158,6 +201,7 @@ class SearchHistory {
 class GroceryList {
   final String id;
   final String userId;
+  final String name;
   final List<GroceryItem> items;
   final Map<String, List<GroceryItem>> byCategory;
   final int totalItems;
@@ -168,6 +212,7 @@ class GroceryList {
   GroceryList({
     required this.id,
     required this.userId,
+    this.name = '',
     required this.items,
     required this.byCategory,
     required this.totalItems,
@@ -186,6 +231,7 @@ class GroceryList {
     return GroceryList(
       id: json['id'] ?? '',
       userId: json['user_id'] ?? '',
+      name: json['name'] ?? '',
       items: itemsList,
       byCategory: byCategory,
       totalItems: json['total_items'] ?? itemsList.length,
@@ -198,6 +244,7 @@ class GroceryList {
   Map<String, dynamic> toJson() => {
     'id': id,
     'user_id': userId,
+    'name': name,
     'items': items.map((e) => e.toJson()).toList(),
     'total_items': totalItems,
     'recipes': recipes,
