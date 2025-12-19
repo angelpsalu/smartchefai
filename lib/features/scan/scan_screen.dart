@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
@@ -151,8 +152,8 @@ class _ScanScreenState extends State<ScanScreen> {
                 borderRadius: AppSpacing.borderRadiusLg,
                 child: Stack(
                   children: [
-                    Image.network(
-                      _selectedImage!.path,
+                    Image.file(
+                      File(_selectedImage!.path),
                       height: 250,
                       width: double.infinity,
                       fit: BoxFit.cover,

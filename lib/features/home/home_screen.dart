@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
@@ -13,6 +14,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  DateTime? _lastBackPress;
+
   @override
   void initState() {
     super.initState();
@@ -21,15 +24,43 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<bool> _onWillPop() async {
+    final now = DateTime.now();
+    final maxDuration = const Duration(seconds: 2);
+    final isWarning = _lastBackPress == null ||
+        now.difference(_lastBackPress!) > maxDuration;
+
+    if (isWarning) {
+      _lastBackPress = now;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Press back again to exit'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await context.read<RecipeProvider>().loadRecipes();
-          },
-          child: CustomScrollView(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await context.read<RecipeProvider>().loadRecipes();
+            },
+            child: CustomScrollView(
             slivers: [
               // Header
               SliverToBoxAdapter(
@@ -42,9 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: AppSpacing.paddingHorizontalMd,
                   child: SmartSearchBar(
                     readOnly: true,
-                    onTap: () => Navigator.pushNamed(context, '/search'),
-                    onVoiceTap: () => Navigator.pushNamed(context, '/voice-search'),
-                    onCameraTap: () => Navigator.pushNamed(context, '/scan'),
+                    onTap: () => context.push('/search'),
+                    onVoiceTap: () => context.push('/voice-search'),
+                    onCameraTap: () => context.push('/scan'),
                     hintText: 'What would you like to cook today?',
                   ),
                 ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2, end: 0),
@@ -85,8 +116,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+        ),
       ),
-      bottomNavigationBar: const SmartChefBottomNav(currentIndex: 0),
     );
   }
 
@@ -131,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           // Profile Avatar
           GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/profile'),
+            onTap: () => context.push('/profile'),
             child: const ProfileAvatar(
               size: 44,
               initials: 'SC',
@@ -179,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 category: categories[index],
                 onTap: () {
                   context.read<RecipeProvider>().searchRecipes(categories[index].name);
-                  Navigator.pushNamed(context, '/search');
+                  context.push('/search');
                 },
               ).animate(delay: (100 * index).ms).fadeIn().scale(
                     begin: const Offset(0.8, 0.8),
@@ -226,11 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         difficulty: recipe.difficulty,
                         rating: recipe.rating,
                         isFavorite: context.watch<RecipeProvider>().isFavorite(recipe.id),
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          '/recipe/${recipe.id}',
-                          arguments: recipe,
-                        ),
+                        onTap: () => context.push('/recipe/${recipe.id}', extra: recipe),
                         onFavoriteTap: () {
                           context.read<RecipeProvider>().toggleFavorite(recipe.id);
                         },
@@ -300,11 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
               difficulty: recipe.difficulty,
               rating: recipe.rating,
               isFavorite: context.watch<RecipeProvider>().isFavorite(recipe.id),
-              onTap: () => Navigator.pushNamed(
-                context,
-                '/recipe/${recipe.id}',
-                arguments: recipe,
-              ),
+              onTap: () => context.push('/recipe/${recipe.id}', extra: recipe),
               onFavoriteTap: () {
                 context.read<RecipeProvider>().toggleFavorite(recipe.id);
               },
