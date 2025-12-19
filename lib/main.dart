@@ -36,7 +36,14 @@ class SmartChefApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => RecipeProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(
+          create: (_) {
+            final provider = UserProvider();
+            // Load theme preference on startup
+            provider.loadThemePreference();
+            return provider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => GroceryListProvider()),
       ],
       child: Consumer<UserProvider>(

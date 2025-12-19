@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +20,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String? _selectedCategory;
   bool _isListening = false;
   final stt.SpeechToText _speech = stt.SpeechToText();
+  Timer? _debounceTimer;
 
   final List<String> _categories = [
     'Beef',
@@ -77,7 +79,14 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _performSearch(String query) {
     if (query.isEmpty) return;
-    context.read<RecipeProvider>().searchRecipes(query);
+    
+    // Cancel previous timer
+    _debounceTimer?.cancel();
+    
+    // Start new timer for debouncing
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      context.read<RecipeProvider>().searchRecipes(query);
+    });
   }
 
   @override
@@ -85,6 +94,7 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.dispose();
     _focusNode.dispose();
     _speech.stop();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -169,7 +179,6 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const SmartChefBottomNav(currentIndex: 1),
     );
   }
 

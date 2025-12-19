@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
@@ -107,13 +108,13 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.restaurant,
                 title: 'Dietary Preferences',
                 subtitle: 'Vegetarian, Gluten-free...',
-                onTap: () => Navigator.pushNamed(context, '/dietary-preferences'),
+                onTap: () => context.push('/dietary-preferences'),
               ),
               SettingsTile(
                 icon: Icons.no_food,
                 title: 'Allergies',
                 subtitle: 'Set your food allergies',
-                onTap: () {},
+                onTap: () => context.push('/dietary-preferences'),
               ),
               SettingsTile(
                 icon: Icons.calculate,
@@ -242,7 +243,6 @@ class ProfileScreen extends StatelessWidget {
           const Gap.xxxl(),
         ],
       ),
-      bottomNavigationBar: const SmartChefBottomNav(currentIndex: 4),
     );
   }
 }

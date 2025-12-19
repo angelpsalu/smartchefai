@@ -83,11 +83,18 @@ class RecipeProvider extends ChangeNotifier {
       _favorites.removeWhere((r) => r.id == recipeId);
     } else {
       _favoriteIds.add(recipeId);
-      final recipe = _recipes.firstWhere(
-        (r) => r.id == recipeId,
-        orElse: () => _currentRecipe!,
-      );
-      if (!_favorites.any((r) => r.id == recipeId)) {
+      
+      // Try to find recipe in loaded recipes first
+      Recipe? recipe;
+      try {
+        recipe = _recipes.firstWhere((r) => r.id == recipeId);
+      } catch (e) {
+        // If not in recipes list, use current recipe if available
+        recipe = _currentRecipe;
+      }
+      
+      // Only add if we have a valid recipe and it's not already in favorites
+      if (recipe != null && !_favorites.any((r) => r.id == recipeId)) {
         _favorites.add(recipe);
       }
     }
@@ -322,13 +329,39 @@ class GroceryListProvider extends ChangeNotifier {
   Future<void> _loadLocalItems() async {
     final prefs = await SharedPreferences.getInstance();
     final itemsJson = prefs.getStringList('grocery_items') ?? [];
-    // Parse saved items (simplified - in production use Hive)
+    
+    // Parse saved items: format is "name|quantity|unit|category|checked"
+    _items = itemsJson.map((itemStr) {
+      final parts = itemStr.split('|');
+      if (parts.length >= 2) {
+        return GroceryItem(
+          name: parts[0],
+          quantity: parts.length > 1 ? double.tryParse(parts[1]) ?? 1.0 : 1.0,
+          unit: parts.length > 2 ? parts[2] : '',
+          category: parts.length > 3 ? parts[3] : 'other',
+          checked: parts.length > 4 ? parts[4] == 'true' : false,
+          recipes: [],
+        );
+      }
+      // Fallback for old format "name|checked"
+      return GroceryItem(
+        name: parts[0],
+        quantity: 1.0,
+        unit: '',
+        category: 'other',
+        checked: parts.length > 1 ? parts[1] == 'true' : false,
+        recipes: [],
+      );
+    }).toList();
+    
     notifyListeners();
   }
 
   Future<void> _saveLocalItems() async {
     final prefs = await SharedPreferences.getInstance();
-    final itemsJson = _items.map((e) => '${e.name}|${e.checked}').toList();
+    final itemsJson = _items.map((e) => 
+      '${e.name}|${e.quantity}|${e.unit}|${e.category}|${e.checked}'
+    ).toList();
     await prefs.setStringList('grocery_items', itemsJson);
   }
 
