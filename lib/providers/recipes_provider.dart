@@ -7,11 +7,11 @@ class RecipeProvider extends ChangeNotifier {
   final ApiService _apiService = ApiService();
 
   List<Recipe> _recipes = [];
-  List<Recipe> _favorites = [];
+  final List<Recipe> _favorites = [];
   Recipe? _currentRecipe;
   bool _isLoading = false;
   String? _error;
-  List<String> _searchHistory = [];
+  final List<String> _searchHistory = [];
 
   // Getters
   List<Recipe> get recipes => _recipes;

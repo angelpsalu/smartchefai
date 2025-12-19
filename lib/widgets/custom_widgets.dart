@@ -9,12 +9,12 @@ class SmartChefAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBackButton;
 
   const SmartChefAppBar({
-    Key? key,
+    super.key,
     required this.title,
     this.actions,
     this.onBackPressed,
     this.showBackButton = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -67,12 +67,12 @@ class RecipeCard extends StatelessWidget {
   final VoidCallback? onFavoriteTap;
 
   const RecipeCard({
-    Key? key,
+    super.key,
     required this.recipe,
     required this.onTap,
     this.isFavorite = false,
     this.onFavoriteTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +218,7 @@ class RecipeCard extends StatelessWidget {
 class NutritionInfoWidget extends StatelessWidget {
   final Nutrition nutrition;
 
-  const NutritionInfoWidget({Key? key, required this.nutrition}) : super(key: key);
+  const NutritionInfoWidget({super.key, required this.nutrition});
 
   @override
   Widget build(BuildContext context) {
@@ -290,13 +290,13 @@ class GroceryItemTile extends StatelessWidget {
   final VoidCallback? onDelete;
 
   const GroceryItemTile({
-    Key? key,
+    super.key,
     required this.itemName,
     required this.category,
     required this.isChecked,
     required this.onToggle,
     this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -348,13 +348,13 @@ class SmartChefSearchBar extends StatelessWidget {
   final Function(String)? onChanged;
 
   const SmartChefSearchBar({
-    Key? key,
+    super.key,
     required this.controller,
     this.hintText = 'Search recipes...',
     this.onVoicePressed,
     this.onCameraPressed,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +399,7 @@ class SmartChefSearchBar extends StatelessWidget {
 class LoadingState extends StatelessWidget {
   final String? message;
 
-  const LoadingState({Key? key, this.message}) : super(key: key);
+  const LoadingState({super.key, this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -429,10 +429,10 @@ class ErrorState extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const ErrorState({
-    Key? key,
+    super.key,
     required this.message,
     this.onRetry,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -473,12 +473,12 @@ class EmptyState extends StatelessWidget {
   final VoidCallback? onAction;
 
   const EmptyState({
-    Key? key,
+    super.key,
     required this.message,
     this.icon = Icons.inbox,
     this.actionLabel,
     this.onAction,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

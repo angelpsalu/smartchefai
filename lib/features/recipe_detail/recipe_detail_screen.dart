@@ -604,7 +604,7 @@ class _NutritionTab extends StatelessWidget {
               Expanded(
                 child: NutritionCard(
                   label: 'Protein',
-                  value: '${nutrition!.protein}',
+                  value: nutrition!.protein,
                   unit: 'g',
                   icon: Icons.fitness_center,
                   color: AppColors.accentGreen,
@@ -618,7 +618,7 @@ class _NutritionTab extends StatelessWidget {
               Expanded(
                 child: NutritionCard(
                   label: 'Carbs',
-                  value: '${nutrition!.carbs}',
+                  value: nutrition!.carbs,
                   unit: 'g',
                   icon: Icons.grain,
                   color: AppColors.accentYellow,
@@ -628,7 +628,7 @@ class _NutritionTab extends StatelessWidget {
               Expanded(
                 child: NutritionCard(
                   label: 'Fat',
-                  value: '${nutrition!.fat}',
+                  value: nutrition!.fat,
                   unit: 'g',
                   icon: Icons.water_drop,
                   color: Colors.blue,
