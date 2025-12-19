@@ -311,7 +311,7 @@ class GroceryListProvider extends ChangeNotifier {
 
   List<GroceryList> _lists = [];
   GroceryList? _currentList;
-  final List<GroceryItem> _items = [];
+  List<GroceryItem> _items = [];
   bool _isLoading = false;
   String? _error;
 
