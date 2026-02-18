@@ -3,6 +3,14 @@
     "firebase": {
       "command": "npx",
       "args": ["-y", "firebase-tools@latest", "mcp"]
+    },
+    "flutter-mcp": {
+      "command": "npx",
+      "args": ["-y", "flutter-mcp"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
     }
   }
 }
