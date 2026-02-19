@@ -26,8 +26,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleSignOut() async {
+    final userProvider = context.read<UserProvider>();
     context.pop();
-    await context.read<UserProvider>().logout();
+    await userProvider.logout();
     if (!mounted) return;
     context.go('/get-started');
   }
@@ -243,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   content: const Text('Are you sure you want to sign out?'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.pop(),
                       child: const Text('Cancel'),
                     ),
                     FilledButton(
