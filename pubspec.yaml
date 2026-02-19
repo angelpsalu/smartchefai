@@ -41,6 +41,9 @@ dependencies:
   # Navigation
   go_router: ^10.0.0
 
+  # Fonts
+  google_fonts: ^6.2.1
+
   # Utils
   share_plus: ^7.2.0
 
