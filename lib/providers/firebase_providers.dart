@@ -465,20 +465,6 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  /// Sign in as guest
-  Future<void> signInAsGuest() async {
-    _appUser = AppUser(
-      id: 'guest',
-      name: 'Guest User',
-      email: 'guest@smartchefai.com',
-      dietaryPreferences: [],
-      allergies: [],
-      favoriteRecipes: [],
-      searchHistory: [],
-    );
-    notifyListeners();
-  }
-
   /// Load theme preference
   Future<void> loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();

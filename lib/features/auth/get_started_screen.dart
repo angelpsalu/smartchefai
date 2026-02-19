@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import '../../providers/app_providers.dart';
 import '../../app/theme/theme.dart';
 
 class GetStartedScreen extends StatefulWidget {
@@ -221,41 +219,6 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                                     letterSpacing: 0.5,
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            
-                            // Guest Access
-                            TextButton(
-                              onPressed: () async {
-                                final userProvider = context.read<UserProvider>();
-                                await userProvider.signInAsGuest();
-                                if (context.mounted) {
-                                  context.go('/');
-                                }
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: colorScheme.onSurfaceVariant,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Continue as Guest',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    Icons.arrow_forward,
-                                    size: 18,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ],
                               ),
                             ),
                           ],
