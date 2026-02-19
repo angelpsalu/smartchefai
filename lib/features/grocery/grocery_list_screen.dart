@@ -219,7 +219,6 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
         icon: const Icon(Icons.mic),
         label: const Text('Add by Voice'),
       ),
-      bottomNavigationBar: const SmartChefBottomNav(currentIndex: 0),
     );
   }
 }
