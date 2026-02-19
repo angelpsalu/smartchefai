@@ -5,12 +5,17 @@ import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
   String _getInitials(String? name) {
     if (name == null || name.isEmpty) return 'SC';
-    
+
     final parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
@@ -18,6 +23,13 @@ class ProfileScreen extends StatelessWidget {
       return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
     }
     return 'SC';
+  }
+
+  Future<void> _handleSignOut() async {
+    context.pop();
+    await context.read<UserProvider>().logout();
+    if (!mounted) return;
+    context.go('/get-started');
   }
 
   @override
@@ -235,10 +247,7 @@ class ProfileScreen extends StatelessWidget {
                       child: const Text('Cancel'),
                     ),
                     FilledButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // Sign out logic
-                      },
+                      onPressed: _handleSignOut,
                       child: const Text('Sign Out'),
                     ),
                   ],
