@@ -1,8 +1,10 @@
 /// Data models for SmartChef AI
-/// 
+///
 /// All models follow immutable patterns with copyWith methods
 /// for efficient state management.
 library;
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Recipe model representing a cooking recipe
 class Recipe {
@@ -453,4 +455,51 @@ class BoundingBox {
       y2: (json['y2'] as num?)?.toDouble() ?? 0.0,
     );
   }
+}
+
+/// AppUser model for Firestore
+class AppUser {
+  final String id;
+  final String name;
+  final String email;
+  final List<String> dietaryPreferences;
+  final List<String> allergies;
+  final List<String> favoriteRecipes;
+  final List<Map<String, dynamic>> searchHistory;
+  final DateTime? createdAt;
+
+  AppUser({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.dietaryPreferences,
+    required this.allergies,
+    required this.favoriteRecipes,
+    required this.searchHistory,
+    this.createdAt,
+  });
+
+  factory AppUser.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return AppUser(
+      id: doc.id,
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      dietaryPreferences: List<String>.from(data['dietary_preferences'] ?? []),
+      allergies: List<String>.from(data['allergies'] ?? []),
+      favoriteRecipes: List<String>.from(data['favorite_recipes'] ?? []),
+      searchHistory: List<Map<String, dynamic>>.from(data['search_history'] ?? []),
+      createdAt: (data['created_at'] as Timestamp?)?.toDate(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'email': email,
+    'dietary_preferences': dietaryPreferences,
+    'allergies': allergies,
+    'favorite_recipes': favoriteRecipes,
+    'search_history': searchHistory,
+  };
 }
