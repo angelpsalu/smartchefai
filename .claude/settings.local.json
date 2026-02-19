@@ -4,7 +4,9 @@
       "WebSearch",
       "Bash(npx firebase-tools:*)",
       "Bash(npx -y firebase-tools@latest mcp)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(git -C \"E:/coding/smartchefai\" log --oneline -20)",
+      "Bash(python3:*)"
     ]
   }
 }
