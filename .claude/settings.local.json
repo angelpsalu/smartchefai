@@ -6,7 +6,19 @@
       "Bash(npx -y firebase-tools@latest mcp)",
       "Bash(npm view:*)",
       "Bash(git -C \"E:/coding/smartchefai\" log --oneline -20)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git worktree:*)",
+      "Bash(flutter analyze:*)",
+      "WebFetch(domain:example.com)",
+      "Bash(flutter test:*)",
+      "Bash(git branch:*)",
+      "Bash(git -C .worktrees/phase-0 status:*)",
+      "WebFetch(domain:www.themealdb.com)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)"
     ]
   }
 }
