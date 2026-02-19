@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
@@ -48,7 +49,7 @@ class FavoritesScreen extends StatelessWidget {
               title: 'No favorites yet',
               subtitle: 'Start exploring and save recipes you love!',
               actionText: 'Browse Recipes',
-              onAction: () => Navigator.pushNamed(context, '/'),
+              onAction: () => context.go('/'),
             );
           }
 
@@ -71,11 +72,7 @@ class FavoritesScreen extends StatelessWidget {
                 difficulty: recipe.difficulty,
                 rating: recipe.rating,
                 isFavorite: true,
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  '/recipe/${recipe.id}',
-                  arguments: recipe,
-                ),
+                onTap: () => context.push('/recipe/${recipe.id}', extra: recipe),
                 onFavoriteTap: () {
                   provider.toggleFavorite(recipe.id);
                 },

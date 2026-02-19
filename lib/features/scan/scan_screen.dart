@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
@@ -60,11 +61,7 @@ class _ScanScreenState extends State<ScanScreen> {
   void _searchRecipes() {
     if (_detectedIngredients.isEmpty) return;
 
-    Navigator.pushNamed(
-      context,
-      '/search',
-      arguments: {'ingredients': _detectedIngredients},
-    );
+    context.go('/search');
   }
 
   @override

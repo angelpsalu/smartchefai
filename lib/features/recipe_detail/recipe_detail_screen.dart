@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../app/theme/theme.dart';
@@ -48,7 +49,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
             pinned: true,
             backgroundColor: colorScheme.surface,
             leading: IconButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => context.pop(),
               icon: Container(
                 padding: AppSpacing.paddingSm,
                 decoration: BoxDecoration(
@@ -311,7 +312,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
         ),
         action: SnackBarAction(
           label: 'View',
-          onPressed: () => Navigator.pushNamed(context, '/grocery'),
+          onPressed: () => context.go('/grocery'),
         ),
       ),
     );

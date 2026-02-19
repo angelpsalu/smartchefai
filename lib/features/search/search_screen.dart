@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
@@ -123,7 +124,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 }
               },
               onVoiceTap: _isListening ? _stopListening : _startListening,
-              onCameraTap: () => Navigator.pushNamed(context, '/scan'),
+              onCameraTap: () => context.push('/scan'),
             ),
           ),
 
@@ -304,11 +305,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 difficulty: recipe.difficulty,
                 rating: recipe.rating,
                 isFavorite: context.watch<RecipeProvider>().isFavorite(recipe.id),
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  '/recipe/${recipe.id}',
-                  arguments: recipe,
-                ),
+                onTap: () => context.push('/recipe/${recipe.id}', extra: recipe),
                 onFavoriteTap: () {
                   context.read<RecipeProvider>().toggleFavorite(recipe.id);
                 },
