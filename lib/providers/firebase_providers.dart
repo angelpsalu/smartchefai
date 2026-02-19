@@ -465,6 +465,43 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  // Recent searches
+  List<String> _recentSearches = [];
+  List<String> get recentSearches => List.unmodifiable(_recentSearches);
+
+  /// Load recent searches from Firebase
+  Future<void> loadRecentSearches() async {
+    try {
+      final history = await _firebaseService.getSearchHistory();
+      // Sort by timestamp descending, take latest 10, extract query strings
+      final sorted = [...history]
+        ..sort((a, b) => (b['timestamp'] as String).compareTo(a['timestamp'] as String));
+      _recentSearches = sorted
+          .take(10)
+          .map((e) => e['query'] as String)
+          .toList();
+      notifyListeners();
+    } catch (_) {
+      // Keep existing list on error
+    }
+  }
+
+  /// Save a search query to Firebase and update local list
+  Future<void> addRecentSearch(String query) async {
+    if (query.trim().isEmpty) return;
+    // Update local list immediately
+    _recentSearches.removeWhere((s) => s.toLowerCase() == query.toLowerCase());
+    _recentSearches.insert(0, query);
+    if (_recentSearches.length > 10) _recentSearches = _recentSearches.take(10).toList();
+    notifyListeners();
+    // Persist to Firebase
+    try {
+      await _firebaseService.addSearchHistory(query);
+    } catch (_) {
+      // Continue — local update already applied
+    }
+  }
+
   /// Load theme preference
   Future<void> loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();

@@ -33,18 +33,13 @@ class _SearchScreenState extends State<SearchScreen> {
     'Side',
   ];
 
-  final List<String> _recentSearches = [
-    'Chicken curry',
-    'Pasta carbonara',
-    'Vegetable stir fry',
-  ];
-
   @override
   void initState() {
     super.initState();
     _initSpeech();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
+      context.read<UserProvider>().loadRecentSearches();
     });
   }
 
@@ -79,13 +74,14 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _performSearch(String query) {
     if (query.isEmpty) return;
-    
+
     // Cancel previous timer
     _debounceTimer?.cancel();
-    
+
     // Start new timer for debouncing
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       context.read<RecipeProvider>().searchRecipes(query);
+      context.read<UserProvider>().addRecentSearch(query);
     });
   }
 
@@ -189,6 +185,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     // Show recent searches if no search query
     if (_searchController.text.isEmpty && _selectedCategory == null) {
+      final recentSearches = context.watch<UserProvider>().recentSearches;
       return ListView(
         padding: AppSpacing.paddingMd,
         children: [
@@ -199,7 +196,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           const Gap.md(),
-          ..._recentSearches.map((search) => ListTile(
+          ...recentSearches.map((search) => ListTile(
                 leading: const Icon(Icons.history),
                 title: Text(search),
                 onTap: () {
