@@ -10,7 +10,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 450, "protein": "18g", "carbs": "55g", "fat": "16g", "fiber": "2g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Spaghetti+Carbonara"
+    "image_url": "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg"
   },
   {
     "name": "Margherita Pizza",
@@ -23,7 +23,7 @@
     "dietary_tags": ["vegetarian"],
     "nutrition": {"calories": 280, "protein": "12g", "carbs": "45g", "fat": "8g", "fiber": "2g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Margherita+Pizza"
+    "image_url": "https://www.themealdb.com/images/media/meals/lrfdwz1764438393.jpg"
   },
   {
     "name": "Butter Chicken",
@@ -36,7 +36,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 380, "protein": "35g", "carbs": "15g", "fat": "22g", "fiber": "1g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Butter+Chicken"
+    "image_url": "https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg"
   },
   {
     "name": "Pad Thai",
@@ -49,7 +49,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 420, "protein": "28g", "carbs": "48g", "fat": "12g", "fiber": "2g"},
     "servings": 3,
-    "image_url": "https://via.placeholder.com/400x300?text=Pad+Thai"
+    "image_url": "https://www.themealdb.com/images/media/meals/rg9ze01763479093.jpg"
   },
   {
     "name": "Grilled Salmon with Lemon",
@@ -62,7 +62,7 @@
     "dietary_tags": ["gluten-free"],
     "nutrition": {"calories": 320, "protein": "42g", "carbs": "2g", "fat": "18g", "fiber": "0g"},
     "servings": 3,
-    "image_url": "https://via.placeholder.com/400x300?text=Grilled+Salmon"
+    "image_url": "https://www.themealdb.com/images/media/meals/ikizdm1763760862.jpg"
   },
   {
     "name": "Vegetable Stir Fry",
@@ -75,7 +75,7 @@
     "dietary_tags": ["vegetarian", "vegan", "gluten-free"],
     "nutrition": {"calories": 180, "protein": "6g", "carbs": "22g", "fat": "8g", "fiber": "5g"},
     "servings": 3,
-    "image_url": "https://via.placeholder.com/400x300?text=Vegetable+Stir+Fry"
+    "image_url": "https://www.themealdb.com/images/media/meals/rwvw8q1765660071.jpg"
   },
   {
     "name": "Caesar Salad",
@@ -88,7 +88,7 @@
     "dietary_tags": ["gluten-free"],
     "nutrition": {"calories": 280, "protein": "8g", "carbs": "15g", "fat": "21g", "fiber": "3g"},
     "servings": 3,
-    "image_url": "https://via.placeholder.com/400x300?text=Caesar+Salad"
+    "image_url": "https://www.themealdb.com/images/media/meals/zry07j1763779321.jpg"
   },
   {
     "name": "Tacos al Pastor",
@@ -101,7 +101,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 350, "protein": "32g", "carbs": "28g", "fat": "15g", "fiber": "2g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Tacos+al+Pastor"
+    "image_url": "https://www.themealdb.com/images/media/meals/uvuyxu1503067369.jpg"
   },
   {
     "name": "Chicken Tikka Masala",
@@ -114,7 +114,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 420, "protein": "38g", "carbs": "18g", "fat": "20g", "fiber": "1g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Chicken+Tikka+Masala"
+    "image_url": "https://www.themealdb.com/images/media/meals/sstssx1487349585.jpg"
   },
   {
     "name": "Chocolate Chip Cookies",
@@ -127,7 +127,7 @@
     "dietary_tags": ["vegetarian"],
     "nutrition": {"calories": 220, "protein": "2g", "carbs": "28g", "fat": "12g", "fiber": "1g"},
     "servings": 24,
-    "image_url": "https://via.placeholder.com/400x300?text=Chocolate+Chip+Cookies"
+    "image_url": "https://www.themealdb.com/images/media/meals/sktequ1764447186.jpg"
   },
   {
     "name": "Greek Moussaka",
@@ -140,7 +140,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 480, "protein": "35g", "carbs": "25g", "fat": "28g", "fiber": "4g"},
     "servings": 6,
-    "image_url": "https://via.placeholder.com/400x300?text=Greek+Moussaka"
+    "image_url": "https://www.themealdb.com/images/media/meals/ctg8jd1585563097.jpg"
   },
   {
     "name": "Quinoa Buddha Bowl",
@@ -153,7 +153,7 @@
     "dietary_tags": ["vegan", "vegetarian", "gluten-free"],
     "nutrition": {"calories": 380, "protein": "14g", "carbs": "52g", "fat": "15g", "fiber": "12g"},
     "servings": 2,
-    "image_url": "https://via.placeholder.com/400x300?text=Buddha+Bowl"
+    "image_url": "https://www.themealdb.com/images/media/meals/k29viq1585565980.jpg"
   },
   {
     "name": "Beef Tacos",
@@ -166,7 +166,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 320, "protein": "25g", "carbs": "22g", "fat": "18g", "fiber": "2g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Beef+Tacos"
+    "image_url": "https://www.themealdb.com/images/media/meals/pbzcrx1763765096.jpg"
   },
   {
     "name": "Pasta Primavera",
@@ -179,7 +179,7 @@
     "dietary_tags": ["vegetarian"],
     "nutrition": {"calories": 380, "protein": "12g", "carbs": "60g", "fat": "10g", "fiber": "5g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Pasta+Primavera"
+    "image_url": "https://www.themealdb.com/images/media/meals/wvqpwt1468339226.jpg"
   },
   {
     "name": "Teriyaki Chicken Bowl",
@@ -192,7 +192,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 450, "protein": "38g", "carbs": "55g", "fat": "8g", "fiber": "4g"},
     "servings": 3,
-    "image_url": "https://via.placeholder.com/400x300?text=Teriyaki+Bowl"
+    "image_url": "https://www.themealdb.com/images/media/meals/xxyupu1468262513.jpg"
   },
   {
     "name": "Caprese Sandwich",
@@ -205,7 +205,7 @@
     "dietary_tags": ["vegetarian"],
     "nutrition": {"calories": 420, "protein": "16g", "carbs": "45g", "fat": "20g", "fiber": "2g"},
     "servings": 2,
-    "image_url": "https://via.placeholder.com/400x300?text=Caprese+Sandwich"
+    "image_url": "https://www.themealdb.com/images/media/meals/j80gmw1764372176.jpg"
   },
   {
     "name": "Beef Stroganoff",
@@ -218,7 +218,7 @@
     "dietary_tags": [],
     "nutrition": {"calories": 520, "protein": "42g", "carbs": "45g", "fat": "20g", "fiber": "3g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Beef+Stroganoff"
+    "image_url": "https://www.themealdb.com/images/media/meals/svprys1511176755.jpg"
   },
   {
     "name": "Vegetable Curry",
@@ -231,7 +231,7 @@
     "dietary_tags": ["vegan", "vegetarian"],
     "nutrition": {"calories": 280, "protein": "8g", "carbs": "35g", "fat": "12g", "fiber": "6g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Vegetable+Curry"
+    "image_url": "https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg"
   },
   {
     "name": "Blueberry Pancakes",
@@ -244,6 +244,6 @@
     "dietary_tags": ["vegetarian"],
     "nutrition": {"calories": 320, "protein": "8g", "carbs": "48g", "fat": "10g", "fiber": "2g"},
     "servings": 4,
-    "image_url": "https://via.placeholder.com/400x300?text=Blueberry+Pancakes"
+    "image_url": "https://www.themealdb.com/images/media/meals/rwuyqx1511383174.jpg"
   }
 ]
