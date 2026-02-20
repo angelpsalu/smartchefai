@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
@@ -24,6 +25,7 @@ class FirebaseService {
   // Firebase instances
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // TheMealDB API for recipe data (FREE backup source)
@@ -773,6 +775,43 @@ class FirebaseService {
     return getUserProfile();
   }
 
+  /// Upload user profile photo to Firebase Storage and save URL to Firestore.
+  /// Returns the public download URL.
+  Future<String> uploadProfilePhoto(XFile imageFile) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    final bytes = await imageFile.readAsBytes();
+    final ref = _storage.ref().child('users/${user.uid}/profile.jpg');
+    await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+    final downloadUrl = await ref.getDownloadURL();
+
+    await _firestore.collection('users').doc(user.uid).update({
+      'photo_url': downloadUrl,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+
+    return downloadUrl;
+  }
+
+  /// Remove user profile photo from Firebase Storage and clear the URL in Firestore.
+  Future<void> removeProfilePhoto() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final ref = _storage.ref().child('users/${user.uid}/profile.jpg');
+      await ref.delete();
+    } catch (_) {
+      // File may not exist — ignore
+    }
+
+    await _firestore.collection('users').doc(user.uid).update({
+      'photo_url': null,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
   // ==================== FAVORITES (Firestore) ====================
 
   /// Get user's favorite recipe IDs
@@ -949,6 +988,59 @@ class FirebaseService {
       // Return empty
     }
     return [];
+  }
+
+  // ==================== MEAL PLAN (Firestore) ====================
+
+  /// Fetch the current user's meal plan. Returns null if none saved yet.
+  Future<MealPlan?> getMealPlan() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    try {
+      final doc = await _firestore.collection('meal_plans').doc(user.uid).get();
+      if (!doc.exists) return null;
+      return MealPlan.fromFirestore(doc.data()!);
+    } catch (e) {
+      debugPrint('getMealPlan error: $e');
+      return null;
+    }
+  }
+
+  /// Save (overwrite) the user's meal plan to Firestore.
+  Future<void> saveMealPlan(MealPlan plan) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    await _firestore
+        .collection('meal_plans')
+        .doc(user.uid)
+        .set(plan.toFirestore());
+  }
+
+  // ==================== NUTRITION GOALS (Firestore) ====================
+
+  /// Fetch the current user's nutrition goals. Returns null if none saved.
+  Future<NutritionGoals?> getNutritionGoals() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    try {
+      final doc =
+          await _firestore.collection('nutrition_goals').doc(user.uid).get();
+      if (!doc.exists) return null;
+      return NutritionGoals.fromFirestore(doc.data()!);
+    } catch (e) {
+      debugPrint('getNutritionGoals error: $e');
+      return null;
+    }
+  }
+
+  /// Save (overwrite) the user's nutrition goals to Firestore.
+  Future<void> saveNutritionGoals(NutritionGoals goals) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    await _firestore
+        .collection('nutrition_goals')
+        .doc(user.uid)
+        .set(goals.toFirestore());
   }
 
   // ==================== HEALTH CHECK ====================
