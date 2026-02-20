@@ -46,3 +46,6 @@ app.*.map.json
 
 # Git worktrees
 .worktrees/
+
+# Local secrets — never commit these (but do commit *.example templates)
+dart_defines/*.json

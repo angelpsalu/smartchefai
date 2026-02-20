@@ -101,10 +101,12 @@ class FirebaseService {
   // ==================== AI IMAGE ANALYSIS ====================
 
   // Google Cloud Vision REST API key.
-  // Restrict this key in Cloud Console to your Android app to prevent abuse:
-  // APIs & Services → Credentials → key → Application restrictions → Android apps
-  // Add package: com.example.smartchefai + your debug/release SHA-1 fingerprint.
-  static const String _visionApiKey = 'AIzaSyDZrcTp_VXVOr0WvMzkApq1gWzyTow-IVU';
+  // DO NOT hard-code this value. Pass it at build time:
+  //   flutter run --dart-define=VISION_API_KEY=your_key_here
+  //   flutter build apk --dart-define=VISION_API_KEY=your_key_here
+  // Store the key in a local file (e.g. dart_defines/dev.json) that is gitignored.
+  static const String _visionApiKey =
+      String.fromEnvironment('VISION_API_KEY');
 
   static const String _visionApiUrl =
       'https://vision.googleapis.com/v1/images:annotate';
@@ -121,6 +123,13 @@ class FirebaseService {
   /// Returns detected ingredients sorted by confidence descending.
   /// Throws on network error or invalid API key.
   Future<List<DetectedIngredient>> analyzeImage(XFile imageFile) async {
+    if (_visionApiKey.isEmpty) {
+      throw Exception(
+        'VISION_API_KEY is not set. '
+        'Run with: flutter run --dart-define-from-file=dart_defines/dev.json',
+      );
+    }
+
     final bytes = await imageFile.readAsBytes();
     final base64Image = base64Encode(bytes);
 
