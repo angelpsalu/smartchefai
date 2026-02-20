@@ -6,22 +6,33 @@
   "storage": {
     "rules": "storage.rules"
   },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ],
   "flutter": {
     "platforms": {
       "android": {
         "default": {
           "projectId": "smartchefai-344c5",
-          "appId": "1:363654315902:android:cd6584fce56de1ad37fd2f",
+          "appId": "1:741649838109:android:3da8cefa5be547db1ced25",
           "fileOutput": "android/app/google-services.json"
         }
       },
-      "dart": {
-        "lib/firebase_options.dart": {
+      "web": {
+        "default": {
           "projectId": "smartchefai-344c5",
-          "configurations": {
-            "android": "1:363654315902:android:cd6584fce56de1ad37fd2f",
-            "web": "1:363654315902:web:f4277ec6cabb731b37fd2f"
-          }
+          "appId": "1:741649838109:web:b31bba8e3ba3e0411ced25",
+          "fileOutput": "lib/firebase_options.dart"
         }
       }
     }
