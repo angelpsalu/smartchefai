@@ -74,11 +74,11 @@ class _ScanScreenState extends State<ScanScreen> {
     if (_detectedIngredients.isEmpty) return;
     setState(() => _isSearching = true);
 
-    await context.read<RecipeProvider>().searchByIngredients(_detectedIngredients);
+    final results = await context.read<RecipeProvider>().searchByIngredients(_detectedIngredients);
 
     if (!mounted) return;
     setState(() {
-      _scanRecipes = List.from(context.read<RecipeProvider>().recipes);
+      _scanRecipes = results;
       _isSearching = false;
     });
   }
