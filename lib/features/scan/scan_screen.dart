@@ -2,7 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../../app/theme/theme.dart';
+import '../../models/models.dart';
+import '../../providers/app_providers.dart';
+import '../../services/firebase_service.dart';
 import '../../shared/widgets/widgets.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -17,13 +21,15 @@ class _ScanScreenState extends State<ScanScreen> {
   bool _isProcessing = false;
   List<String> _detectedIngredients = [];
   XFile? _selectedImage;
+  List<Recipe> _scanRecipes = [];
+  bool _isSearching = false;
 
   Future<void> _pickImage(ImageSource source) async {
     try {
       final image = await _picker.pickImage(
         source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
+        maxWidth: 512,
+        maxHeight: 512,
         imageQuality: 85,
       );
 
@@ -33,22 +39,28 @@ class _ScanScreenState extends State<ScanScreen> {
           _isProcessing = true;
         });
 
-        // Simulate AI processing
-        await Future.delayed(const Duration(seconds: 2));
+        try {
+          final detected = await FirebaseService().analyzeImage(image);
+          if (!mounted) return;
+          setState(() {
+            _detectedIngredients = detected.map((d) => d.name).toList();
+            _isProcessing = false;
+          });
 
-        // Mock detected ingredients
-        if (!mounted) return;
-        setState(() {
-          _detectedIngredients = [
-            'Tomatoes',
-            'Onion',
-            'Garlic',
-            'Bell Pepper',
-            'Olive Oil',
-            'Basil',
-          ];
-          _isProcessing = false;
-        });
+          if (_detectedIngredients.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No ingredients detected. Try a clearer photo.'),
+              ),
+            );
+          }
+        } catch (e) {
+          if (!mounted) return;
+          setState(() => _isProcessing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Analysis failed: ${e.toString()}')),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -58,10 +70,17 @@ class _ScanScreenState extends State<ScanScreen> {
     }
   }
 
-  void _searchRecipes() {
+  Future<void> _searchRecipes() async {
     if (_detectedIngredients.isEmpty) return;
+    setState(() => _isSearching = true);
 
-    context.go('/search');
+    await context.read<RecipeProvider>().searchByIngredients(_detectedIngredients);
+
+    if (!mounted) return;
+    setState(() {
+      _scanRecipes = List.from(context.read<RecipeProvider>().recipes);
+      _isSearching = false;
+    });
   }
 
   @override
@@ -212,6 +231,7 @@ class _ScanScreenState extends State<ScanScreen> {
                           setState(() {
                             _selectedImage = null;
                             _detectedIngredients = [];
+                            _scanRecipes = [];
                           });
                         },
                         icon: Container(
@@ -288,6 +308,71 @@ class _ScanScreenState extends State<ScanScreen> {
                   minimumSize: const Size(double.infinity, 48),
                 ),
               ),
+            ],
+
+            // Search loading indicator
+            if (_isSearching) ...[
+              const Gap.xl(),
+              const Center(child: CircularProgressIndicator()),
+              const Gap.sm(),
+              Center(
+                child: Text(
+                  'Finding matching recipes...',
+                  style: textTheme.bodyMedium,
+                ),
+              ),
+            ],
+
+            // Inline recipe results
+            if (_scanRecipes.isNotEmpty) ...[
+              const Gap.xl(),
+              Row(
+                children: [
+                  Icon(Icons.restaurant_menu, color: colorScheme.primary),
+                  const HGap.sm(),
+                  Text(
+                    '${_scanRecipes.length} recipes found',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const Gap.md(),
+              SizedBox(
+                height: 220,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.zero,
+                  itemCount: _scanRecipes.length,
+                  separatorBuilder: (_, __) => const HGap.md(),
+                  itemBuilder: (context, index) {
+                    final recipe = _scanRecipes[index];
+                    return SizedBox(
+                      width: 160,
+                      child: RecipeCard(
+                        id: recipe.id,
+                        title: recipe.name,
+                        imageUrl: recipe.imageUrl,
+                        cookTime: '${recipe.prepTimeInt + recipe.cookTimeInt} min',
+                        difficulty: recipe.difficulty,
+                        rating: recipe.rating,
+                        isFavorite: context
+                            .watch<RecipeProvider>()
+                            .isFavorite(recipe.id),
+                        onTap: () => context.push(
+                          '/recipe/${recipe.id}',
+                          extra: recipe,
+                        ),
+                        onFavoriteTap: () => context
+                            .read<RecipeProvider>()
+                            .toggleFavorite(recipe.id),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const Gap.lg(),
             ],
           ],
         ),
