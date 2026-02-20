@@ -137,11 +137,22 @@ class FirebaseService {
           }
         ]
       },
-      options: Options(receiveTimeout: const Duration(seconds: 30)),
+      options: Options(
+        receiveTimeout: const Duration(seconds: 30),
+        // Allow 4xx through so we can parse Google's error message body
+        validateStatus: (status) => status != null && status < 500,
+      ),
     );
 
     if (response.data == null) {
       throw Exception('Empty response from Vision API');
+    }
+
+    // Surface 4xx errors with the actual Google error message
+    if ((response.statusCode ?? 0) >= 400) {
+      final body = response.data!;
+      final errMsg = ((body['error'] as Map?))?['message'] ?? 'HTTP ${response.statusCode}';
+      throw Exception('Vision API error: $errMsg');
     }
 
     final responses =
