@@ -555,7 +555,10 @@ class MealPlan {
 
   Map<String, dynamic> toFirestore() => {
     'user_id': userId,
-    'days': days,
+    'days': {
+      for (final entry in days.entries)
+        if (entry.value != null) entry.key: entry.value,
+    },
     'week_start': Timestamp.fromDate(weekStart),
     'updated_at': FieldValue.serverTimestamp(),
   };
@@ -602,12 +605,14 @@ class NutritionGoals {
   );
 
   factory NutritionGoals.fromFirestore(Map<String, dynamic> data) {
+    final userId = data['user_id'] as String? ?? '';
+    final d = NutritionGoals.defaults(userId);
     return NutritionGoals(
-      userId: data['user_id'] as String? ?? '',
-      dailyCalories: (data['daily_calories'] as num?)?.toInt() ?? 2000,
-      dailyProtein: (data['daily_protein'] as num?)?.toInt() ?? 50,
-      dailyCarbs: (data['daily_carbs'] as num?)?.toInt() ?? 250,
-      dailyFat: (data['daily_fat'] as num?)?.toInt() ?? 70,
+      userId: userId,
+      dailyCalories: (data['daily_calories'] as num?)?.toInt() ?? d.dailyCalories,
+      dailyProtein: (data['daily_protein'] as num?)?.toInt() ?? d.dailyProtein,
+      dailyCarbs: (data['daily_carbs'] as num?)?.toInt() ?? d.dailyCarbs,
+      dailyFat: (data['daily_fat'] as num?)?.toInt() ?? d.dailyFat,
     );
   }
 
