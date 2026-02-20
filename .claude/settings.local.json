@@ -18,7 +18,23 @@
       "WebFetch(domain:www.themealdb.com)",
       "Bash(git checkout:*)",
       "Bash(git pull:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(firebase:*)",
+      "Bash(\"E:/coding/smartchefai/.firebaserc\":*)",
+      "Bash(\"E:/coding/smartchefai/firebase.json\":*)",
+      "Bash(\"E:/coding/smartchefai/functions/package.json\":*)",
+      "Bash(\"E:/coding/smartchefai/functions/tsconfig.json\":*)",
+      "Bash(\"E:/coding/smartchefai/functions/src/index.ts\":*)",
+      "Bash(\"E:/coding/smartchefai/functions/.gitignore\":*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(\"E:/coding/smartchefai/functions/src/ingredientFilter.ts\":*)",
+      "Bash(\"E:/coding/smartchefai/functions/src/ingredientFilter.test.ts\":*)",
+      "Bash(npm test:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)"
     ]
   }
 }

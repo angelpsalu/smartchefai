@@ -2,7 +2,7 @@
 
 > **AI-Powered Recipe Recommender**
 > Architecture: Firebase + Flutter | Targets: Android + Web
-> Last updated: 2026-02-19
+> Last updated: 2026-02-20
 
 For deep technical details see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 For bugs and cleanup items see [`BUGS.md`](BUGS.md).
@@ -20,7 +20,7 @@ lib/
 │   ├── routes.dart               # GoRouter with ShellRoute + auth redirect
 │   └── theme/
 │       ├── app_colors.dart       # Color constants (AppColors)
-│       ├── app_typography.dart   # Text styles (AppTypography) — uses Poppins (see BUG-008)
+│       ├── app_typography.dart   # Text styles (AppTypography) — Poppins via google_fonts
 │       ├── app_spacing.dart      # Spacing constants (AppSpacing)
 │       └── app_theme.dart        # ThemeData (light + dark)
 ├── features/                     # Feature-first screen structure
@@ -41,14 +41,6 @@ lib/
 │   └── app_providers.dart        # Re-exports firebase_providers.dart
 └── services/
     └── firebase_service.dart     # Singleton: Firestore + Auth + TheMealDB fallback
-```
-
-### Dead Files — Do NOT use or import these
-
-```
-lib/widgets/custom_widgets.dart       ← legacy, never imported, scheduled for deletion
-lib/services/api_service.dart         ← legacy, unused, scheduled for deletion
-lib/providers/grocery_provider.dart   ← duplicate, superseded, scheduled for deletion
 ```
 
 ---
@@ -146,7 +138,7 @@ Three providers. All extend `ChangeNotifier`. Registered in `main.dart`.
 | Provider | What it owns |
 |----------|-------------|
 | `RecipeProvider` | `_recipes`, `_favoriteIds`, loading/error state, search results |
-| `UserProvider` | Auth state, `AppUser` profile, theme mode |
+| `UserProvider` | Auth state, `AppUser` profile, theme mode, recent searches |
 | `GroceryListProvider` | Grocery items, local + Firebase sync |
 
 ```dart
@@ -173,10 +165,11 @@ final service = FirebaseService();  // Always the same instance
 Key capabilities (see `firebase_service.dart`):
 - `getAllRecipes()` - cached, falls back to TheMealDB if Firestore empty
 - `searchRecipes(query)`, `searchByIngredients(ingredients)`
-- Email/password auth, Google Sign-In, anonymous auth, password reset
+- Email/password auth, Google Sign-In, password reset
 - `getUserProfile()`, `createUserProfile()`
 - `addFavorite()`, `removeFavorite()`, `getFavoriteIds()`
 - `createGroceryList()`, `getGroceryLists()`
+- `addSearchHistory()`, `getSearchHistory()`
 
 ### Auth check
 
@@ -191,7 +184,7 @@ FirebaseService().currentUser  // firebase_auth.User?
 - Project ID: `smartchefai-344c5`
 - Android: configured (`google-services.json` present)
 - Web: configured (`firebase_options.dart`)
-- iOS/macOS/Windows: **NOT configured** (placeholder values)
+- iOS/macOS/Windows: **NOT configured** (placeholder values only)
 
 ---
 
@@ -201,16 +194,14 @@ Location: `lib/models/models.dart`
 
 | Model | Purpose |
 |-------|---------|
-| `Recipe` | Recipe with ingredients, steps, nutrition, imageUrl |
-| `Nutrition` | Calories, protein, carbs, fat, fiber |
+| `Recipe` | Recipe with ingredients, steps, nutrition, imageUrl. Use `prepTimeInt`/`cookTimeInt` getters for arithmetic (fields are String) |
+| `Nutrition` | Calories (int), protein, carbs, fat, fiber (Strings like "25g") |
 | `AppUser` | Firebase user with Firestore profile data |
 | `GroceryList` | List of GroceryItems with Firestore sync |
 | `GroceryItem` | Immutable grocery item with `copyWith` |
 | `DetectedIngredient` | Scan result with confidence score |
 
-All models: `const` constructor, named params, `copyWith()`, `fromMap()`, `toMap()`.
-
-> `AppUser` is currently defined in `firebase_service.dart` — move to `models.dart` (see BUGS.md cleanup).
+All models: `const` constructor, named params, `copyWith()`, `fromJson()`, `toJson()`.
 
 ---
 
@@ -224,13 +215,13 @@ All models: `const` constructor, named params, `copyWith()`, `fromMap()`, `toMap
 
 ---
 
-## Active Bugs
+## Open Bugs
 
-See [`BUGS.md`](BUGS.md) for the full list. Critical ones:
+See [`BUGS.md`](BUGS.md) for the full list. Currently open:
 
-- **BUG-001 HIGH**: Sign-out doesn't work (`profile_screen.dart`)
-- **BUG-002 MEDIUM**: `Navigator.pushNamed` used in 6+ screens — must be GoRouter
-- **BUG-003 MEDIUM**: Recipe detail navigation passes `arguments:` instead of `extra:` — shows "not found"
+- **BUG-006 LOW**: Profile "Recipes Made" (`'12'`) and "Streak" (`'5 days'`) stats are hardcoded (`profile_screen.dart:107,116`)
+- **BUG-007 LOW**: `google_logo.png` missing from `assets/icons/` — fallback icon shown on Google Sign-In button
+- **BUG-004 LOW**: `Recipe.prepTime`/`cookTime` are String types — always use `prepTimeInt`/`cookTimeInt` getters for arithmetic
 
 ---
 
@@ -241,22 +232,16 @@ See [`BUGS.md`](BUGS.md) for the full list. Critical ones:
 | `firebase_core` | Firebase init |
 | `cloud_firestore` | Database |
 | `firebase_auth` | Authentication |
-| `firebase_storage` | File storage (declared, not yet integrated) |
+| `firebase_storage` | File storage (declared, not yet used in UI) |
 | `google_sign_in` | Google OAuth |
 | `provider` | State management |
 | `go_router` | Navigation |
-| `dio` | HTTP client (TheMealDB API) |
+| `dio` | HTTP client (TheMealDB API + retry interceptor) |
 | `http` | HTTP client (secondary) |
-| `shared_preferences` | Onboarding flag, theme setting |
+| `shared_preferences` | Onboarding flag, theme setting, offline favorites/grocery cache |
 | `cached_network_image` | Image loading with cache |
 | `image_picker` | Camera + gallery access |
 | `speech_to_text` | Voice search |
 | `share_plus` | Share recipe via system sheet |
-| `flutter_animate` | Animations |
+| `google_fonts` | Poppins font (loaded at runtime) |
 | `permission_handler` | Runtime permissions |
-
-## Dependencies Declared But NOT Used
-
-Remove these from `pubspec.yaml` (see BUGS.md cleanup):
-
-`shimmer`, `flutter_spinkit`, `hive`, `hive_flutter`, `flutter_tts`, `fl_chart`, `flutter_svg`, `intl`, `uuid`, `path_provider`, `url_launcher`

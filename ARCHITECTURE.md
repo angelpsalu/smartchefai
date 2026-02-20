@@ -1,7 +1,8 @@
-# SmartChef AI - Architecture
+# SmartChef AI — Architecture
 
 > Technical reference for the Firebase + Flutter architecture.
 > Covers data flow, state management, navigation, caching, and platform specifics.
+> Last updated: 2026-02-20
 
 ---
 
@@ -42,28 +43,31 @@
 ### Recipe Loading
 
 ```
-UI (HomeScreen)
+UI (HomeScreen.initState)
   → context.read<RecipeProvider>().loadRecipes()
     → FirebaseService().getAllRecipes()
-      → Check in-memory cache (30-min expiry)
-        → [Cache valid] Return _cachedRecipes
+      → Check in-memory cache (_cachedRecipes, 30-min expiry)
+        → [Cache valid] Return _cachedRecipes immediately
         → [Cache stale] Query Firestore recipes/ collection
-          → [Firestore empty] Seed from TheMealDB API + data/recipes.json
-          → Store results in _cachedRecipes + update _cacheTimestamp
+          → [Firestore has data] Return documents as List<Recipe>
+          → [Firestore empty]   Seed from TheMealDB API + data/recipes.json
+                                Write seeded recipes to Firestore for next time
+          → Update _cachedRecipes + _cacheTimestamp
     → RecipeProvider._recipes = result
     → notifyListeners()
-  → Consumer<RecipeProvider> rebuilds with new recipes
+  → Consumer<RecipeProvider> rebuilds with new recipe list
 ```
 
-### Favorites Toggle
+### Favorites Toggle (Optimistic Update)
 
 ```
 UI (RecipeCard heart button)
   → context.read<RecipeProvider>().toggleFavorite(recipeId)
-    → [Optimistic update] _favoriteIds.add/remove locally
-    → notifyListeners()  ← UI updates immediately
-    → FirebaseService().addFavorite(recipeId) or removeFavorite(recipeId)
-      → Firestore: users/{uid}/favorite_recipes array update
+    → [Optimistic] _favoriteIds.add/remove locally
+    → notifyListeners()          ← UI updates immediately, no waiting
+    → Persist to SharedPreferences (offline support)
+    → FirebaseService().addFavorite / removeFavorite
+        → Firestore: users/{uid}/favorite_recipes array update
 ```
 
 ### Authentication Flow
@@ -71,18 +75,26 @@ UI (RecipeCard heart button)
 ```
 App Launch
   → main.dart: Firebase.initializeApp()
-  → GoRouter redirect checks FirebaseService().isSignedIn
-    → [Not signed in] Redirect to /get-started
-    → [Signed in] Allow navigation to /
+  → main.dart: SharedPreferences check onboarding_complete
+  → GoRouter redirect: FirebaseService().isSignedIn (sync bool)
+    → [Not signed in] Route to /get-started
+    → [Signed in]     Allow route to /
 
 GetStartedScreen
   → [Sign Up] → /signup → SignupScreen
-  → [Sign In] → /login → LoginScreen
-  → [Guest]  → UserProvider.signInAsGuest() → / (local only, no Firebase)
+  → [Sign In] → /login  → LoginScreen
+  (Guest mode has been removed entirely)
 
 LoginScreen / SignupScreen
-  → FirebaseService().signInWithEmailAndPassword() or createUserWithEmailAndPassword()
-  → On success: GoRouter redirect re-evaluates → navigates to /onboarding or /
+  → UserProvider.signInWithEmail() or signUpWithEmail()
+      → FirebaseService().signInWithEmail() or registerWithEmail()
+      → On success: UserProvider._appUser set, notifyListeners()
+  → profile_screen.dart _handleSignOut():
+      → context.pop()               — dismiss dialog
+      → await userProvider.logout() — Firebase signOut, clear _appUser
+      → if (!mounted) return
+      → context.go('/get-started')  — explicit navigation (GoRouter redirect
+                                       is sync, won't auto-fire on state change)
 ```
 
 ---
@@ -92,55 +104,58 @@ LoginScreen / SignupScreen
 ### Route Structure
 
 ```
-GoRouter
-├── /get-started          (GetStartedScreen - no shell)
-├── /login                (LoginScreen - no shell)
-├── /signup               (SignupScreen - no shell)
-├── /forgot-password      (ForgotPasswordScreen - no shell)
-├── /onboarding           (OnboardingScreen - no shell)
-├── /scan                 (ScanScreen - no shell, full-screen camera)
-├── /recipe/:id           (RecipeDetailScreen - no shell, extra: Recipe)
-├── /dietary-preferences  (DietaryPreferencesScreen - no shell)
-└── ShellRoute (MainShell with BottomNav)
+GoRouter (lib/app/routes.dart)
+├── /get-started          (GetStartedScreen — no shell, auth only)
+├── /login                (LoginScreen — no shell)
+├── /signup               (SignupScreen — no shell)
+├── /forgot-password      (ForgotPasswordScreen — no shell)
+├── /onboarding           (OnboardingScreen — no shell, shown once)
+├── /scan                 (ScanScreen — no shell, full-screen camera)
+├── /grocery              (GroceryListScreen — no shell, full-screen)
+├── /dietary-preferences  (DietaryPreferencesScreen — no shell)
+├── /recipe/:id           (RecipeDetailScreen — no shell; Recipe via extra:)
+├── /voice-search         (SearchScreen alias — no shell)
+└── ShellRoute (ScaffoldWithNavBar)
     ├── /          (HomeScreen)
     ├── /search    (SearchScreen)
     ├── /favorites (FavoritesScreen)
-    ├── /grocery   (GroceryListScreen)  ← Phase 0: move here from standalone
     └── /profile   (ProfileScreen)
 ```
 
-### Navigation Rules
+The bottom navigation bar has 5 positions: Home (0), Search (1), Camera button (2), Favorites (3), Profile (4). The camera button at index 2 is a special push-button (`context.push('/scan')`), not a nav destination, so positions 3 and 4 are used for Favorites and Profile indices.
 
-**Always use GoRouter. Never use Navigator directly.**
+### Auth Guard
+
+```dart
+// lib/app/routes.dart
+redirect: (context, state) {
+  final isSignedIn = FirebaseService().isSignedIn;  // sync bool
+  final isAuthRoute = state.uri.path.startsWith('/get-started') || ...;
+
+  if (!isSignedIn && !isAuthRoute) return '/get-started';
+  if (isSignedIn && isAuthRoute) return '/';
+  return null;
+}
+```
+
+**Limitation**: The redirect is synchronous. It does not subscribe to `authStateChanges`. If a Firebase token expires mid-session, the user won't be redirected until the next navigation event. Post-logout navigation must be triggered explicitly (as in `_handleSignOut`).
+
+### Navigation Rules
 
 ```dart
 // ✅ Navigate to a tab (replaces current stack)
 context.go('/search');
 
-// ✅ Push a detail screen (keeps back button)
+// ✅ Push a detail screen (back button works)
 context.push('/recipe/${recipe.id}', extra: recipe);
 
-// ✅ Replace (e.g., after login)
-context.go('/');
+// ✅ Pass data to routes — always use extra:, not arguments:
+context.push('/recipe/${recipe.id}', extra: recipe);
+// Receive in route: final recipe = state.extra as Recipe?;
 
-// ❌ Never use these - bypasses GoRouter shell and auth guard
+// ❌ Never — bypasses ShellRoute and auth guard
 Navigator.pushNamed(context, '/path');
 Navigator.push(context, MaterialPageRoute(...));
-```
-
-### Auth Guard
-
-Defined in `lib/app/routes.dart` via GoRouter `redirect`:
-
-```dart
-redirect: (context, state) {
-  final isSignedIn = FirebaseService().isSignedIn;
-  final isAuthRoute = ['/login', '/signup', '/get-started', ...].contains(state.fullPath);
-
-  if (!isSignedIn && !isAuthRoute) return '/get-started';
-  if (isSignedIn && isAuthRoute) return '/';
-  return null; // no redirect
-}
 ```
 
 ---
@@ -149,69 +164,41 @@ redirect: (context, state) {
 
 ### Three Providers
 
-Registered in `main.dart` via `MultiProvider`:
+Registered in `main.dart` via `MultiProvider`. All extend `ChangeNotifier`.
 
-| Provider | Responsibility |
-|----------|---------------|
-| `RecipeProvider` | Recipe list, search results, favorites, loading state |
-| `UserProvider` | Auth state, user profile, theme preference |
-| `GroceryListProvider` | Grocery items, local + Firebase sync |
+| Provider | File | Responsibility |
+|----------|------|---------------|
+| `RecipeProvider` | `firebase_providers.dart` | Recipe list, search results, favorites, loading/error state |
+| `UserProvider` | `firebase_providers.dart` | Auth state, `AppUser` profile, dark mode preference, recent searches |
+| `GroceryListProvider` | `firebase_providers.dart` | Grocery items (local + Firebase), cloud save/load |
 
-### Provider Pattern
-
-All providers extend `ChangeNotifier`. Pattern:
+### Consuming Providers
 
 ```dart
-class RecipeProvider extends ChangeNotifier {
-  // Private state
-  List<Recipe> _recipes = [];
-  bool _isLoading = false;
+// Reading (no rebuild — use in callbacks/initState)
+context.read<RecipeProvider>().loadRecipes();
 
-  // Public getters (read-only)
-  List<Recipe> get recipes => List.unmodifiable(_recipes);
-  bool get isLoading => _isLoading;
-
-  // Actions that mutate state
-  Future<void> loadRecipes() async {
-    _isLoading = true;
-    notifyListeners();
-
-    _recipes = await _firebaseService.getAllRecipes();
-    _isLoading = false;
-    notifyListeners();
-  }
-}
-```
-
-### Consuming State in UI
-
-```dart
-// Reading (no rebuild)
-final recipes = context.read<RecipeProvider>().recipes;
-
-// Watching (rebuilds on change)
+// Watching (rebuilds when anything changes)
 final recipes = context.watch<RecipeProvider>().recipes;
 
-// Selecting (rebuilds only when specific value changes)
+// Selecting (rebuilds only when specific field changes)
 final isLoading = context.select<RecipeProvider, bool>((p) => p.isLoading);
 
-// In build method via Consumer (fine-grained rebuild)
+// In build tree — fine-grained rebuild scope
 Consumer<RecipeProvider>(
-  builder: (context, provider, child) => Text('${provider.recipes.length} recipes'),
+  builder: (context, provider, child) => Text('${provider.recipes.length}'),
 )
 ```
 
 ### Immutable State Updates
 
-All state mutations use `copyWith` - never direct field mutation:
-
 ```dart
-// ✅ Correct - creates new object
-_items[index] = _items[index].copyWith(checked: !_items[index].checked);
+// ✅ Use copyWith — creates a new object, triggers Provider rebuild
+_items[index] = _items[index].copyWith(checked: true);
 notifyListeners();
 
-// ❌ Wrong - Flutter won't detect this change
-_items[index].checked = !_items[index].checked;
+// ❌ Direct mutation — Provider will NOT detect this change
+_items[index].checked = true;
 ```
 
 ---
@@ -222,79 +209,77 @@ _items[index].checked = !_items[index].checked;
 
 Location: `lib/services/firebase_service.dart`
 
+Single instance created via factory constructor — `FirebaseService()` always returns the same object. Must call `initialize()` before use (called in `main.dart`).
+
 ```
 FirebaseService
-├── Firebase instances
-│   ├── FirebaseFirestore _firestore
-│   └── FirebaseAuth _auth
-├── In-memory cache
-│   ├── List<Recipe> _cachedRecipes
-│   └── DateTime? _cacheTimestamp (30-min expiry)
-├── Recipe operations
-│   ├── getAllRecipes({bool forceRefresh})
-│   ├── getRecipe(String id)
-│   ├── searchRecipes(String query)
-│   └── searchByIngredients(List<String> ingredients)
-├── User operations
-│   ├── signInWithEmailAndPassword(email, password)
-│   ├── createUserWithEmailAndPassword(email, password)
+├── Auth
+│   ├── signInWithEmail(email, password)
+│   ├── registerWithEmail(email, password, name)
 │   ├── signInWithGoogle()
-│   ├── signInAnonymously()
 │   ├── signOut()
 │   ├── sendPasswordResetEmail(email)
-│   ├── getUserProfile()
-│   └── createUserProfile(...)
-├── Favorites
-│   ├── getFavoriteIds()
+│   ├── isSignedIn                      → bool (sync)
+│   ├── currentUser                     → firebase_auth.User?
+│   └── authStateChanges                → Stream<User?>
+├── User Profile (Firestore users/)
+│   ├── getUserProfile()                → AppUser?
+│   ├── createUserProfile(name, email)
+│   └── updatePreferences(...)
+├── Recipes (Firestore recipes/ + TheMealDB fallback)
+│   ├── getAllRecipes()                 → List<Recipe> (cached)
+│   ├── getRecipe(id)                  → Recipe?
+│   ├── searchRecipes(query)           → List<Recipe>
+│   └── searchByIngredients(list)      → List<Recipe>
+├── Favorites (Firestore users/{uid})
+│   ├── getFavoriteIds()               → List<String>
 │   ├── addFavorite(recipeId)
 │   └── removeFavorite(recipeId)
-└── Grocery lists
-    ├── createGroceryList(...)
-    └── getGroceryLists()
+├── Grocery Lists (Firestore grocery_lists/)
+│   ├── createGroceryList(name, items) → String (listId)
+│   ├── getGroceryList(listId)         → GroceryList?
+│   ├── getGroceryLists()              → List<GroceryList>
+│   ├── toggleGroceryItem(listId, name)
+│   └── deleteGroceryList(listId)
+└── Search History (Firestore users/{uid}/search_history)
+    ├── getSearchHistory()             → List<Map>
+    └── addSearchHistory(query)
 ```
 
-### Retry Strategy
+### Network Resilience
 
-`FirebaseService` includes exponential backoff for Firestore reads:
-
-```dart
-Future<T> _withRetry<T>(Future<T> Function() operation) async {
-  int attempts = 0;
-  while (attempts < 3) {
-    try {
-      return await operation();
-    } catch (e) {
-      attempts++;
-      await Future.delayed(Duration(seconds: 2 * attempts));
-    }
-  }
-  throw Exception('Max retries exceeded');
-}
-```
+HTTP calls via `Dio` with a retry interceptor (not a generic `_withRetry` wrapper). The `Dio` interceptor retries requests that fail with `connectionTimeout`, `receiveTimeout`, or `connectionError` — up to 3 times with 500ms/1s/1.5s delays.
 
 ### TheMealDB Fallback
 
-When Firestore `recipes/` collection is empty, `FirebaseService` seeds it:
-1. Fetches categories from `https://www.themealdb.com/api/json/v1/1/categories.php`
-2. Fetches meals per category
-3. Writes results to Firestore as `Recipe` documents
-4. Also seeds from `data/recipes.json` (19 local recipes)
+When `getAllRecipes()` finds Firestore empty:
+1. Loads `data/recipes.json` (19 bundled recipes)
+2. Fetches categories from `https://www.themealdb.com/api/json/v1/1/categories.php`
+3. Fetches meal lists per category
+4. Writes all results to Firestore `recipes/` collection for future use
+
+Images use TheMealDB's CDN URLs (`strMealThumb`).
 
 ---
 
 ## Caching Strategy
 
-Three layers:
+Three independent layers:
 
 | Layer | Mechanism | Scope | Duration |
 |-------|-----------|-------|----------|
-| In-memory | `_cachedRecipes` list in FirebaseService | Current session | 30 minutes |
-| Firestore offline | `FirebaseFirestore.instance.settings.persistenceEnabled = true` | Between sessions | Indefinite |
-| App preferences | `SharedPreferences` | Between sessions | Indefinite |
+| In-memory | `_cachedRecipes` + `_cacheTimestamp` in `FirebaseService` | Current process only | 30 minutes |
+| Firestore offline | `persistenceEnabled: true` (set in `initialize()`) | Between sessions | Until cache evicted |
+| SharedPreferences | Key-value via `shared_preferences` package | Between sessions | Persistent |
 
-SharedPreferences keys:
-- `onboarding_completed` → `bool` - whether to show onboarding on launch
-- `theme_mode` → `string` - `'light'` / `'dark'` / `'system'`
+**SharedPreferences keys used:**
+
+| Key | Type | Purpose |
+|-----|------|---------|
+| `onboarding_complete` | bool | Show onboarding on first launch only |
+| `dark_mode` | bool | Dark mode user preference |
+| `favorite_ids` | List\<String\> | Offline-first favorites cache |
+| `grocery_items` | List\<String\> | Local grocery items (pipe-delimited: `name|qty|unit|category|checked`) |
 
 ---
 
@@ -302,107 +287,103 @@ SharedPreferences keys:
 
 Location: `lib/models/models.dart`
 
-All models use:
-- `const` constructors for compile-time safety
-- Named required parameters
-- `copyWith()` method for immutable updates
-- `fromMap()` / `toMap()` for Firestore serialization
+All models use immutable patterns:
+- `const` constructors (where fields allow)
+- All required parameters are named
+- `copyWith()` for state updates
+- `fromJson()` / `toJson()` for Firestore + TheMealDB serialization
 
-| Model | Key Fields | Firestore Collection |
-|-------|-----------|---------------------|
-| `Recipe` | id, name, ingredients, steps, cuisine, nutrition, imageUrl | `recipes/` |
-| `Nutrition` | calories, protein, carbs, fat, fiber | Nested in Recipe |
-| `AppUser` | uid, name, email, dietaryPreferences, allergies, favoriteRecipes | `users/` |
-| `GroceryList` | id, userId, name, items, status | `grocery_lists/` |
-| `GroceryItem` | id, name, quantity, unit, checked, category | Nested in GroceryList |
-| `DetectedIngredient` | name, confidence, boundingBox | In-memory only |
-
-> **Note**: `AppUser` is currently defined inside `firebase_service.dart`. It should be moved to `models/models.dart` (tracked in BUGS.md cleanup items).
+| Model | Key Fields | Notes |
+|-------|-----------|-------|
+| `Recipe` | id, name, ingredients[], steps[], prepTime, cookTime, difficulty, cuisine, dietaryTags[], nutrition, imageUrl | `prepTime`/`cookTime` are `String` — use `prepTimeInt`/`cookTimeInt` getters for arithmetic (see BUG-004) |
+| `Nutrition` | calories (int), protein, carbs, fat, fiber | Strings like `"25g"` for macro fields |
+| `AppUser` | id, name, email, dietaryPreferences[], allergies[], favoriteRecipes[], searchHistory[] | Firebase UID as `id` |
+| `User` | Same as AppUser | Legacy wrapper — `UserProvider.currentUser` returns this for compatibility; can be removed |
+| `GroceryList` | id, userId, name, items[], byCategory{}, status | `byCategory` computed from items on deserialization |
+| `GroceryItem` | name, quantity (double), unit, category, checked | Immutable via `copyWith(checked:)` |
+| `DetectedIngredient` | name, confidence (double), bbox | In-memory only; not persisted |
+| `BoundingBox` | x1, y1, x2, y2 | Nested in `DetectedIngredient` |
+| `SearchHistory` | query, timestamp | Returned by `getSearchHistory()`; not a first-class model |
 
 ---
 
 ## Theme System
 
-### Files
-
 ```
 lib/app/theme/
-├── theme.dart           # Barrel export
-├── app_colors.dart      # Color constants
-├── app_typography.dart  # TextStyle definitions (uses Poppins - see BUG-008)
-├── app_spacing.dart     # Spacing constants (xxs=4 through xxxl=64)
-└── app_theme.dart       # ThemeData (light + dark)
+├── theme.dart           # Barrel export (import this in screens)
+├── app_colors.dart      # Color constants (AppColors)
+├── app_typography.dart  # TextTheme via GoogleFonts.poppinsTextTheme()
+├── app_spacing.dart     # Spacing constants (AppSpacing) + BorderRadius helpers
+└── app_theme.dart       # ThemeData light + dark (uses Material 3)
 ```
 
-### Key Rules
+**Font**: Poppins via `google_fonts` package (`GoogleFonts.poppinsTextTheme()`). Downloaded at runtime; no font files in `assets/fonts/`. No bundled font declaration needed in `pubspec.yaml`.
 
+**Spacing scale** (`AppSpacing.*`):
+
+| Constant | dp | Use |
+|----------|----|-----|
+| `xxs` | 4 | Micro gaps |
+| `xs` | 8 | Tight padding |
+| `sm` | 12 | Component padding |
+| `md` | 16 | Standard padding (most common) |
+| `lg` | 24 | Section spacing |
+| `xl` | 32 | Large section dividers |
+| `xxl` | 48 | Page-level padding |
+| `xxxl` | 64 | Hero/splash spacing |
+
+**Key rules:**
 ```dart
-// ✅ Use withValues() for opacity - withOpacity() is deprecated in Flutter 3.x
+// ✅ withValues() — withOpacity() is deprecated in Flutter 3.x
 Colors.black.withValues(alpha: 0.1)
 
-// ✅ Use AppSpacing constants instead of raw numbers
-SizedBox(height: AppSpacing.md)  // 16.0
+// ✅ Spacing constants
+SizedBox(height: AppSpacing.md)
 
-// ✅ Use AppColors constants
-color: AppColors.primaryOrange  // Color(0xFFFF6B35)
+// ✅ Color constants
+AppColors.primaryOrange   // Color(0xFFFF6B35)
+AppColors.accentGreen
+AppColors.accentYellow
 ```
-
-### Spacing Constants
-
-| Name | Value | Use |
-|------|-------|-----|
-| `xxs` | 4 | Micro gaps |
-| `xs` | 8 | Small padding |
-| `sm` | 12 | Component padding |
-| `md` | 16 | Standard section spacing |
-| `lg` | 24 | Large gaps |
-| `xl` | 32 | Section dividers |
-| `xxl` | 48 | Page padding |
-| `xxxl` | 64 | Hero spacing |
 
 ---
 
 ## Firebase Configuration
 
-### Project
+### Project Details
 
 - **Project ID**: `smartchefai-344c5`
-- **Configured for**: Android, Web
-- **Not configured**: iOS, macOS, Windows (placeholder values in `firebase_options.dart`)
+- **Configured for**: Android (real), Web (real)
+- **Not configured**: iOS, macOS, Windows (placeholder values only)
 
-### Platform Files
+### Platform Config Files
 
-| Platform | Config File | Status |
-|----------|------------|--------|
+| Platform | File | Status |
+|----------|------|--------|
 | Android | `android/app/google-services.json` | Real credentials |
 | Web | `lib/firebase_options.dart` (web section) | Real credentials |
-| iOS | `lib/firebase_options.dart` (ios section) | Placeholder - not configured |
-| macOS | `lib/firebase_options.dart` (macos section) | Placeholder - not configured |
+| iOS | `lib/firebase_options.dart` (ios section) | Placeholder — DO NOT use |
+| macOS | `lib/firebase_options.dart` (macos section) | Placeholder — DO NOT use |
 
 ### Firestore Security Rules
 
-> No `firestore.rules` file exists locally. Must be created before any production use.
-
-Recommended rules pattern:
+No `firestore.rules` file exists locally. Must be created before production. Recommended pattern:
 
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Recipes - readable by all authenticated users
     match /recipes/{recipeId} {
       allow read: if request.auth != null;
-      allow write: if false; // only via admin/seeding
+      allow write: if false;  // admin/seeding only
     }
-
-    // Users - only accessible by the user themselves
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-
-    // Grocery lists - only accessible by the owning user
     match /grocery_lists/{listId} {
-      allow read, write: if request.auth != null && resource.data.user_id == request.auth.uid;
+      allow read, write: if request.auth != null
+                         && resource.data.user_id == request.auth.uid;
     }
   }
 }
@@ -410,26 +391,49 @@ service cloud.firestore {
 
 ---
 
-## File Organization Rules
+## File Organization
 
-### Feature-First Structure
+### Project Structure
 
-New screens go in `lib/features/{feature_name}/{feature_name}_screen.dart`.
+```
+lib/
+├── main.dart                     # App entry, Firebase init, MultiProvider setup
+├── firebase_options.dart         # Firebase SDK config (Android + Web real; iOS placeholder)
+├── app/
+│   ├── routes.dart               # GoRouter: ShellRoute + auth redirect
+│   └── theme/
+│       ├── theme.dart            # Barrel export
+│       ├── app_colors.dart       # AppColors constants
+│       ├── app_typography.dart   # AppTypography (Poppins via google_fonts)
+│       ├── app_spacing.dart      # AppSpacing constants
+│       └── app_theme.dart        # ThemeData light + dark
+├── features/                     # Feature-first screen organization
+│   ├── auth/                     # get_started, login, signup, forgot_password
+│   ├── home/home_screen.dart
+│   ├── search/search_screen.dart
+│   ├── recipe_detail/recipe_detail_screen.dart
+│   ├── favorites/favorites_screen.dart
+│   ├── grocery/grocery_list_screen.dart
+│   ├── profile/profile_screen.dart
+│   ├── scan/scan_screen.dart
+│   ├── onboarding/onboarding_screen.dart
+│   └── dietary_preferences/dietary_preferences_screen.dart
+├── shared/widgets/               # Reusable widgets (barrel: widgets.dart)
+├── models/models.dart            # All data models (barrel export)
+├── providers/
+│   ├── firebase_providers.dart   # RecipeProvider, UserProvider, GroceryListProvider
+│   └── app_providers.dart        # Re-exports firebase_providers.dart
+└── services/
+    └── firebase_service.dart     # FirebaseService singleton
+```
 
-Do NOT create top-level screen files - always under `features/`.
+### Adding a New Feature
 
-### Shared Widgets
-
-Reusable widgets go in `lib/shared/widgets/`. Add to `widgets.dart` barrel export.
-
-Do NOT add to `lib/widgets/custom_widgets.dart` - that file is dead code scheduled for deletion.
-
-### Barrel Exports
-
-Each major directory has a barrel:
-- `lib/shared/widgets/widgets.dart` - all shared widgets
-- `lib/models/models.dart` - all model classes
-- `lib/providers/app_providers.dart` - re-exports `firebase_providers.dart`
+1. Create `lib/features/{name}/{name}_screen.dart`
+2. Add route to `lib/app/routes.dart`
+3. If needs state: add methods to an existing provider, or create a new `ChangeNotifier` in `firebase_providers.dart` and register in `main.dart`
+4. If needs new Firestore collection: add CRUD methods to `FirebaseService`, update `firestore.rules`
+5. Add reusable widgets to `lib/shared/widgets/` and export from `widgets.dart`
 
 ---
 
@@ -437,18 +441,20 @@ Each major directory has a barrel:
 
 ### Android
 
-- Min SDK: 21 (set in `android/app/build.gradle`)
-- Package: `com.example.smartchefai` (needs rename before release - see ROADMAP Phase 3)
-- Permissions needed: `CAMERA`, `READ_EXTERNAL_STORAGE`, `RECORD_AUDIO` (for voice search)
-- Google Sign-In: OAuth client configured in `google-services.json`
+- Min SDK: 21 (`android/app/build.gradle`)
+- Application ID: `com.example.smartchefai` (must rename before Play Store release)
+- Permissions declared: `CAMERA`, `READ_EXTERNAL_STORAGE`, `RECORD_AUDIO`
+- Google Sign-In: OAuth client in `google-services.json`
+- `speech_to_text` uses Android SpeechRecognizer API (on-device)
 
 ### Web
 
-- Firebase configured for web in `firebase_options.dart`
-- `image_picker` has limited web support (gallery only, no camera on all browsers)
-- `speech_to_text` works on Chrome/Edge on web
-- Deep links work via standard URL routing through GoRouter
+- Firebase configured in `firebase_options.dart` (web section)
+- `image_picker` on web: gallery only (no direct camera access on all browsers)
+- `speech_to_text` on web: works on Chrome and Edge; not all browsers
+- Navigation: standard GoRouter URL routing — deep links work as-is
+- `permission_handler` has limited web support — camera/mic access via browser prompt
 
 ---
 
-*Last updated: 2026-02-19 | Project: SmartChef AI v0.1.0*
+*Last updated: 2026-02-20 | Project: SmartChef AI v0.1.0 | Targets: Android + Web*
