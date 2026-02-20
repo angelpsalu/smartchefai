@@ -12,8 +12,8 @@ class Recipe {
   final String name;
   final List<String> ingredients;
   final List<String> steps;
-  final String prepTime;
-  final String cookTime;
+  final int prepTime;
+  final int cookTime;
   final String difficulty;
   final String cuisine;
   final List<String> dietaryTags;
@@ -23,10 +23,6 @@ class Recipe {
   final double? similarityScore;
   final double? rating;
 
-  // Convenience getters for int time values
-  int get prepTimeInt => int.tryParse(prepTime.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-  int get cookTimeInt => int.tryParse(cookTime.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-  
   // Aliases for compatibility
   List<String> get instructions => steps;
 
@@ -53,8 +49,8 @@ class Recipe {
     String? name,
     List<String>? ingredients,
     List<String>? steps,
-    String? prepTime,
-    String? cookTime,
+    int? prepTime,
+    int? cookTime,
     String? difficulty,
     String? cuisine,
     List<String>? dietaryTags,
@@ -88,8 +84,8 @@ class Recipe {
       name: json['name'] ?? json['strMeal'] ?? '',
       ingredients: _parseIngredients(json),
       steps: _parseSteps(json),
-      prepTime: json['prep_time'] ?? json['prepTime'] ?? '15 min',
-      cookTime: json['cook_time'] ?? json['cookTime'] ?? '30 min',
+      prepTime: _parseTime(json['prep_time'] ?? json['prepTime'] ?? 15),
+      cookTime: _parseTime(json['cook_time'] ?? json['cookTime'] ?? 30),
       difficulty: json['difficulty'] ?? 'Medium',
       cuisine: json['cuisine'] ?? json['strArea'] ?? '',
       dietaryTags: List<String>.from(json['dietary_tags'] ?? json['strTags']?.split(',') ?? []),
@@ -99,6 +95,16 @@ class Recipe {
       similarityScore: (json['similarity_score'] as num?)?.toDouble(),
       rating: (json['rating'] as num?)?.toDouble() ?? 4.5,
     );
+  }
+
+  /// Parse a time value that may be int or String (e.g. "15 mins") to int minutes.
+  static int _parseTime(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      return int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    }
+    return 0;
   }
 
   static List<String> _parseIngredients(Map<String, dynamic> json) {
@@ -140,6 +146,7 @@ class Recipe {
     'steps': steps,
     'prep_time': prepTime,
     'cook_time': cookTime,
+
     'difficulty': difficulty,
     'cuisine': cuisine,
     'dietary_tags': dietaryTags,
@@ -199,69 +206,6 @@ class Nutrition {
     'carbs': carbs,
     'fat': fat,
     'fiber': fiber,
-  };
-}
-
-/// User model for app users
-class User {
-  final String id;
-  final String name;
-  final String email;
-  final List<String> dietaryPreferences;
-  final List<String> allergies;
-  final List<String> favoriteRecipes;
-  final List<Map<String, dynamic>> searchHistory;
-
-  const User({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.dietaryPreferences,
-    required this.allergies,
-    required this.favoriteRecipes,
-    required this.searchHistory,
-  });
-  
-  /// Create a copy with modified fields
-  User copyWith({
-    String? id,
-    String? name,
-    String? email,
-    List<String>? dietaryPreferences,
-    List<String>? allergies,
-    List<String>? favoriteRecipes,
-    List<Map<String, dynamic>>? searchHistory,
-  }) {
-    return User(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      email: email ?? this.email,
-      dietaryPreferences: dietaryPreferences ?? this.dietaryPreferences,
-      allergies: allergies ?? this.allergies,
-      favoriteRecipes: favoriteRecipes ?? this.favoriteRecipes,
-      searchHistory: searchHistory ?? this.searchHistory,
-    );
-  }
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      dietaryPreferences: List<String>.from(json['dietary_preferences'] ?? []),
-      allergies: List<String>.from(json['allergies'] ?? []),
-      favoriteRecipes: List<String>.from(json['favorite_recipes'] ?? []),
-      searchHistory: List<Map<String, dynamic>>.from(json['search_history'] ?? []),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'email': email,
-    'dietary_preferences': dietaryPreferences,
-    'allergies': allergies,
-    'favorite_recipes': favoriteRecipes,
   };
 }
 
@@ -467,6 +411,9 @@ class AppUser {
   final List<String> favoriteRecipes;
   final List<Map<String, dynamic>> searchHistory;
   final DateTime? createdAt;
+  final int recipesCooked;
+  final int currentStreak;
+  final DateTime? lastCookedDate;
 
   AppUser({
     required this.id,
@@ -477,7 +424,38 @@ class AppUser {
     required this.favoriteRecipes,
     required this.searchHistory,
     this.createdAt,
+    this.recipesCooked = 0,
+    this.currentStreak = 0,
+    this.lastCookedDate,
   });
+
+  AppUser copyWith({
+    String? id,
+    String? name,
+    String? email,
+    List<String>? dietaryPreferences,
+    List<String>? allergies,
+    List<String>? favoriteRecipes,
+    List<Map<String, dynamic>>? searchHistory,
+    DateTime? createdAt,
+    int? recipesCooked,
+    int? currentStreak,
+    DateTime? lastCookedDate,
+  }) {
+    return AppUser(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      dietaryPreferences: dietaryPreferences ?? this.dietaryPreferences,
+      allergies: allergies ?? this.allergies,
+      favoriteRecipes: favoriteRecipes ?? this.favoriteRecipes,
+      searchHistory: searchHistory ?? this.searchHistory,
+      createdAt: createdAt ?? this.createdAt,
+      recipesCooked: recipesCooked ?? this.recipesCooked,
+      currentStreak: currentStreak ?? this.currentStreak,
+      lastCookedDate: lastCookedDate ?? this.lastCookedDate,
+    );
+  }
 
   factory AppUser.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -490,6 +468,9 @@ class AppUser {
       favoriteRecipes: List<String>.from(data['favorite_recipes'] ?? []),
       searchHistory: List<Map<String, dynamic>>.from(data['search_history'] ?? []),
       createdAt: (data['created_at'] as Timestamp?)?.toDate(),
+      recipesCooked: (data['recipes_cooked'] as num?)?.toInt() ?? 0,
+      currentStreak: (data['current_streak'] as num?)?.toInt() ?? 0,
+      lastCookedDate: (data['last_cooked_date'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -501,5 +482,10 @@ class AppUser {
     'allergies': allergies,
     'favorite_recipes': favoriteRecipes,
     'search_history': searchHistory,
+    'recipes_cooked': recipesCooked,
+    'current_streak': currentStreak,
+    'last_cooked_date': lastCookedDate != null
+        ? Timestamp.fromDate(lastCookedDate!)
+        : null,
   };
 }

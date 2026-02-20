@@ -244,16 +244,6 @@ class FirebaseService {
   /// Check if user is signed in
   bool get isSignedIn => _auth.currentUser != null;
 
-  /// Sign in anonymously (for guest users)
-  Future<firebase_auth.UserCredential> signInAnonymously() async {
-    try {
-      return await _auth.signInAnonymously();
-    } catch (e) {
-      debugPrint('Error signing in anonymously: $e');
-      rethrow;
-    }
-  }
-
   /// Sign in with email/password
   Future<firebase_auth.UserCredential> signInWithEmail(String email, String password) async {
     try {
@@ -516,8 +506,8 @@ class FirebaseService {
       name: meal['strMeal'] ?? '',
       ingredients: [],
       steps: [],
-      prepTime: '15 mins',
-      cookTime: '30 mins',
+      prepTime: 15,
+      cookTime: 30,
       difficulty: 'medium',
       cuisine: category,
       dietaryTags: category == 'Vegetarian' ? ['vegetarian'] : [],
@@ -548,8 +538,8 @@ class FirebaseService {
       name: meal['strMeal'] ?? '',
       ingredients: ingredients,
       steps: steps,
-      prepTime: '15 mins',
-      cookTime: '30 mins',
+      prepTime: 15,
+      cookTime: 30,
       difficulty: 'medium',
       cuisine: meal['strArea'] ?? 'International',
       dietaryTags: _extractDietaryTags(meal),
@@ -707,6 +697,9 @@ class FirebaseService {
       'allergies': allergies ?? [],
       'favorite_recipes': [],
       'search_history': [],
+      'recipes_cooked': 0,
+      'current_streak': 0,
+      'last_cooked_date': null,
       'created_at': FieldValue.serverTimestamp(),
       'updated_at': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
@@ -741,6 +734,43 @@ class FirebaseService {
       'allergies': allergies,
       'updated_at': FieldValue.serverTimestamp(),
     });
+  }
+
+  /// Increment recipes cooked counter and update streak
+  Future<AppUser?> incrementRecipesCooked() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+
+    final doc = await _firestore.collection('users').doc(user.uid).get();
+    if (!doc.exists) return null;
+
+    final data = doc.data()!;
+    final now = DateTime.now();
+    final lastCooked = (data['last_cooked_date'] as Timestamp?)?.toDate();
+    int currentStreak = (data['current_streak'] as num?)?.toInt() ?? 0;
+
+    // Streak logic: increment if last cooked yesterday or today, reset if gap > 1 day
+    if (lastCooked != null) {
+      final daysSinceLast = now.difference(lastCooked).inDays;
+      if (daysSinceLast <= 1) {
+        // Continue or maintain streak
+        if (daysSinceLast == 1) currentStreak++;
+        // Same day: keep streak as-is
+      } else {
+        currentStreak = 1; // Reset streak
+      }
+    } else {
+      currentStreak = 1; // First time cooking
+    }
+
+    await _firestore.collection('users').doc(user.uid).update({
+      'recipes_cooked': FieldValue.increment(1),
+      'current_streak': currentStreak,
+      'last_cooked_date': Timestamp.fromDate(now),
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+
+    return getUserProfile();
   }
 
   // ==================== FAVORITES (Firestore) ====================
@@ -919,45 +949,6 @@ class FirebaseService {
       // Return empty
     }
     return [];
-  }
-
-  // ==================== INGREDIENT DETECTION (Mock) ====================
-  
-  /// Detect ingredients from image
-  /// Note: For MVP, returns mock data. 
-  /// In production, integrate with:
-  /// - Google Cloud Vision API
-  /// - Firebase ML Kit
-  /// - Custom TensorFlow model
-  Future<List<DetectedIngredient>> detectIngredients(List<int> imageBytes) async {
-    // Simulate detection delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Mock detected ingredients
-    return [
-      DetectedIngredient(
-        name: 'tomato',
-        confidence: 0.95,
-        bbox: BoundingBox(x1: 0.1, y1: 0.1, x2: 0.3, y2: 0.3),
-      ),
-      DetectedIngredient(
-        name: 'onion',
-        confidence: 0.88,
-        bbox: BoundingBox(x1: 0.4, y1: 0.2, x2: 0.6, y2: 0.4),
-      ),
-      DetectedIngredient(
-        name: 'garlic',
-        confidence: 0.82,
-        bbox: BoundingBox(x1: 0.7, y1: 0.3, x2: 0.9, y2: 0.5),
-      ),
-    ];
-  }
-
-  /// Detect ingredients and find matching recipes
-  Future<List<Recipe>> detectIngredientsAndFindRecipes(List<int> imageBytes) async {
-    final ingredients = await detectIngredients(imageBytes);
-    final ingredientNames = ingredients.map((i) => i.name).toList();
-    return searchByIngredients(ingredientNames);
   }
 
   // ==================== HEALTH CHECK ====================

@@ -17,9 +17,9 @@
 - [x] Fix recipe detail navigation to use `extra:` instead of `arguments:`
 - [x] Remove grocery screen redundant bottom nav (now a full-screen route outside ShellRoute)
 - [x] Remove guest mode that bypassed Firebase Auth (`09a360a`)
-- [ ] **BUG-006** - Profile "Recipes Made" and "Streak" stats still hardcoded (`profile_screen.dart:107,116`)
-- [ ] **BUG-007** - Add `google_logo.png` to `assets/icons/`
-- [ ] **BUG-004** - Change `Recipe.prepTime`/`cookTime` from String to int
+- [x] **BUG-006** - Profile stats now show `0` instead of hardcoded values (real tracking in Phase 1)
+- [x] **BUG-007** - Added official Google 'G' logo PNG to `assets/icons/google_logo.png`
+- [x] **BUG-004** - Changed `Recipe.prepTime`/`cookTime` from String to int (minutes)
 
 ### 0.2 Dead Code / Cleanup
 
@@ -28,10 +28,10 @@
 - [x] Deleted `lib/providers/grocery_provider.dart`
 - [x] Removed unused packages from `pubspec.yaml`
 - [x] Moved `AppUser` to `lib/models/models.dart`
-- [ ] Delete `signInAnonymously()` from `FirebaseService` (leftover from guest mode)
-- [ ] Remove `User` class from `lib/models/models.dart` — use `AppUser` directly
-- [ ] Add `firestore.rules` with production-grade security rules
-- [ ] Add `storage.rules`
+- [x] Delete `signInAnonymously()` from `FirebaseService` (+ removed mock `detectIngredients`)
+- [x] Remove `User` class from `lib/models/models.dart` — `UserProvider.currentUser` now returns `AppUser`
+- [x] Audit `firestore.rules` — production-grade (owner-only access, default deny)
+- [x] Audit `storage.rules` — added 5 MB size limit + image-only content type validation
 
 ### 0.3 Feature Data
 
@@ -49,29 +49,28 @@
 
 ### 1.1 Profile Screen — Real Stats
 
-- [ ] Add `recipesCooked` (int) field to Firestore `users/{uid}` document
-- [ ] Add `currentStreak` (int) and `lastCookedDate` (timestamp) to user document
-- [ ] Display live stats from `UserProvider` in profile stat cards
-- [ ] Notifications toggle — wire to `SharedPreferences` or Firestore user doc
-- [ ] Language selector — save to `SharedPreferences`
-- [ ] Help & FAQ — open a web URL or in-app sheet
-- [ ] Send Feedback — open email intent or in-app form
-- [ ] Rate the App — open Play Store URL (Android) / App Store URL (iOS if added)
+- [x] Add `recipesCooked` (int) field to Firestore `users/{uid}` document
+- [x] Add `currentStreak` (int) and `lastCookedDate` (timestamp) to user document
+- [x] Display live stats from `UserProvider` in profile stat cards
+- [x] Notifications toggle — wired to `SharedPreferences`
+- [x] Language selector — saves to `SharedPreferences`, shows dialog with 6 languages
+- [x] Help & FAQ — opens GitHub URL via `url_launcher`
+- [x] Send Feedback — opens `mailto:` intent via `url_launcher`
+- [x] Rate the App — opens Play Store URL via `url_launcher`
 
 ### 1.2 Grocery List Auto-Sync
 
-> `FirebaseService` already has `createGroceryList()`, `getGroceryLists()`, and `toggleGroceryItem()` fully implemented. The UI currently only syncs manually via the cloud upload button.
-
-- [ ] Auto-load grocery lists from Firestore when user authenticates
-- [ ] Auto-save grocery list changes to Firestore in real time
-- [ ] Merge local `SharedPreferences` items with Firebase items on login
-- [ ] Handle conflict resolution (local vs cloud)
+- [x] Auto-load grocery list from Firestore on app start / login (`syncOnLogin()` from HomeScreen)
+- [x] Auto-save changes to Firestore on every add/remove/toggle/clear
+- [x] Merge local `SharedPreferences` items with Firebase items (cloud checked state wins)
+- [x] Conflict resolution: union of item names, cloud wins for checked state
+- [x] Cloud status indicator in AppBar (cloud_done / cloud_off icon)
 
 ### 1.3 Improve Recipe Detail
 
-- [ ] Increment `recipesCooked` counter when user taps "Start Cooking"
-- [ ] Add "Add all to grocery list" button that populates grocery list from recipe ingredients
-- [ ] Display estimated total time from `prepTimeInt + cookTimeInt` (use existing getters)
+- [x] "Start Cooking" button increments `recipesCooked` + streak in Firestore, switches to Instructions tab
+- [x] "Add to Grocery List" button already existed — kept and working
+- [x] Total time info card (`prepTime + cookTime`) added to quick-info row
 
 **Success criteria**: Profile shows real user data, grocery list syncs automatically.
 
@@ -83,13 +82,14 @@
 
 ### 2.1 Real AI Ingredient Detection ✅ Done
 
-- [x] Firebase Cloud Function `analyzeIngredients` (HTTP trigger, gen 2, Node 20, TypeScript)
-- [x] Google Cloud Vision `LABEL_DETECTION` — score ≥ 0.65, non-food blocklist applied
-- [x] `FirebaseService.analyzeImage(XFile)` — base64 encode, ID token auth, Dio POST
+- [x] Google Cloud Vision REST API — called directly from Flutter via Dio (no Cloud Function needed)
+- [x] `LABEL_DETECTION` — score ≥ 0.65 threshold + food keyword allowlist filter (~80 keywords)
+- [x] `FirebaseService.analyzeImage(XFile)` — base64 encode, POST with `?key=VISION_API_KEY`
 - [x] `ScanScreen` — real detection replaces mock, image compressed to 512×512px
 - [x] `ScanScreen` — inline horizontal scroll row of `RecipeCard`s (no navigation to `/search`)
 - [x] Users can edit/remove detected ingredient chips before searching
-- [ ] **Pending**: Deploy Cloud Function (requires Firebase Blaze plan upgrade)
+- [x] API key secured via `String.fromEnvironment` + gitignored `dart_defines/dev.json`
+- [ ] `functions/` Cloud Function kept for optional Blaze plan upgrade in future
 - [ ] Confidence scores displayed in chip UI (out of scope this phase)
 
 ### 2.2 Email Verification Flow

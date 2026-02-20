@@ -14,35 +14,10 @@ class GroceryListScreen extends StatefulWidget {
 
 class _GroceryListScreenState extends State<GroceryListScreen> {
   final _textController = TextEditingController();
-  bool _isSaving = false;
-
   @override
   void dispose() {
     _textController.dispose();
     super.dispose();
-  }
-
-  Future<void> _saveToCloud() async {
-    final provider = context.read<GroceryListProvider>();
-    if (provider.items.isEmpty) return;
-
-    setState(() => _isSaving = true);
-    final listId = await provider.createGroceryList('', []);
-    if (!mounted) return;
-    setState(() => _isSaving = false);
-
-    if (listId != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Grocery list saved to cloud!')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to save list. Check your connection.'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    }
   }
 
   void _addItem() {
@@ -89,21 +64,20 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
         actions: [
           Consumer<GroceryListProvider>(
             builder: (context, provider, child) {
-              final hasItems = provider.items.isNotEmpty;
-              return _isSaving
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : IconButton(
-                      onPressed: hasItems ? _saveToCloud : null,
-                      icon: const Icon(Icons.cloud_upload_outlined),
-                      tooltip: 'Save list to cloud',
-                    );
+              return Tooltip(
+                message: provider.isSynced ? 'Synced to cloud' : 'Local only',
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    provider.isSynced
+                        ? Icons.cloud_done_outlined
+                        : Icons.cloud_off_outlined,
+                    color: provider.isSynced
+                        ? AppColors.accentGreen
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              );
             },
           ),
           Consumer<GroceryListProvider>(

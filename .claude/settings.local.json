@@ -34,7 +34,10 @@
       "Bash(\"E:/coding/smartchefai/functions/src/ingredientFilter.test.ts\":*)",
       "Bash(npm test:*)",
       "Bash(curl:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git push:*)",
+      "Skill(claude-md-management:revise-claude-md)"
     ]
   }
 }

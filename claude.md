@@ -10,9 +10,27 @@ For feature planning see [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
+## Running the App
+
+```bash
+# Scan feature requires VISION_API_KEY — always run with:
+flutter run --dart-define-from-file=dart_defines/dev.json
+
+# VS Code: press F5 — .vscode/launch.json passes the flag automatically
+```
+
+Setup: copy `dart_defines/dev.json.example` → `dart_defines/dev.json`, paste your Vision API key.
+Requires Cloud Vision API enabled + billing linked on GCP project `smartchefai-344c5` (1,000 calls/month free).
+
+---
+
 ## Project Structure
 
 ```
+dart_defines/
+├── dev.json              # gitignored — add VISION_API_KEY here (copy from .example)
+└── dev.json.example      # committed template for new devs
+functions/                # Cloud Function TypeScript — NOT deployed (Spark plan); kept for Blaze upgrade
 lib/
 ├── main.dart                     # App entry, Firebase init, MultiProvider
 ├── firebase_options.dart         # Firebase config (Android + Web real, iOS placeholder)
@@ -163,6 +181,7 @@ final service = FirebaseService();  // Always the same instance
 ```
 
 Key capabilities (see `firebase_service.dart`):
+- `analyzeImage(XFile)` — Vision REST API, food-only allowlist filter, returns `List<DetectedIngredient>`
 - `getAllRecipes()` - cached, falls back to TheMealDB if Firestore empty
 - `searchRecipes(query)`, `searchByIngredients(ingredients)`
 - Email/password auth, Google Sign-In, password reset
@@ -185,6 +204,7 @@ FirebaseService().currentUser  // firebase_auth.User?
 - Android: configured (`google-services.json` present)
 - Web: configured (`firebase_options.dart`)
 - iOS/macOS/Windows: **NOT configured** (placeholder values only)
+- Firebase plan: **Spark (free)** — `firebase deploy --only functions` will fail; upgrade to Blaze to deploy Cloud Functions
 
 ---
 
@@ -194,7 +214,7 @@ Location: `lib/models/models.dart`
 
 | Model | Purpose |
 |-------|---------|
-| `Recipe` | Recipe with ingredients, steps, nutrition, imageUrl. Use `prepTimeInt`/`cookTimeInt` getters for arithmetic (fields are String) |
+| `Recipe` | Recipe with ingredients, steps, nutrition, imageUrl. `prepTime`/`cookTime` are `int` (minutes) |
 | `Nutrition` | Calories (int), protein, carbs, fat, fiber (Strings like "25g") |
 | `AppUser` | Firebase user with Firestore profile data |
 | `GroceryList` | List of GroceryItems with Firestore sync |
@@ -217,11 +237,7 @@ All models: `const` constructor, named params, `copyWith()`, `fromJson()`, `toJs
 
 ## Open Bugs
 
-See [`BUGS.md`](BUGS.md) for the full list. Currently open:
-
-- **BUG-006 LOW**: Profile "Recipes Made" (`'12'`) and "Streak" (`'5 days'`) stats are hardcoded (`profile_screen.dart:107,116`)
-- **BUG-007 LOW**: `google_logo.png` missing from `assets/icons/` — fallback icon shown on Google Sign-In button
-- **BUG-004 LOW**: `Recipe.prepTime`/`cookTime` are String types — always use `prepTimeInt`/`cookTimeInt` getters for arithmetic
+See [`BUGS.md`](BUGS.md) for the full list. No open bugs currently.
 
 ---
 
@@ -236,7 +252,7 @@ See [`BUGS.md`](BUGS.md) for the full list. Currently open:
 | `google_sign_in` | Google OAuth |
 | `provider` | State management |
 | `go_router` | Navigation |
-| `dio` | HTTP client (TheMealDB API + retry interceptor) |
+| `dio` | HTTP client (TheMealDB API + Cloud Vision REST API + retry interceptor) |
 | `http` | HTTP client (secondary) |
 | `shared_preferences` | Onboarding flag, theme setting, offline favorites/grocery cache |
 | `cached_network_image` | Image loading with cache |

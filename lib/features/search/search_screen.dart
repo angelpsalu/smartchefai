@@ -298,7 +298,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 id: recipe.id,
                 title: recipe.name,
                 imageUrl: recipe.imageUrl,
-                cookTime: '${recipe.prepTimeInt + recipe.cookTimeInt} min',
+                cookTime: '${recipe.prepTime + recipe.cookTime} min',
                 difficulty: recipe.difficulty,
                 rating: recipe.rating,
                 isFavorite: context.watch<RecipeProvider>().isFavorite(recipe.id),

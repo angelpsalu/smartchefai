@@ -218,7 +218,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                         child: _InfoCard(
                           icon: Icons.schedule,
                           label: 'Prep',
-                          value: recipe.prepTime,
+                          value: '${recipe.prepTime} min',
                           color: colorScheme.primary,
                         ),
                       ),
@@ -227,8 +227,17 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                         child: _InfoCard(
                           icon: Icons.local_fire_department,
                           label: 'Cook',
-                          value: recipe.cookTime,
+                          value: '${recipe.cookTime} min',
                           color: AppColors.primaryOrange,
+                        ),
+                      ),
+                      const HGap.md(),
+                      Expanded(
+                        child: _InfoCard(
+                          icon: Icons.timer_outlined,
+                          label: 'Total',
+                          value: '${recipe.prepTime + recipe.cookTime} min',
+                          color: AppColors.accentYellow,
                         ),
                       ),
                       const HGap.md(),
@@ -244,6 +253,15 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                   ),
 
                   const Gap.lg(),
+
+                  // Start Cooking Button
+                  GradientButton(
+                    text: 'Start Cooking',
+                    icon: Icons.play_arrow_rounded,
+                    onPressed: () => _startCooking(context),
+                  ),
+
+                  const Gap.md(),
                 ],
               ),
             ),
@@ -285,6 +303,19 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _startCooking(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final userProvider = context.read<UserProvider>();
+    // Increment counter in Firestore
+    await userProvider.incrementRecipesCooked();
+    if (!mounted) return;
+    // Switch to instructions tab
+    _tabController.animateTo(1);
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Good luck! Follow the instructions below.')),
     );
   }
 

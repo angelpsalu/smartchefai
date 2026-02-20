@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
@@ -23,6 +24,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
     }
     return 'SC';
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open link')),
+      );
+    }
+  }
+
+  void _showLanguageDialog() {
+    const languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Consumer<UserProvider>(
+          builder: (context, provider, _) {
+            return SimpleDialog(
+              title: const Text('Select Language'),
+              children: languages.map((lang) {
+                return SimpleDialogOption(
+                  onPressed: () {
+                    provider.setLanguage(lang);
+                    Navigator.pop(context);
+                  },
+                  child: Row(
+                    children: [
+                      if (provider.selectedLanguage == lang)
+                        const Icon(Icons.check, size: 20)
+                      else
+                        const SizedBox(width: 20),
+                      const SizedBox(width: 8),
+                      Text(lang),
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _handleSignOut() async {
@@ -89,35 +134,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const Gap.xl(),
 
           // Stats Cards
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.favorite,
-                  label: 'Favorites',
-                  value: context.watch<RecipeProvider>().favoriteRecipes.length.toString(),
-                  color: AppColors.primaryOrange,
-                ),
-              ),
-              const HGap.md(),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.restaurant_menu,
-                  label: 'Recipes Made',
-                  value: '12',
-                  color: AppColors.accentGreen,
-                ),
-              ),
-              const HGap.md(),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.local_fire_department,
-                  label: 'Streak',
-                  value: '5 days',
-                  color: AppColors.accentYellow,
-                ),
-              ),
-            ],
+          Consumer2<RecipeProvider, UserProvider>(
+            builder: (context, recipeProvider, userProvider, _) {
+              final user = userProvider.appUser;
+              return Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      icon: Icons.favorite,
+                      label: 'Favorites',
+                      value: recipeProvider.favoriteRecipes.length.toString(),
+                      color: AppColors.primaryOrange,
+                    ),
+                  ),
+                  const HGap.md(),
+                  Expanded(
+                    child: _StatCard(
+                      icon: Icons.restaurant_menu,
+                      label: 'Recipes Made',
+                      value: (user?.recipesCooked ?? 0).toString(),
+                      color: AppColors.accentGreen,
+                    ),
+                  ),
+                  const HGap.md(),
+                  Expanded(
+                    child: _StatCard(
+                      icon: Icons.local_fire_department,
+                      label: 'Streak',
+                      value: '${user?.currentStreak ?? 0} days',
+                      color: AppColors.accentYellow,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
 
           const Gap.xl(),
@@ -178,20 +228,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 },
               ),
-              SettingsTile(
-                icon: Icons.notifications,
-                title: 'Notifications',
-                subtitle: 'Meal reminders, tips',
-                trailing: Switch(
-                  value: true,
-                  onChanged: (value) {},
-                ),
+              Consumer<UserProvider>(
+                builder: (context, provider, child) {
+                  return SettingsTile(
+                    icon: Icons.notifications,
+                    title: 'Notifications',
+                    subtitle: 'Meal reminders, tips',
+                    trailing: Switch(
+                      value: provider.notificationsEnabled,
+                      onChanged: (value) => provider.toggleNotifications(),
+                    ),
+                  );
+                },
               ),
-              SettingsTile(
-                icon: Icons.language,
-                title: 'Language',
-                subtitle: 'English',
-                onTap: () {},
+              Consumer<UserProvider>(
+                builder: (context, provider, child) {
+                  return SettingsTile(
+                    icon: Icons.language,
+                    title: 'Language',
+                    subtitle: provider.selectedLanguage,
+                    onTap: _showLanguageDialog,
+                  );
+                },
               ),
             ],
           ),
@@ -211,17 +269,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               SettingsTile(
                 icon: Icons.help_outline,
                 title: 'Help & FAQ',
-                onTap: () {},
+                onTap: () => _launchUrl('https://github.com/topics/smartchefai'),
               ),
               SettingsTile(
                 icon: Icons.feedback_outlined,
                 title: 'Send Feedback',
-                onTap: () {},
+                onTap: () => _launchUrl(
+                  'mailto:feedback@smartchef.ai?subject=SmartChef%20AI%20Feedback',
+                ),
               ),
               SettingsTile(
                 icon: Icons.star_outline,
                 title: 'Rate the App',
-                onTap: () {},
+                onTap: () => _launchUrl(
+                  'https://play.google.com/store/apps/details?id=com.example.smartchefai',
+                ),
               ),
               SettingsTile(
                 icon: Icons.info_outline,

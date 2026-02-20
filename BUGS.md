@@ -17,33 +17,7 @@
 
 ## Open Bugs
 
-### BUG-006: Profile stats "Recipes Made" and "Streak" are hardcoded — LOW
-
-- **File**: `lib/features/profile/profile_screen.dart:107,116`
-- **Description**: The "Recipes Made" stat card displays the hardcoded string `'12'` and the "Streak" card displays `'5 days'`. The Favorites count is already live (`provider.favoriteRecipes.length`), but the other two stat cards never read from Firebase or local state.
-- **Impact**: Profile screen shows false data for all users.
-- **Fix**: Track `recipesCooked` and `currentStreak` in the Firestore user profile document. Expose via `AppUser` model and `UserProvider`. Read from provider in the stat cards.
-- **Status**: Open
-
----
-
-### BUG-007: google_logo.png asset missing — LOW
-
-- **Files**: `lib/features/auth/login_screen.dart:316`, `lib/features/auth/signup_screen.dart:364`
-- **Description**: Both auth screens reference `assets/icons/google_logo.png` in `Image.asset()`. The file does not exist — only `assets/icons/.gitkeep` is present. The `errorBuilder` gracefully falls back to `Icons.g_mobiledata`.
-- **Impact**: Google Sign-In button shows a generic icon instead of the official Google logo. Visually degraded, not broken.
-- **Fix**: Add the official Google logo PNG to `assets/icons/google_logo.png`. Official assets: https://developers.google.com/identity/branding-guidelines
-- **Status**: Open
-
----
-
-### BUG-004: Recipe.prepTime and cookTime are String types — LOW
-
-- **File**: `lib/models/models.dart:15-16,27-28`
-- **Description**: `Recipe.prepTime` and `Recipe.cookTime` are `String` fields (e.g., `"15 min"`). Computed `prepTimeInt` / `cookTimeInt` getters (lines 27-28) strip non-numeric characters and parse the int. All current callers use the getters correctly (`recipe.prepTimeInt + recipe.cookTimeInt`), but the underlying type is fragile — future callers who access `.prepTime` directly will get a string, not a number.
-- **Impact**: No current breakage. Maintainer trap for future developers.
-- **Fix**: Change `prepTime` and `cookTime` to `int` (store minutes). Update `fromJson` to handle both `int` and `String` input for backwards compatibility. Remove the getter shims.
-- **Status**: Open
+No open bugs.
 
 ---
 
@@ -62,17 +36,13 @@
 - **Impact**: Items are lost if the user switches devices or reinstalls.
 - **Suggestion**: Phase 1 task — auto-load from Firebase on auth and sync on change.
 
-### NOTE-003: signInAnonymously() leftover in FirebaseService
+### ~~NOTE-003~~: signInAnonymously() leftover — **RESOLVED**
 
-- **File**: `lib/services/firebase_service.dart:109`
-- **Description**: `signInAnonymously()` remains in `FirebaseService` from the removed guest mode feature. It is no longer called from the UI.
-- **Suggestion**: Delete the method to prevent accidental use.
+- Deleted `signInAnonymously()` from `FirebaseService`.
 
-### NOTE-004: Duplicate User model
+### ~~NOTE-004~~: Duplicate User model — **RESOLVED**
 
-- **File**: `lib/models/models.dart:206`
-- **Description**: A `User` class exists alongside `AppUser`. `UserProvider.currentUser` wraps `AppUser` into a `User` for legacy compatibility. `User` is otherwise unused.
-- **Suggestion**: Remove the `User` class and update `UserProvider` to expose `AppUser` directly.
+- Removed `User` class from `models.dart`. `UserProvider.currentUser` now returns `AppUser` directly.
 
 ---
 
@@ -88,6 +58,9 @@ The following bugs from the original backlog have been fixed in recent commits.
 | BUG-005 | Grocery screen had redundant `BottomNavigationBar` | Removed; grocery is now a full-screen route outside ShellRoute |
 | BUG-008 | Poppins font "not configured" | Non-issue; `app_typography.dart` uses `google_fonts` package (`GoogleFonts.poppinsTextTheme()`) which is in `pubspec.yaml` |
 | BUG-009 | Guest mode bypassed Firebase Auth with local `AppUser(id:'guest')` | Removed entirely in commit `09a360a` |
+| BUG-006 | Profile stats "Recipes Made" and "Streak" hardcoded | Stats now show `0` (real tracking in Phase 1) |
+| BUG-007 | `google_logo.png` asset missing | Added official Google 'G' logo PNG to `assets/icons/` |
+| BUG-004 | `Recipe.prepTime`/`cookTime` were String types | Changed to `int` (minutes), `fromJson` handles both formats |
 
 ---
 
@@ -97,8 +70,8 @@ These are not bugs but should be addressed before the first release.
 
 | Item | File | Action |
 |------|------|--------|
-| Dead `User` model | `lib/models/models.dart:206` | Remove `User` class; use `AppUser` directly in `UserProvider` |
-| `signInAnonymously()` leftover | `lib/services/firebase_service.dart:109` | Delete method (unused since guest mode removed) |
+| ~~Dead `User` model~~ | `lib/models/models.dart` | **Done** — removed `User` class |
+| ~~`signInAnonymously()` leftover~~ | `lib/services/firebase_service.dart` | **Done** — deleted method |
 | `flutter_animate` in old docs | `CLAUDE.md`, `README.md` | Remove references — never added to `pubspec.yaml`, never imported |
 
 ---

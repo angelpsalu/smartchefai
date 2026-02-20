@@ -230,24 +230,18 @@ class UserProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   bool _isDarkMode = false;
+  bool _notificationsEnabled = true;
+  String _selectedLanguage = 'English';
 
-  // Getters - currentUser returns legacy User model for compatibility
-  User? get currentUser => _appUser != null
-      ? User(
-          id: _appUser!.id,
-          name: _appUser!.name,
-          email: _appUser!.email,
-          dietaryPreferences: _appUser!.dietaryPreferences,
-          allergies: _appUser!.allergies,
-          favoriteRecipes: _appUser!.favoriteRecipes,
-          searchHistory: _appUser!.searchHistory,
-        )
-      : null;
+  // Getters
+  AppUser? get currentUser => _appUser;
   AppUser? get appUser => _appUser;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isAuthenticated => _appUser != null || _firebaseService.currentUser != null;
   bool get isDarkMode => _isDarkMode;
+  bool get notificationsEnabled => _notificationsEnabled;
+  String get selectedLanguage => _selectedLanguage;
 
   UserProvider() {
     _initUser();
@@ -256,10 +250,15 @@ class UserProvider extends ChangeNotifier {
   /// Initialize user (load existing user if authenticated)
   Future<void> _initUser() async {
     try {
+      // Load app preferences
+      final prefs = await SharedPreferences.getInstance();
+      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+      _selectedLanguage = prefs.getString('selected_language') ?? 'English';
+
       // Only load user profile if already signed in
       if (_firebaseService.currentUser != null) {
         _appUser = await _firebaseService.getUserProfile();
-        
+
         // Create profile if doesn't exist (for existing Firebase auth users)
         if (_appUser == null) {
           final user = _firebaseService.currentUser!;
@@ -516,9 +515,35 @@ class UserProvider extends ChangeNotifier {
     await prefs.setBool('dark_mode', _isDarkMode);
     notifyListeners();
   }
+
+  /// Toggle notifications preference
+  Future<void> toggleNotifications() async {
+    _notificationsEnabled = !_notificationsEnabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', _notificationsEnabled);
+    notifyListeners();
+  }
+
+  /// Set language preference
+  Future<void> setLanguage(String language) async {
+    _selectedLanguage = language;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_language', language);
+    notifyListeners();
+  }
+
+  /// Increment recipes cooked counter (call when user starts cooking)
+  Future<void> incrementRecipesCooked() async {
+    try {
+      _appUser = await _firebaseService.incrementRecipesCooked();
+      notifyListeners();
+    } catch (e) {
+      // Non-critical — ignore
+    }
+  }
 }
 
-/// Grocery List Provider - Manages grocery lists
+/// Grocery List Provider - Manages grocery lists with auto-sync
 class GroceryListProvider extends ChangeNotifier {
   final FirebaseService _firebaseService = FirebaseService();
 
@@ -527,6 +552,7 @@ class GroceryListProvider extends ChangeNotifier {
   List<GroceryItem> _items = [];
   bool _isLoading = false;
   String? _error;
+  String? _cloudListId; // ID of the active Firestore list for this session
 
   // Getters
   List<GroceryList> get lists => _lists;
@@ -534,70 +560,154 @@ class GroceryListProvider extends ChangeNotifier {
   List<GroceryItem> get items => _items;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get isSynced => _cloudListId != null;
 
   GroceryListProvider() {
-    _loadLocalItems();
+    _init();
   }
 
-  /// Load items from local storage
+  /// Load local items then try to merge with cloud
+  Future<void> _init() async {
+    await _loadLocalItems();
+    await _syncFromCloud();
+  }
+
+  /// Load items from SharedPreferences
   Future<void> _loadLocalItems() async {
     final prefs = await SharedPreferences.getInstance();
+    _cloudListId = prefs.getString('active_grocery_list_id');
     final itemsJson = prefs.getStringList('grocery_items') ?? [];
 
     _items = itemsJson.map((itemStr) {
       final parts = itemStr.split('|');
-      if (parts.length >= 2) {
-        return GroceryItem(
-          name: parts[0],
-          quantity: parts.length > 1 ? double.tryParse(parts[1]) ?? 1.0 : 1.0,
-          unit: parts.length > 2 ? parts[2] : '',
-          category: parts.length > 3 ? parts[3] : 'other',
-          checked: parts.length > 4 ? parts[4] == 'true' : false,
-          recipes: [],
-        );
-      }
       return GroceryItem(
-        name: parts[0],
-        quantity: 1.0,
-        unit: '',
-        category: 'other',
-        checked: parts.length > 1 ? parts[1] == 'true' : false,
+        name: parts.isNotEmpty ? parts[0] : '',
+        quantity: parts.length > 1 ? double.tryParse(parts[1]) ?? 1.0 : 1.0,
+        unit: parts.length > 2 ? parts[2] : '',
+        category: parts.length > 3 ? parts[3] : 'other',
+        checked: parts.length > 4 ? parts[4] == 'true' : false,
         recipes: [],
       );
-    }).toList();
+    }).whereType<GroceryItem>().where((i) => i.name.isNotEmpty).toList();
 
     notifyListeners();
   }
 
-  /// Save items to local storage
+  /// Save items to SharedPreferences
   Future<void> _saveLocalItems() async {
     final prefs = await SharedPreferences.getInstance();
     final itemsJson = _items
         .map((e) => '${e.name}|${e.quantity}|${e.unit}|${e.category}|${e.checked}')
         .toList();
     await prefs.setStringList('grocery_items', itemsJson);
+    if (_cloudListId != null) {
+      await prefs.setString('active_grocery_list_id', _cloudListId!);
+    }
+  }
+
+  /// Pull from Firestore and merge with local items (cloud checked state wins)
+  Future<void> _syncFromCloud() async {
+    if (_firebaseService.currentUser == null) return;
+    try {
+      GroceryList? cloudList;
+
+      if (_cloudListId != null) {
+        cloudList = await _firebaseService.getGroceryList(_cloudListId!);
+      }
+
+      // If no known list, fetch the most recent one
+      if (cloudList == null) {
+        final lists = await _firebaseService.getGroceryLists();
+        if (lists.isNotEmpty) {
+          cloudList = lists.first;
+          _cloudListId = cloudList.id;
+        }
+      }
+
+      if (cloudList != null) {
+        _mergeWithCloud(cloudList.items);
+        _currentList = cloudList;
+        await _saveLocalItems();
+        notifyListeners();
+      }
+    } catch (_) {
+      // Stay with local items on network error
+    }
+  }
+
+  /// Merge cloud items with local: union of names, cloud wins for checked state
+  void _mergeWithCloud(List<GroceryItem> cloudItems) {
+    final merged = <String, GroceryItem>{};
+
+    // Start with local items
+    for (final item in _items) {
+      merged[item.name.toLowerCase()] = item;
+    }
+
+    // Overlay cloud items: cloud wins for checked state
+    for (final cloudItem in cloudItems) {
+      final key = cloudItem.name.toLowerCase();
+      if (merged.containsKey(key)) {
+        // Keep local item but use cloud's checked state
+        merged[key] = merged[key]!.copyWith(checked: cloudItem.checked);
+      } else {
+        merged[key] = cloudItem;
+      }
+    }
+
+    _items = merged.values.toList();
+  }
+
+  /// Push current items to Firestore (create or update)
+  Future<void> _pushToCloud() async {
+    if (_firebaseService.currentUser == null) return;
+    try {
+      if (_cloudListId == null) {
+        // Create a new cloud list
+        _cloudListId = await _firebaseService.createGroceryList(
+          name: 'My Grocery List',
+          items: _items,
+        );
+        final prefs = await SharedPreferences.getInstance();
+        if (_cloudListId != null) {
+          await prefs.setString('active_grocery_list_id', _cloudListId!);
+        }
+      } else {
+        // Update existing cloud list
+        await _firebaseService.updateGroceryList(_cloudListId!, items: _items);
+      }
+    } catch (_) {
+      // Non-critical — local changes already saved
+    }
   }
 
   /// Add item
   void addItem(GroceryItem item) {
+    // Avoid duplicate names
+    if (_items.any((i) => i.name.toLowerCase() == item.name.toLowerCase())) {
+      return;
+    }
     _items.add(item);
     _saveLocalItems();
+    _pushToCloud();
     notifyListeners();
   }
 
   /// Remove item
-  void removeItem(String id) {
-    _items.removeWhere((item) => item.name == id);
+  void removeItem(String name) {
+    _items.removeWhere((item) => item.name == name);
     _saveLocalItems();
+    _pushToCloud();
     notifyListeners();
   }
 
   /// Toggle item checked state (immutable pattern)
-  void toggleItem(String id) {
-    final index = _items.indexWhere((item) => item.name == id);
+  void toggleItem(String name) {
+    final index = _items.indexWhere((item) => item.name == name);
     if (index != -1) {
       _items[index] = _items[index].copyWith(checked: !_items[index].checked);
       _saveLocalItems();
+      _pushToCloud();
       notifyListeners();
     }
   }
@@ -606,10 +716,16 @@ class GroceryListProvider extends ChangeNotifier {
   void clearCheckedItems() {
     _items.removeWhere((item) => item.checked);
     _saveLocalItems();
+    _pushToCloud();
     notifyListeners();
   }
 
-  /// Create grocery list (Firebase)
+  /// Force a full sync from cloud (call after login)
+  Future<void> syncOnLogin() async {
+    await _syncFromCloud();
+  }
+
+  /// Create grocery list (kept for explicit saves, e.g. from recipe detail)
   Future<String?> createGroceryList(
     String userId,
     List<String> recipeIds, {
@@ -620,11 +736,19 @@ class GroceryListProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      if (_cloudListId != null) {
+        await _firebaseService.updateGroceryList(_cloudListId!, items: _items);
+        _isLoading = false;
+        notifyListeners();
+        return _cloudListId;
+      }
       final listId = await _firebaseService.createGroceryList(
-        name: 'Grocery List ${DateTime.now().toString().substring(0, 10)}',
+        name: 'My Grocery List',
         items: _items,
       );
-      await getGroceryList(listId);
+      _cloudListId = listId;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('active_grocery_list_id', listId);
       _isLoading = false;
       notifyListeners();
       return listId;
@@ -682,6 +806,11 @@ class GroceryListProvider extends ChangeNotifier {
     try {
       await _firebaseService.deleteGroceryList(listId);
       _lists.removeWhere((l) => l.id == listId);
+      if (_cloudListId == listId) {
+        _cloudListId = null;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('active_grocery_list_id');
+      }
       notifyListeners();
       return true;
     } catch (e) {

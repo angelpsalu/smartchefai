@@ -68,7 +68,7 @@ class FavoritesScreen extends StatelessWidget {
                 id: recipe.id,
                 title: recipe.name,
                 imageUrl: recipe.imageUrl,
-                cookTime: '${recipe.prepTimeInt + recipe.cookTimeInt} min',
+                cookTime: '${recipe.prepTime + recipe.cookTime} min',
                 difficulty: recipe.difficulty,
                 rating: recipe.rating,
                 isFavorite: true,

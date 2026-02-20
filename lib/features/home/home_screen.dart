@@ -20,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecipeProvider>().loadRecipes();
+      context.read<GroceryListProvider>().syncOnLogin();
     });
   }
 
@@ -249,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         id: recipe.id,
                         title: recipe.name,
                         imageUrl: recipe.imageUrl,
-                        cookTime: '${recipe.prepTimeInt + recipe.cookTimeInt} min',
+                        cookTime: '${recipe.prepTime + recipe.cookTime} min',
                         difficulty: recipe.difficulty,
                         rating: recipe.rating,
                         isFavorite: context.watch<RecipeProvider>().isFavorite(recipe.id),
@@ -319,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
               id: recipe.id,
               title: recipe.name,
               imageUrl: recipe.imageUrl,
-              cookTime: '${recipe.prepTimeInt + recipe.cookTimeInt} min',
+              cookTime: '${recipe.prepTime + recipe.cookTime} min',
               difficulty: recipe.difficulty,
               rating: recipe.rating,
               isFavorite: context.watch<RecipeProvider>().isFavorite(recipe.id),
