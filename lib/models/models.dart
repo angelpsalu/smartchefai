@@ -414,6 +414,7 @@ class AppUser {
   final int recipesCooked;
   final int currentStreak;
   final DateTime? lastCookedDate;
+  final String? photoUrl;
 
   AppUser({
     required this.id,
@@ -427,6 +428,7 @@ class AppUser {
     this.recipesCooked = 0,
     this.currentStreak = 0,
     this.lastCookedDate,
+    this.photoUrl,
   });
 
   AppUser copyWith({
@@ -441,6 +443,7 @@ class AppUser {
     int? recipesCooked,
     int? currentStreak,
     DateTime? lastCookedDate,
+    String? photoUrl,
   }) {
     return AppUser(
       id: id ?? this.id,
@@ -454,6 +457,7 @@ class AppUser {
       recipesCooked: recipesCooked ?? this.recipesCooked,
       currentStreak: currentStreak ?? this.currentStreak,
       lastCookedDate: lastCookedDate ?? this.lastCookedDate,
+      photoUrl: photoUrl ?? this.photoUrl,
     );
   }
 
@@ -471,6 +475,7 @@ class AppUser {
       recipesCooked: (data['recipes_cooked'] as num?)?.toInt() ?? 0,
       currentStreak: (data['current_streak'] as num?)?.toInt() ?? 0,
       lastCookedDate: (data['last_cooked_date'] as Timestamp?)?.toDate(),
+      photoUrl: data['photo_url'] as String?,
     );
   }
 
@@ -487,5 +492,131 @@ class AppUser {
     'last_cooked_date': lastCookedDate != null
         ? Timestamp.fromDate(lastCookedDate!)
         : null,
+    'photo_url': photoUrl,
+  };
+}
+
+/// Meal plan for a single week, stored as one Firestore doc per user
+class MealPlan {
+  final String userId;
+  // Keys: 'monday'…'sunday'. Values: recipeId (null = empty slot)
+  final Map<String, String?> days;
+  final DateTime weekStart;
+  final DateTime updatedAt;
+
+  static const List<String> dayNames = [
+    'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  ];
+
+  const MealPlan({
+    required this.userId,
+    required this.days,
+    required this.weekStart,
+    required this.updatedAt,
+  });
+
+  MealPlan copyWith({
+    String? userId,
+    Map<String, String?>? days,
+    DateTime? weekStart,
+    DateTime? updatedAt,
+  }) {
+    return MealPlan(
+      userId: userId ?? this.userId,
+      days: days ?? this.days,
+      weekStart: weekStart ?? this.weekStart,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  factory MealPlan.empty(String userId) {
+    final now = DateTime.now();
+    // Find Monday of this week
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    return MealPlan(
+      userId: userId,
+      days: {for (final d in dayNames) d: null},
+      weekStart: DateTime(monday.year, monday.month, monday.day),
+      updatedAt: now,
+    );
+  }
+
+  factory MealPlan.fromFirestore(Map<String, dynamic> data) {
+    final rawDays = data['days'] as Map<String, dynamic>? ?? {};
+    return MealPlan(
+      userId: data['user_id'] as String? ?? '',
+      days: {
+        for (final d in dayNames) d: rawDays[d] as String?,
+      },
+      weekStart: (data['week_start'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updated_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() => {
+    'user_id': userId,
+    'days': days,
+    'week_start': Timestamp.fromDate(weekStart),
+    'updated_at': FieldValue.serverTimestamp(),
+  };
+}
+
+/// User's daily nutrition targets
+class NutritionGoals {
+  final String userId;
+  final int dailyCalories;
+  final int dailyProtein; // grams
+  final int dailyCarbs;   // grams
+  final int dailyFat;     // grams
+
+  const NutritionGoals({
+    required this.userId,
+    required this.dailyCalories,
+    required this.dailyProtein,
+    required this.dailyCarbs,
+    required this.dailyFat,
+  });
+
+  NutritionGoals copyWith({
+    String? userId,
+    int? dailyCalories,
+    int? dailyProtein,
+    int? dailyCarbs,
+    int? dailyFat,
+  }) {
+    return NutritionGoals(
+      userId: userId ?? this.userId,
+      dailyCalories: dailyCalories ?? this.dailyCalories,
+      dailyProtein: dailyProtein ?? this.dailyProtein,
+      dailyCarbs: dailyCarbs ?? this.dailyCarbs,
+      dailyFat: dailyFat ?? this.dailyFat,
+    );
+  }
+
+  factory NutritionGoals.defaults(String userId) => NutritionGoals(
+    userId: userId,
+    dailyCalories: 2000,
+    dailyProtein: 50,
+    dailyCarbs: 250,
+    dailyFat: 70,
+  );
+
+  factory NutritionGoals.fromFirestore(Map<String, dynamic> data) {
+    return NutritionGoals(
+      userId: data['user_id'] as String? ?? '',
+      dailyCalories: (data['daily_calories'] as num?)?.toInt() ?? 2000,
+      dailyProtein: (data['daily_protein'] as num?)?.toInt() ?? 50,
+      dailyCarbs: (data['daily_carbs'] as num?)?.toInt() ?? 250,
+      dailyFat: (data['daily_fat'] as num?)?.toInt() ?? 70,
+    );
+  }
+
+  Map<String, dynamic> toFirestore() => {
+    'user_id': userId,
+    'daily_calories': dailyCalories,
+    'daily_protein': dailyProtein,
+    'daily_carbs': dailyCarbs,
+    'daily_fat': dailyFat,
+    'updated_at': FieldValue.serverTimestamp(),
   };
 }
