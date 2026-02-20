@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:smartchefai/models/models.dart';
 
 /// Firebase Service - Direct Firestore integration
@@ -95,6 +96,53 @@ class FirebaseService {
   bool get _isCacheValid {
     if (_cachedRecipes.isEmpty || _cacheTimestamp == null) return false;
     return DateTime.now().difference(_cacheTimestamp!) < _cacheExpiration;
+  }
+
+  // ==================== AI IMAGE ANALYSIS ====================
+
+  static const String _analyzeFunctionUrl =
+      'https://us-central1-smartchefai-344c5.cloudfunctions.net/analyzeIngredients';
+
+  /// Analyze an image for food ingredients using Google Cloud Vision.
+  ///
+  /// Returns detected ingredients sorted by confidence descending.
+  /// Throws if user is not authenticated or the network call fails.
+  Future<List<DetectedIngredient>> analyzeImage(XFile imageFile) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('Must be signed in to analyze images');
+    }
+
+    // Read and encode image
+    final bytes = await imageFile.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    // Get Firebase ID token for authentication
+    final idToken = await user.getIdToken();
+
+    // Call Cloud Function
+    final response = await _dio.post<Map<String, dynamic>>(
+      _analyzeFunctionUrl,
+      data: {'imageBase64': base64Image},
+      options: Options(
+        headers: {'Authorization': 'Bearer $idToken'},
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+
+    if (response.data == null) {
+      throw Exception('Empty response from analyzeIngredients');
+    }
+
+    final rawList = response.data!['ingredients'] as List<dynamic>? ?? [];
+    return rawList.map((item) {
+      final map = item as Map<String, dynamic>;
+      return DetectedIngredient(
+        name: map['name'] as String,
+        confidence: (map['confidence'] as num).toDouble(),
+        bbox: BoundingBox(x1: 0, y1: 0, x2: 0, y2: 0),
+      );
+    }).toList();
   }
 
   // ==================== AUTHENTICATION ====================
