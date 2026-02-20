@@ -100,49 +100,84 @@ class FirebaseService {
 
   // ==================== AI IMAGE ANALYSIS ====================
 
-  static const String _analyzeFunctionUrl =
-      'https://us-central1-smartchefai-344c5.cloudfunctions.net/analyzeIngredients';
+  // Google Cloud Vision REST API key.
+  // Restrict this key in Cloud Console to your Android app to prevent abuse:
+  // APIs & Services → Credentials → key → Application restrictions → Android apps
+  // Add package: com.example.smartchefai + your debug/release SHA-1 fingerprint.
+  static const String _visionApiKey = 'AIzaSyDZrcTp_VXVOr0WvMzkApq1gWzyTow-IVU';
+
+  static const String _visionApiUrl =
+      'https://vision.googleapis.com/v1/images:annotate';
+
+  static const Set<String> _nonFoodBlocklist = {
+    'Kitchen', 'Tableware', 'Room', 'Table', 'Countertop',
+    'Wood', 'Dish', 'Plate', 'Bowl', 'Cutlery', 'Furniture',
+    'Interior design', 'Hardwood', 'Wall', 'Floor', 'Ceiling',
+    'Light', 'Lighting', 'Textile', 'Shelf',
+  };
 
   /// Analyze an image for food ingredients using Google Cloud Vision.
   ///
   /// Returns detected ingredients sorted by confidence descending.
-  /// Throws if user is not authenticated or the network call fails.
+  /// Throws on network error or invalid API key.
   Future<List<DetectedIngredient>> analyzeImage(XFile imageFile) async {
-    final user = _auth.currentUser;
-    if (user == null) {
-      throw Exception('Must be signed in to analyze images');
-    }
-
-    // Read and encode image
     final bytes = await imageFile.readAsBytes();
     final base64Image = base64Encode(bytes);
 
-    // Get Firebase ID token for authentication
-    final idToken = await user.getIdToken();
-
-    // Call Cloud Function
     final response = await _dio.post<Map<String, dynamic>>(
-      _analyzeFunctionUrl,
-      data: {'imageBase64': base64Image},
-      options: Options(
-        headers: {'Authorization': 'Bearer $idToken'},
-        receiveTimeout: const Duration(seconds: 30),
-      ),
+      _visionApiUrl,
+      queryParameters: {'key': _visionApiKey},
+      data: {
+        'requests': [
+          {
+            'image': {'content': base64Image},
+            'features': [
+              {'type': 'LABEL_DETECTION', 'maxResults': 20}
+            ],
+          }
+        ]
+      },
+      options: Options(receiveTimeout: const Duration(seconds: 30)),
     );
 
     if (response.data == null) {
-      throw Exception('Empty response from analyzeIngredients');
+      throw Exception('Empty response from Vision API');
     }
 
-    final rawList = response.data!['ingredients'] as List<dynamic>? ?? [];
-    return rawList.map((item) {
-      final map = item as Map<String, dynamic>;
-      return DetectedIngredient(
-        name: map['name'] as String,
-        confidence: (map['confidence'] as num).toDouble(),
-        bbox: BoundingBox(x1: 0, y1: 0, x2: 0, y2: 0),
-      );
-    }).toList();
+    final responses =
+        response.data!['responses'] as List<dynamic>? ?? [];
+    if (responses.isEmpty) return [];
+
+    final firstResponse = responses.first as Map<String, dynamic>;
+    // Vision API returns an error object in the response when the request fails
+    // (e.g. quota exceeded, invalid image). Surface it instead of returning [].
+    if (firstResponse.containsKey('error')) {
+      final err = firstResponse['error'] as Map<String, dynamic>;
+      throw Exception('Vision API error: ${err['message'] ?? err}');
+    }
+
+    final labels =
+        firstResponse['labelAnnotations'] as List<dynamic>? ?? [];
+
+    return _filterLabels(labels);
+  }
+
+  List<DetectedIngredient> _filterLabels(List<dynamic> labels) {
+    final filtered = labels
+        .map((l) => l as Map<String, dynamic>)
+        .where(
+            (l) => (l['score'] as num? ?? 0).toDouble() >= 0.65)
+        .where((l) =>
+            !_nonFoodBlocklist
+                .contains(l['description'] as String? ?? ''))
+        .map((l) => DetectedIngredient(
+              name: l['description'] as String? ?? '',
+              confidence: (l['score'] as num).toDouble(),
+              bbox: BoundingBox(x1: 0, y1: 0, x2: 0, y2: 0),
+            ))
+        .toList();
+    filtered.sort((a, b) => b.confidence.compareTo(a.confidence));
+    return filtered;
   }
 
   // ==================== AUTHENTICATION ====================
