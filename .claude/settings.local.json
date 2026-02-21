@@ -37,7 +37,13 @@
       "Bash(pkill:*)",
       "Bash(git check-ignore:*)",
       "Bash(git push:*)",
-      "Skill(claude-md-management:revise-claude-md)"
+      "Skill(claude-md-management:revise-claude-md)",
+      "Bash(E:/coding/smartchefai/lib/models/models.dart:*)",
+      "Bash(python3.exe:*)",
+      "Bash(python.exe --version:*)",
+      "Bash(py:*)",
+      "Bash(where:*)",
+      "Bash(python:*)"
     ]
   }
 }

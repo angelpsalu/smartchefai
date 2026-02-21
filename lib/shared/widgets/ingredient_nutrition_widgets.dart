@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../app/theme/theme.dart';
 
@@ -264,10 +265,10 @@ class ProfileAvatar extends StatelessWidget {
             ),
             child: imageUrl != null
                 ? ClipOval(
-                    child: Image.network(
-                      imageUrl!,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildInitials(
+                      errorWidget: (_, __, ___) => _buildInitials(
                         colorScheme,
                         textTheme,
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartchefai/models/models.dart';
 import 'package:smartchefai/services/firebase_service.dart';
@@ -232,6 +233,7 @@ class UserProvider extends ChangeNotifier {
   bool _isDarkMode = false;
   bool _notificationsEnabled = true;
   String _selectedLanguage = 'English';
+  bool _isUploadingPhoto = false;
 
   // Getters
   AppUser? get currentUser => _appUser;
@@ -242,6 +244,7 @@ class UserProvider extends ChangeNotifier {
   bool get isDarkMode => _isDarkMode;
   bool get notificationsEnabled => _notificationsEnabled;
   String get selectedLanguage => _selectedLanguage;
+  bool get isUploadingPhoto => _isUploadingPhoto;
 
   UserProvider() {
     _initUser();
@@ -324,14 +327,9 @@ class UserProvider extends ChangeNotifier {
       
       // Update local user
       if (_appUser != null) {
-        _appUser = AppUser(
-          id: _appUser!.id,
-          name: _appUser!.name,
-          email: _appUser!.email,
+        _appUser = _appUser!.copyWith(
           dietaryPreferences: dietaryPreferences,
           allergies: allergies,
-          favoriteRecipes: _appUser!.favoriteRecipes,
-          searchHistory: _appUser!.searchHistory,
         );
       }
       
@@ -539,6 +537,38 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       // Non-critical — ignore
+    }
+  }
+
+  /// Upload a profile photo and update the user's photoUrl
+  Future<void> uploadPhoto(XFile file) async {
+    _isUploadingPhoto = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final url = await _firebaseService.uploadProfilePhoto(file);
+      _appUser = _appUser?.copyWith(photoUrl: url);
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isUploadingPhoto = false;
+      notifyListeners();
+    }
+  }
+
+  /// Remove the profile photo from Storage and clear the URL
+  Future<void> removePhoto() async {
+    _isUploadingPhoto = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _firebaseService.removeProfilePhoto();
+      _appUser = await _firebaseService.getUserProfile();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isUploadingPhoto = false;
+      notifyListeners();
     }
   }
 }

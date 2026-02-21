@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -70,6 +71,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _handleAvatarTap() async {
+    final userProvider = context.read<UserProvider>();
+    final hasPhoto = userProvider.currentUser?.photoUrl != null;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        final colorScheme = Theme.of(ctx).colorScheme;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final picker = ImagePicker();
+                  final image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                    maxWidth: 512,
+                    maxHeight: 512,
+                    imageQuality: 85,
+                  );
+                  if (image != null && mounted) {
+                    await context.read<UserProvider>().uploadPhoto(image);
+                  }
+                },
+              ),
+              if (hasPhoto)
+                ListTile(
+                  leading: Icon(Icons.delete_outline, color: colorScheme.error),
+                  title: Text(
+                    'Remove Photo',
+                    style: TextStyle(color: colorScheme.error),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await context.read<UserProvider>().removePhoto();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _handleSignOut() async {
     final userProvider = context.read<UserProvider>();
     context.pop();
@@ -100,8 +149,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     final user = provider.currentUser;
                     return ProfileAvatar(
                       size: 100,
+                      imageUrl: user?.photoUrl,
                       initials: _getInitials(user?.name),
                       showEditButton: true,
+                      onTap: _handleAvatarTap,
                     );
                   },
                 ),

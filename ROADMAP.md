@@ -105,12 +105,12 @@
 - [ ] Auto-generate grocery list from weekly meal plan
 - [ ] Persist plan to Firestore `meal_plans/{uid}`
 
-### 2.4 Recipe Sharing (Android + Web)
+### 2.4 Recipe Sharing (Android + Web) ✅ Done
 
-- [ ] `share_plus` is already integrated — extend with recipe URL sharing
-- [ ] Generate a shareable deep link per recipe (`/recipe/{id}`)
+- [x] `share_plus` is already integrated — extend with recipe URL sharing
+- [x] Generate a shareable deep link per recipe (`/recipe/{id}`)
 - [ ] Web: the recipe detail route already works at `/recipe/{id}` — make it load without auth for shared links
-- [ ] Android: share via system share sheet with recipe name + link
+- [x] Android: share via system share sheet with recipe name + link
 
 ### 2.5 Nutrition Goal Tracking
 
@@ -119,11 +119,11 @@
 - [ ] Display progress chart — add `fl_chart` package if implementing this feature
 - [ ] Weekly nutrition summary view
 
-### 2.6 Firebase Storage Integration
+### 2.6 Firebase Storage Integration ✅ Done
 
-- [ ] Allow users to upload a profile photo (declared in `pubspec.yaml` but not yet used)
-- [ ] Store photos in `Firebase Storage` under `users/{uid}/profile.jpg`
-- [ ] Display in `ProfileAvatar` widget
+- [x] Allow users to upload a profile photo (declared in `pubspec.yaml` but not yet used)
+- [x] Store photos in `Firebase Storage` under `users/{uid}/profile.jpg`
+- [x] Display in `ProfileAvatar` widget
 
 **Success criteria**: Scan uses real ML, meal plan exists, sharing works, nutrition tracking exists.
 

@@ -62,9 +62,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
             actions: [
               IconButton(
                 onPressed: () {
+                  final cuisineInfo = recipe.cuisine.isNotEmpty
+                      ? '${recipe.cuisine} • '
+                      : '';
+                  final totalTime = recipe.prepTime + recipe.cookTime;
                   Share.share(
                     'Check out this recipe: ${recipe.name}\n\n'
-                    'Get it on SmartChef AI!',
+                    '$cuisineInfo$totalTime min\n\n'
+                    'https://smartchefai.web.app/recipe/${recipe.id}',
                   );
                 },
                 icon: Container(

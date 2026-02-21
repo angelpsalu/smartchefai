@@ -248,7 +248,7 @@ See [`BUGS.md`](BUGS.md) for the full list. No open bugs currently.
 | `firebase_core` | Firebase init |
 | `cloud_firestore` | Database |
 | `firebase_auth` | Authentication |
-| `firebase_storage` | File storage (declared, not yet used in UI) |
+| `firebase_storage` | Profile photo upload/delete (`users/{uid}/profile.jpg`) |
 | `google_sign_in` | Google OAuth |
 | `provider` | State management |
 | `go_router` | Navigation |
