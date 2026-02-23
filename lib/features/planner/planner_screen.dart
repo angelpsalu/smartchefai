@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../app/theme/theme.dart';
 import '../../models/models.dart';
 import '../../providers/app_providers.dart';
@@ -182,12 +183,18 @@ class _MealPlanTab extends StatelessWidget {
                                 return ListTile(
                                   leading: ClipRRect(
                                     borderRadius: AppSpacing.borderRadiusSm,
-                                    child: Image.network(
-                                      recipe.imageUrl,
+                                    child: CachedNetworkImage(
+                                      imageUrl: recipe.imageUrl,
                                       width: 48,
                                       height: 48,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
+                                      placeholder: (_, __) => Container(
+                                        width: 48,
+                                        height: 48,
+                                        color: AppColors.primaryOrange
+                                            .withValues(alpha: 0.15),
+                                      ),
+                                      errorWidget: (_, __, ___) => Container(
                                         width: 48,
                                         height: 48,
                                         color: AppColors.primaryOrange

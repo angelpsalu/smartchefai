@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'theme/app_colors.dart';
 import 'theme/app_spacing.dart';
 import '../models/models.dart';
 import '../services/firebase_service.dart';
@@ -426,8 +427,8 @@ class _CenterButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFFF6B35),
-              Color(0xFFE55B2B),
+              AppColors.primaryOrange,
+              AppColors.primaryOrangeDark,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -435,7 +436,7 @@ class _CenterButton extends StatelessWidget {
           borderRadius: AppSpacing.borderRadiusLg,
           boxShadow: [
             BoxShadow(
-              color: Color(0xFFFF6B35).withValues(alpha: 0.3),
+              color: AppColors.primaryOrange.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
