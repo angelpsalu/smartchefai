@@ -23,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecipeProvider>().loadRecipes();
       context.read<GroceryListProvider>().syncOnLogin();
+      context.read<MealPlanProvider>().loadMealPlan();
     });
   }
 

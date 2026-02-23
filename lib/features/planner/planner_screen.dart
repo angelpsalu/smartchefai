@@ -21,6 +21,10 @@ class _PlannerScreenState extends State<PlannerScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MealPlanProvider>().loadMealPlan();
+      context.read<GroceryListProvider>().syncOnLogin();
+    });
   }
 
   @override

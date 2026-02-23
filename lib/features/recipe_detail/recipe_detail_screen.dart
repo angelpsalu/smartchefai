@@ -434,17 +434,26 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                     final messenger = ScaffoldMessenger.of(context);
                     final router = GoRouter.of(context);
                     final name = widget.recipe.name;
-                    await mealPlanProvider.assignRecipe(key, widget.recipe);
-                    if (!mounted) return;
-                    messenger.showSnackBar(
-                      SnackBar(
-                        content: Text('$name added to $day'),
-                        action: SnackBarAction(
-                          label: 'View Planner',
-                          onPressed: () => router.go('/planner'),
+                    try {
+                      await mealPlanProvider.assignRecipe(key, widget.recipe);
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text('$name added to $day'),
+                          action: SnackBarAction(
+                            label: 'View Planner',
+                            onPressed: () => router.go('/planner'),
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to save: $e'),
+                        ),
+                      );
+                    }
                   },
                 );
               }),

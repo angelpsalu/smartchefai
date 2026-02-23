@@ -49,7 +49,15 @@ class MealPlanProvider extends ChangeNotifier {
 
   /// Assign [recipe] to [day] (e.g. 'monday') and persist.
   Future<void> assignRecipe(String day, Recipe recipe) async {
-    if (_mealPlan == null) return;
+    // If not loaded yet, try to load first; fall back to creating an empty plan
+    if (_mealPlan == null) {
+      await loadMealPlan();
+    }
+    if (_mealPlan == null) {
+      final user = _service.currentUser;
+      if (user == null) return;
+      _mealPlan = MealPlan.empty(user.uid);
+    }
     _assignedRecipes[recipe.id] = recipe;
     _mealPlan = _mealPlan!.copyWith(
       days: {..._mealPlan!.days, day: recipe.id},
