@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../app/constants.dart';
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
@@ -16,7 +17,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String _getInitials(String? name) {
-    if (name == null || name.isEmpty) return 'SC';
+    if (name == null || name.isEmpty) return AppMeta.defaultInitials;
 
     final parts = name.trim().split(' ');
     if (parts.length >= 2) {
@@ -24,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } else if (parts.isNotEmpty) {
       return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
     }
-    return 'SC';
+    return AppMeta.defaultInitials;
   }
 
   Future<void> _launchUrl(String url) async {
@@ -38,7 +39,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showLanguageDialog() {
-    const languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese'];
     showDialog(
       context: context,
       builder: (context) {
@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           builder: (context, provider, _) {
             return SimpleDialog(
               title: const Text('Select Language'),
-              children: languages.map((lang) {
+              children: AppMeta.supportedLanguages.map((lang) {
                 return SimpleDialogOption(
                   onPressed: () {
                     provider.setLanguage(lang);
@@ -320,31 +320,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               SettingsTile(
                 icon: Icons.help_outline,
                 title: 'Help & FAQ',
-                onTap: () => _launchUrl('https://smartchefai.web.app/help'),
+                onTap: () => _launchUrl(AppUrls.helpAndFaq),
               ),
               SettingsTile(
                 icon: Icons.feedback_outlined,
                 title: 'Send Feedback',
-                onTap: () => _launchUrl(
-                  'mailto:feedback@smartchef.ai?subject=SmartChef%20AI%20Feedback',
-                ),
+                onTap: () => _launchUrl(AppUrls.feedbackEmail),
               ),
               SettingsTile(
                 icon: Icons.star_outline,
                 title: 'Rate the App',
-                onTap: () => _launchUrl(
-                  'https://play.google.com/store/apps/details?id=com.example.smartchefai',
-                ),
+                onTap: () => _launchUrl(AppUrls.playStore),
               ),
               SettingsTile(
                 icon: Icons.info_outline,
                 title: 'About',
-                subtitle: 'Version 1.0.0',
+                subtitle: 'Version ${AppMeta.version}',
                 onTap: () {
                   showAboutDialog(
                     context: context,
-                    applicationName: 'SmartChef AI',
-                    applicationVersion: '1.0.0',
+                    applicationName: AppMeta.appName,
+                    applicationVersion: AppMeta.version,
                     applicationIcon: Icon(
                       Icons.restaurant_menu,
                       size: 48,

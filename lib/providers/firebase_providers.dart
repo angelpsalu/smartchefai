@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smartchefai/app/constants.dart';
 import 'package:smartchefai/models/models.dart';
 import 'package:smartchefai/services/firebase_service.dart';
 
@@ -33,7 +35,7 @@ class RecipeProvider extends ChangeNotifier {
   Future<void> _loadFavoriteIds() async {
     // Load from local storage first (for offline support)
     final prefs = await SharedPreferences.getInstance();
-    final localIds = prefs.getStringList('favorite_ids') ?? [];
+    final localIds = prefs.getStringList(PrefKeys.favoriteIds) ?? [];
     _favoriteIds = localIds.toSet();
     
     // Try to sync with Firebase
@@ -44,7 +46,7 @@ class RecipeProvider extends ChangeNotifier {
         await _saveFavoriteIds();
       }
     } catch (e) {
-      // Use local favorites if Firebase fails
+      debugPrint('Failed to sync favorites from Firebase: $e');
     }
     
     notifyListeners();
@@ -53,7 +55,7 @@ class RecipeProvider extends ChangeNotifier {
   /// Save favorite IDs to local storage
   Future<void> _saveFavoriteIds() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('favorite_ids', _favoriteIds.toList());
+    await prefs.setStringList(PrefKeys.favoriteIds, _favoriteIds.toList());
   }
 
   /// Load all recipes — Phase 1: local JSON immediately, Phase 2: Firestore in background
@@ -118,7 +120,7 @@ class RecipeProvider extends ChangeNotifier {
       try {
         await _firebaseService.removeFavorite(recipeId);
       } catch (e) {
-        // Continue with local
+        debugPrint('Failed to remove favorite from Firebase: $e');
       }
     } else {
       _favoriteIds.add(recipeId);
@@ -139,7 +141,7 @@ class RecipeProvider extends ChangeNotifier {
       try {
         await _firebaseService.addFavorite(recipeId);
       } catch (e) {
-        // Continue with local
+        debugPrint('Failed to add favorite to Firebase: $e');
       }
     }
     
@@ -255,8 +257,8 @@ class UserProvider extends ChangeNotifier {
     try {
       // Load app preferences
       final prefs = await SharedPreferences.getInstance();
-      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
-      _selectedLanguage = prefs.getString('selected_language') ?? 'English';
+      _notificationsEnabled = prefs.getBool(PrefKeys.notificationsEnabled) ?? true;
+      _selectedLanguage = prefs.getString(PrefKeys.selectedLanguage) ?? AppMeta.defaultLanguage;
 
       // Only load user profile if already signed in
       if (_firebaseService.currentUser != null) {
@@ -274,7 +276,7 @@ class UserProvider extends ChangeNotifier {
       }
       // If no user signed in, leave _appUser as null
     } catch (e) {
-      // Continue without user data
+      debugPrint('Failed to load user profile: $e');
       _error = e.toString();
     }
     notifyListeners();
@@ -347,7 +349,7 @@ class UserProvider extends ChangeNotifier {
     try {
       await _firebaseService.signOut();
     } catch (e) {
-      // Continue
+      debugPrint('Failed to sign out: $e');
     }
     _appUser = null;
     notifyListeners();
@@ -503,7 +505,7 @@ class UserProvider extends ChangeNotifier {
   /// Load theme preference
   Future<void> loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool('dark_mode') ?? false;
+    _isDarkMode = prefs.getBool(PrefKeys.darkMode) ?? false;
     notifyListeners();
   }
 
@@ -511,7 +513,7 @@ class UserProvider extends ChangeNotifier {
   Future<void> toggleDarkMode() async {
     _isDarkMode = !_isDarkMode;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('dark_mode', _isDarkMode);
+    await prefs.setBool(PrefKeys.darkMode, _isDarkMode);
     notifyListeners();
   }
 
@@ -519,7 +521,7 @@ class UserProvider extends ChangeNotifier {
   Future<void> toggleNotifications() async {
     _notificationsEnabled = !_notificationsEnabled;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('notifications_enabled', _notificationsEnabled);
+    await prefs.setBool(PrefKeys.notificationsEnabled, _notificationsEnabled);
     notifyListeners();
   }
 
@@ -527,7 +529,7 @@ class UserProvider extends ChangeNotifier {
   Future<void> setLanguage(String language) async {
     _selectedLanguage = language;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_language', language);
+    await prefs.setString(PrefKeys.selectedLanguage, language);
     notifyListeners();
   }
 
@@ -537,7 +539,7 @@ class UserProvider extends ChangeNotifier {
       _appUser = await _firebaseService.incrementRecipesCooked();
       notifyListeners();
     } catch (e) {
-      // Non-critical — ignore
+      debugPrint('Failed to increment recipes cooked: $e');
     }
   }
 
@@ -607,8 +609,8 @@ class GroceryListProvider extends ChangeNotifier {
   /// Load items from SharedPreferences
   Future<void> _loadLocalItems() async {
     final prefs = await SharedPreferences.getInstance();
-    _cloudListId = prefs.getString('active_grocery_list_id');
-    final itemsJson = prefs.getStringList('grocery_items') ?? [];
+    _cloudListId = prefs.getString(PrefKeys.activeGroceryListId);
+    final itemsJson = prefs.getStringList(PrefKeys.groceryItems) ?? [];
 
     _items = itemsJson.map((itemStr) {
       try {
@@ -652,9 +654,9 @@ class GroceryListProvider extends ChangeNotifier {
               'recipes': e.recipes,
             }))
         .toList();
-    await prefs.setStringList('grocery_items', itemsJson);
+    await prefs.setStringList(PrefKeys.groceryItems, itemsJson);
     if (_cloudListId != null) {
-      await prefs.setString('active_grocery_list_id', _cloudListId!);
+      await prefs.setString(PrefKeys.activeGroceryListId, _cloudListId!);
     }
   }
 
@@ -723,7 +725,7 @@ class GroceryListProvider extends ChangeNotifier {
         );
         final prefs = await SharedPreferences.getInstance();
         if (_cloudListId != null) {
-          await prefs.setString('active_grocery_list_id', _cloudListId!);
+          await prefs.setString(PrefKeys.activeGroceryListId, _cloudListId!);
         }
       } else {
         // Update existing cloud list
@@ -817,7 +819,7 @@ class GroceryListProvider extends ChangeNotifier {
       );
       _cloudListId = listId;
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('active_grocery_list_id', listId);
+      await prefs.setString(PrefKeys.activeGroceryListId, listId);
       _isLoading = false;
       notifyListeners();
       return listId;
@@ -878,7 +880,7 @@ class GroceryListProvider extends ChangeNotifier {
       if (_cloudListId == listId) {
         _cloudListId = null;
         final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('active_grocery_list_id');
+        await prefs.remove(PrefKeys.activeGroceryListId);
       }
       notifyListeners();
       return true;

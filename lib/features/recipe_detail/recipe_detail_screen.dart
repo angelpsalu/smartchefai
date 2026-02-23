@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../app/constants.dart';
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
@@ -70,7 +71,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                   Share.share(
                     'Check out this recipe: ${recipe.name}\n\n'
                     '$cuisineInfo$totalTime min\n\n'
-                    'https://smartchefai.web.app/recipe/${recipe.id}',
+                    '${AppUrls.recipeShareUrl(recipe.id)}',
                   );
                 },
                 icon: Container(

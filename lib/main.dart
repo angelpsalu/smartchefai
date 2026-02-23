@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
+import 'app/constants.dart';
 import 'app/theme/theme.dart';
 import 'app/routes.dart';
 import 'providers/app_providers.dart';
@@ -29,7 +30,7 @@ void main() async {
 
   // Check if onboarding is completed
   final prefs = await SharedPreferences.getInstance();
-  final onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
+  final onboardingComplete = prefs.getBool(PrefKeys.onboardingComplete) ?? false;
 
   runApp(SmartChefApp(showOnboarding: !onboardingComplete));
 }
