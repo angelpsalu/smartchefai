@@ -64,7 +64,7 @@ class _PlannerScreenState extends State<PlannerScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _MealPlanTab(),
+          _MealPlanTab(onSwitchToShopping: () => _tabController.animateTo(1)),
           _GroceryTab(controller: _addItemController),
         ],
       ),
@@ -75,6 +75,10 @@ class _PlannerScreenState extends State<PlannerScreen>
 // ── Meal Plan Tab ─────────────────────────────────────────────────────────────
 
 class _MealPlanTab extends StatelessWidget {
+  final VoidCallback? onSwitchToShopping;
+
+  const _MealPlanTab({this.onSwitchToShopping});
+
   static const List<String> _dayLabels = [
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
   ];
@@ -106,67 +110,100 @@ class _MealPlanTab extends StatelessWidget {
         }
 
         final plan = provider.mealPlan;
+        final plannedIds = plan?.days.values.whereType<String>().toList() ?? [];
+        final hasPlanned = plannedIds.isNotEmpty;
 
-        if (plan == null || plan.days.isEmpty) {
-          return const EmptyState(
-            icon: Icons.calendar_today_outlined,
-            title: 'No meal plan yet',
-            subtitle: 'Open a recipe and tap "Add to Meal Plan" to get started',
-          );
-        }
-
-        return ListView.separated(
-          padding: AppSpacing.paddingMd,
-          itemCount: 7,
-          separatorBuilder: (_, __) => const Gap.sm(),
-          itemBuilder: (context, index) {
-            final day = _dayLabels[index];
-            final recipeId = plan.days[day.toLowerCase()];
-            final hasRecipe = recipeId != null;
-
-            return Card(
-              child: ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: hasRecipe
-                        ? AppColors.primaryOrange.withValues(alpha: 0.15)
-                        : colorScheme.surfaceContainerHighest,
-                    borderRadius: AppSpacing.borderRadiusMd,
-                  ),
-                  child: Center(
-                    child: Text(
-                      day.substring(0, 3),
-                      style: textTheme.labelMedium?.copyWith(
-                        color: hasRecipe
-                            ? AppColors.primaryOrange
-                            : colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
+        return Column(
+          children: [
+            if (hasPlanned)
+              Padding(
+                padding: AppSpacing.paddingMd,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.shopping_cart_outlined),
+                  label: const Text('Add all ingredients to Shopping List'),
+                  onPressed: () {
+                    final items = provider.generateGroceryItems();
+                    context.read<GroceryListProvider>().addItems(items);
+                    onSwitchToShopping?.call();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${items.length} ingredients added to shopping list',
+                        ),
                       ),
-                    ),
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
                   ),
                 ),
-                title: Text(
-                  hasRecipe ? recipeId : 'No recipe planned',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: hasRecipe
-                        ? colorScheme.onSurface
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                trailing: hasRecipe
-                    ? IconButton(
-                        icon: const Icon(Icons.close, size: 18),
-                        onPressed: () => provider.removeRecipe(day.toLowerCase()),
-                      )
-                    : Icon(
-                        Icons.add_circle_outline,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
               ),
-            );
-          },
+            Expanded(
+              child: plan == null
+                  ? const EmptyState(
+                      icon: Icons.calendar_today_outlined,
+                      title: 'No meal plan yet',
+                      subtitle: 'Open a recipe and tap "Add to Meal Plan" to get started',
+                    )
+                  : ListView.separated(
+                      padding: AppSpacing.paddingMd,
+                      itemCount: 7,
+                      separatorBuilder: (_, __) => const Gap.sm(),
+                      itemBuilder: (context, index) {
+                        final day = _dayLabels[index];
+                        final recipeId = plan.days[day.toLowerCase()];
+                        final hasRecipe = recipeId != null;
+                        final recipeName = hasRecipe
+                            ? (provider.assignedRecipes[recipeId]?.name ?? recipeId)
+                            : null;
+
+                        return Card(
+                          child: ListTile(
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: hasRecipe
+                                    ? AppColors.primaryOrange.withValues(alpha: 0.15)
+                                    : colorScheme.surfaceContainerHighest,
+                                borderRadius: AppSpacing.borderRadiusMd,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  day.substring(0, 3),
+                                  style: textTheme.labelMedium?.copyWith(
+                                    color: hasRecipe
+                                        ? AppColors.primaryOrange
+                                        : colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              hasRecipe ? recipeName! : 'No recipe planned',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: hasRecipe
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            trailing: hasRecipe
+                                ? IconButton(
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed: () =>
+                                        provider.removeRecipe(day.toLowerCase()),
+                                  )
+                                : Icon(
+                                    Icons.add_circle_outline,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
         );
       },
     );

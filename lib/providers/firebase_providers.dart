@@ -727,6 +727,22 @@ class GroceryListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Add multiple items in one batch (skips duplicates)
+  void addItems(List<GroceryItem> newItems) {
+    var added = false;
+    for (final item in newItems) {
+      if (!_items.any((i) => i.name.toLowerCase() == item.name.toLowerCase())) {
+        _items.add(item);
+        added = true;
+      }
+    }
+    if (added) {
+      _saveLocalItems();
+      _pushToCloud();
+      notifyListeners();
+    }
+  }
+
   /// Remove item
   void removeItem(String name) {
     _items.removeWhere((item) => item.name == name);

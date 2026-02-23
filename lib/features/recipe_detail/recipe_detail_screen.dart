@@ -262,12 +262,22 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                   const Gap.lg(),
 
                   // Start Cooking Button (only for signed-in users)
-                  if (FirebaseService().isSignedIn)
+                  if (FirebaseService().isSignedIn) ...[
                     GradientButton(
                       text: 'Start Cooking',
                       icon: Icons.play_arrow_rounded,
                       onPressed: () => _startCooking(context),
                     ),
+                    const Gap.sm(),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      label: const Text('Add to Meal Plan'),
+                      onPressed: () => _showAddToMealPlanSheet(context),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                    ),
+                  ],
 
                   const Gap.md(),
                 ],
@@ -360,6 +370,89 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
           onPressed: () => context.push('/grocery'),
         ),
       ),
+    );
+  }
+
+  Future<void> _showAddToMealPlanSheet(BuildContext context) async {
+    final mealPlanProvider = context.read<MealPlanProvider>();
+    const days = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+    ];
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Choose a Day',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...days.map((day) {
+                final key = day.toLowerCase();
+                final assignedId = mealPlanProvider.mealPlan?.days[key];
+                final assignedName = assignedId != null
+                    ? (mealPlanProvider.assignedRecipes[assignedId]?.name ?? 'Recipe')
+                    : null;
+                return ListTile(
+                  leading: Icon(
+                    assignedId != null ? Icons.swap_horiz : Icons.add_circle_outline,
+                    color: assignedId != null
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  title: Text(day),
+                  subtitle: assignedId != null
+                      ? Text(
+                          assignedName!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        )
+                      : null,
+                  onTap: () async {
+                    Navigator.of(sheetCtx).pop();
+                    final messenger = ScaffoldMessenger.of(context);
+                    final router = GoRouter.of(context);
+                    final name = widget.recipe.name;
+                    await mealPlanProvider.assignRecipe(key, widget.recipe);
+                    if (!mounted) return;
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text('$name added to $day'),
+                        action: SnackBarAction(
+                          label: 'View Planner',
+                          onPressed: () => router.go('/planner'),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 }
