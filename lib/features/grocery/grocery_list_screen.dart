@@ -174,7 +174,9 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
                       ...uncheckedItems.map((item) {
                         return GroceryItemTile(
                           name: item.name,
-                          quantity: '${item.quantity} ${item.unit}'.trim(),
+                          quantity: item.unit.isNotEmpty
+                              ? '${item.quantity == item.quantity.roundToDouble() ? item.quantity.toInt() : item.quantity} ${item.unit}'
+                              : '',
                           isChecked: item.checked,
                           onChanged: (value) {
                             provider.toggleItem(item.name);
@@ -208,7 +210,9 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
                       ...checkedItems.map((item) {
                         return GroceryItemTile(
                           name: item.name,
-                          quantity: '${item.quantity} ${item.unit}'.trim(),
+                          quantity: item.unit.isNotEmpty
+                              ? '${item.quantity == item.quantity.roundToDouble() ? item.quantity.toInt() : item.quantity} ${item.unit}'
+                              : '',
                           isChecked: item.checked,
                           onChanged: (value) {
                             provider.toggleItem(item.name);
@@ -225,16 +229,6 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Voice add item
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Voice input coming soon!')),
-          );
-        },
-        icon: const Icon(Icons.mic),
-        label: const Text('Add by Voice'),
       ),
     );
   }
