@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime? _lastBackPress;
+  String? _selectedCategory;
 
   @override
   void initState() {
@@ -171,9 +172,9 @@ class _HomeScreenState extends State<HomeScreen> {
           // Profile Avatar
           GestureDetector(
             onTap: () => context.push('/profile'),
-            child: const ProfileAvatar(
+            child: ProfileAvatar(
               size: 44,
-              initials: 'SC',
+              initials: _getInitials(context.watch<UserProvider>().currentUser?.name),
             ),
           ),
         ],
@@ -181,11 +182,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
+  String _getGreeting() {    final hour = DateTime.now().hour;
     if (hour < 12) return 'Good morning 👋';
     if (hour < 17) return 'Good afternoon 👋';
     return 'Good evening 👋';
+  }
+
+  String _getInitials(String? name) {
+    if (name == null || name.trim().isEmpty) return '?';
+    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    final p = parts[0];
+    return p.substring(0, p.length >= 2 ? 2 : 1).toUpperCase();
   }
 
   Widget _buildCategoriesSection(BuildContext context) {
@@ -201,9 +209,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(
-          title: 'Categories',
+        SectionHeader(
+          title: _selectedCategory != null
+              ? 'Showing: $_selectedCategory'
+              : 'Categories',
           icon: Icons.grid_view_rounded,
+          actionText: _selectedCategory != null ? 'Clear' : null,
+          onActionTap: _selectedCategory != null
+              ? () {
+                  setState(() => _selectedCategory = null);
+                  context.read<RecipeProvider>().loadRecipes();
+                }
+              : null,
         ),
         const Gap.md(),
         SizedBox(
@@ -214,11 +231,19 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: categories.length,
             separatorBuilder: (_, __) => const HGap.md(),
             itemBuilder: (context, index) {
+              final cat = categories[index];
+              final isSelected = _selectedCategory == cat.name;
               return _CategoryCard(
-                category: categories[index],
+                category: cat,
+                isSelected: isSelected,
                 onTap: () {
-                  context.read<RecipeProvider>().searchRecipes(categories[index].name);
-                  context.push('/search');
+                  if (isSelected) {
+                    setState(() => _selectedCategory = null);
+                    context.read<RecipeProvider>().loadRecipes();
+                  } else {
+                    setState(() => _selectedCategory = cat.name);
+                    context.read<RecipeProvider>().searchRecipes(cat.name);
+                  }
                 },
               );
             },
@@ -352,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: AppSpacing.paddingHorizontalMd,
       child: GestureDetector(
-        onTap: () => context.push('/meal-plan'),
+        onTap: () => context.go('/planner'),
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
@@ -404,10 +429,12 @@ class _CategoryItem {
 class _CategoryCard extends StatelessWidget {
   final _CategoryItem category;
   final VoidCallback onTap;
+  final bool isSelected;
 
   const _CategoryCard({
     required this.category,
     required this.onTap,
+    this.isSelected = false,
   });
 
   @override
@@ -420,10 +447,15 @@ class _CategoryCard extends StatelessWidget {
       child: Container(
         width: 80,
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
+          color: isSelected
+              ? AppColors.primaryOrange.withValues(alpha: 0.15)
+              : colorScheme.surfaceContainerHighest,
           borderRadius: AppSpacing.borderRadiusLg,
           border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            color: isSelected
+                ? AppColors.primaryOrange
+                : colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: isSelected ? 1.5 : 1.0,
           ),
         ),
         child: Column(
@@ -437,7 +469,8 @@ class _CategoryCard extends StatelessWidget {
             Text(
               category.name,
               style: textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? AppColors.primaryOrange : null,
               ),
               textAlign: TextAlign.center,
             ),

@@ -195,8 +195,11 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           const Gap.md(),
           ...recentSearches.map((search) => ListTile(
-                leading: const Icon(Icons.history),
-                title: Text(search),
+                leading: Icon(Icons.history, color: colorScheme.onSurfaceVariant),
+                title: Text(
+                  search,
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+                ),
                 onTap: () {
                   _searchController.text = search;
                   _performSearch(search);

@@ -166,6 +166,22 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const DietaryPreferencesScreen(),
     ),
 
+    // Favorites (standalone, accessible from profile)
+    GoRoute(
+      path: '/favorites',
+      name: 'favorites',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const FavoritesScreen(),
+    ),
+
+    // Nutrition Goals
+    GoRoute(
+      path: '/nutrition-goals',
+      name: 'nutrition-goals',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const NutritionGoalsScreen(),
+    ),
+
     // Recipe Detail
     GoRoute(
       path: '/recipe/:id',
@@ -233,9 +249,20 @@ class ScaffoldWithNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: _buildBottomNavBar(context),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        final location = GoRouterState.of(context).uri.toString();
+        if (location != '/') {
+          context.go('/');
+        }
+        // When already on '/', HomeScreen's own PopScope handles exit logic
+      },
+      child: Scaffold(
+        body: child,
+        bottomNavigationBar: _buildBottomNavBar(context),
+      ),
     );
   }
 

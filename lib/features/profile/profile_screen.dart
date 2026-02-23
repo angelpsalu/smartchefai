@@ -163,13 +163,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     return Column(
                       children: [
                         Text(
-                          user?.name ?? 'Smart Chef',
+                          user?.name ?? 'User',
                           style: textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         Text(
-                          user?.email ?? 'chef@smartchef.ai',
+                          user?.email ?? '',
                           style: textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
