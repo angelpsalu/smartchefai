@@ -96,7 +96,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                               color: Colors.white,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const Gap.xl(),
                           
                           // App Name
                           Text(
@@ -141,7 +141,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                               description: 'Find recipes with voice or text',
                               colorScheme: colorScheme,
                             ),
-                            const SizedBox(height: 16),
+                            const Gap.md(),
                             _FeatureItem(
                               icon: Icons.camera_alt,
                               iconColor: AppColors.accentGreen,
@@ -149,7 +149,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                               description: 'Scan ingredients, get instant recipes',
                               colorScheme: colorScheme,
                             ),
-                            const SizedBox(height: 16),
+                            const Gap.md(),
                             _FeatureItem(
                               icon: Icons.favorite,
                               iconColor: AppColors.accentYellow,
@@ -183,7 +183,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                                   elevation: 4,
                                   shadowColor: AppColors.primaryOrange.withValues(alpha: 0.3),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: AppSpacing.borderRadiusLg,
                                   ),
                                 ),
                                 child: const Text(
@@ -196,7 +196,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const Gap.md(),
                             
                             // Secondary CTA
                             SizedBox(
@@ -208,7 +208,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                                   foregroundColor: AppColors.primaryOrange,
                                   side: BorderSide(color: AppColors.primaryOrange, width: 2),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: AppSpacing.borderRadiusLg,
                                   ),
                                 ),
                                 child: const Text(
@@ -280,7 +280,7 @@ class _FeatureItem extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppSpacing.borderRadiusLg,
             ),
             child: Icon(
               icon,
@@ -288,7 +288,7 @@ class _FeatureItem extends StatelessWidget {
               size: 28,
             ),
           ),
-          const SizedBox(width: 16),
+          const HGap.md(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

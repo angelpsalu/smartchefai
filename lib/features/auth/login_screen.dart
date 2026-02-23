@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme/app_spacing.dart';
 import '../../providers/app_providers.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -53,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
               label: 'Dismiss',
@@ -96,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
               label: 'Dismiss',
@@ -142,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       
-                      const SizedBox(height: 24),
+                      const Gap.lg(),
                       
                       // Welcome Text
                       Text(
@@ -154,12 +155,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       
-                      const SizedBox(height: 8),
+                      const Gap.sm(),
                       
                       Text(
                         'Sign in to continue',
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 16,
                         ),
                       ),
@@ -179,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 labelText: 'Email',
                                 prefixIcon: const Icon(Icons.email_outlined),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: AppSpacing.borderRadiusMd,
                                 ),
                                 filled: true,
                                 fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -213,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                 ),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: AppSpacing.borderRadiusMd,
                                 ),
                                 filled: true,
                                 fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -259,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   foregroundColor: Colors.white,
                                   elevation: 4,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: AppSpacing.borderRadiusMd,
                                   ),
                                 ),
                                 child: _isLoading
@@ -284,18 +285,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       
-                      const SizedBox(height: 32),
+                      const Gap.xl(),
                       
                       // Divider
                       Row(
                         children: [
                           const Expanded(child: Divider()),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: AppSpacing.paddingHorizontalMd,
                             child: Text(
                               'OR',
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -304,7 +305,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       
-                      const SizedBox(height: 32),
+                      const Gap.xl(),
                       
                       // Google Sign In Button
                       SizedBox(
@@ -331,13 +332,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             foregroundColor: Colors.black87,
                             side: BorderSide(color: Colors.grey[300]!),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppSpacing.borderRadiusMd,
                             ),
                           ),
                         ),
                       ),
                       
-                      const SizedBox(height: 48),
+                      const Gap.xxl(),
                       
                       // Sign Up Link
                       Row(
@@ -345,7 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Text(
                             "Don't have an account? ",
-                            style: TextStyle(color: Colors.grey[600]),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                           ),
                           TextButton(
                             onPressed: () => context.go('/signup'),

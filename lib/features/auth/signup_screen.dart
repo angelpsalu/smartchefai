@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme/app_spacing.dart';
 import '../../providers/app_providers.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -59,7 +60,7 @@ class _SignupScreenState extends State<SignupScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
               label: 'Dismiss',
@@ -102,7 +103,7 @@ class _SignupScreenState extends State<SignupScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
               label: 'Dismiss',
@@ -138,7 +139,7 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 32),
+                  const Gap.xl(),
                   
                   // Back Button
                   Align(
@@ -149,7 +150,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   
-                  const SizedBox(height: 16),
+                  const Gap.md(),
                   
                   // Welcome Text
                   Text(
@@ -160,16 +161,16 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   
-                  const SizedBox(height: 8),
+                  const Gap.sm(),
                   
                   Text(
                     'Join SmartChef AI today',
                     style: textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[600],
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   
-                  const SizedBox(height: 48),
+                  const Gap.xxl(),
                   
                   // Signup Form
                   Form(
@@ -184,7 +185,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             labelText: 'Full Name',
                             prefixIcon: const Icon(Icons.person_outlined),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppSpacing.borderRadiusMd,
                             ),
                             filled: true,
                             fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -210,7 +211,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             labelText: 'Email',
                             prefixIcon: const Icon(Icons.email_outlined),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppSpacing.borderRadiusMd,
                             ),
                             filled: true,
                             fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -244,7 +245,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               },
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppSpacing.borderRadiusMd,
                             ),
                             filled: true,
                             fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -278,7 +279,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               },
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppSpacing.borderRadiusMd,
                             ),
                             filled: true,
                             fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -294,7 +295,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           },
                         ),
                         
-                        const SizedBox(height: 48),
+                        const Gap.xxl(),
                         
                         // Sign Up Button
                         SizedBox(
@@ -307,7 +308,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               foregroundColor: Colors.white,
                               elevation: 4,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppSpacing.borderRadiusMd,
                               ),
                             ),
                             child: _isLoading
@@ -332,18 +333,18 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   
-                  const SizedBox(height: 32),
+                  const Gap.xl(),
                   
                   // Divider
                   Row(
                     children: [
                       const Expanded(child: Divider()),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: AppSpacing.paddingHorizontalMd,
                         child: Text(
                           'OR',
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -352,7 +353,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ],
                   ),
                   
-                  const SizedBox(height: 32),
+                  const Gap.xl(),
                   
                   // Google Sign In Button
                   SizedBox(
@@ -379,13 +380,13 @@ class _SignupScreenState extends State<SignupScreen> {
                         foregroundColor: Colors.black87,
                         side: BorderSide(color: Colors.grey[300]!),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppSpacing.borderRadiusMd,
                         ),
                       ),
                     ),
                   ),
                   
-                  const SizedBox(height: 48),
+                  const Gap.xxl(),
                   
                   // Login Link
                   Row(
@@ -393,7 +394,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     children: [
                       Text(
                         'Already have an account? ',
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                       ),
                       TextButton(
                         onPressed: () => context.go('/login'),

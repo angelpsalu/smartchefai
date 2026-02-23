@@ -7,7 +7,7 @@ service cloud.firestore {
     // Readable by any authenticated user (including anonymous).
     // Write access is restricted to server-side admin/seeding only.
     match /recipes/{recipeId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if false;
     }
 
@@ -31,6 +31,12 @@ service cloud.firestore {
     // ── Meal Plans ────────────────────────────────────────────────────────────
     // Each document is keyed by the owner's uid — only that user can access it.
     match /meal_plans/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Nutrition Goals ───────────────────────────────────────────────────────
+    // Each document is keyed by the owner's uid — only that user can access it.
+    match /nutrition_goals/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 

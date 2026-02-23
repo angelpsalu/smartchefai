@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_spacing.dart';
 import '../../providers/app_providers.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -39,7 +41,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -69,7 +71,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 32),
+                  const Gap.xl(),
                   
                   // Back Button
                   Align(
@@ -80,16 +82,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                   
-                  const SizedBox(height: 32),
+                  const Gap.xl(),
                   
                   // Icon
                   Icon(
                     _emailSent ? Icons.check_circle_outline : Icons.lock_reset,
                     size: 100,
-                    color: _emailSent ? Colors.green : colorScheme.primary,
+                    color: _emailSent ? AppColors.success : colorScheme.primary,
                   ),
                   
-                  const SizedBox(height: 48),
+                  const Gap.xxl(),
                   
                   // Title
                   Text(
@@ -101,7 +103,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     textAlign: TextAlign.center,
                   ),
                   
-                  const SizedBox(height: 16),
+                  const Gap.md(),
                   
                   // Description
                   Text(
@@ -109,12 +111,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ? 'We\'ve sent a password reset link to ${_emailController.text}. Please check your email and follow the instructions.'
                         : 'Enter your email address and we\'ll send you a link to reset your password.',
                     style: textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[600],
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   
-                  const SizedBox(height: 48),
+                  const Gap.xxl(),
                   
                   if (!_emailSent) ...[
                     // Reset Form
@@ -130,7 +132,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               labelText: 'Email',
                               prefixIcon: const Icon(Icons.email_outlined),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppSpacing.borderRadiusMd,
                               ),
                               filled: true,
                               fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
@@ -146,7 +148,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             },
                           ),
                           
-                          const SizedBox(height: 48),
+                          const Gap.xxl(),
                           
                           // Send Reset Link Button
                           SizedBox(
@@ -159,7 +161,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 foregroundColor: Colors.white,
                                 elevation: 4,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: AppSpacing.borderRadiusMd,
                                 ),
                               ),
                               child: _isLoading
@@ -201,7 +203,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ),
                         ),
                         
-                        const SizedBox(height: 32),
+                        const Gap.xl(),
                         
                         // Back to Login Button
                         SizedBox(
@@ -214,7 +216,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               foregroundColor: Colors.white,
                               elevation: 4,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppSpacing.borderRadiusMd,
                               ),
                             ),
                             child: const Text(
@@ -230,7 +232,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ],
                   
-                  const SizedBox(height: 48),
+                  const Gap.xxl(),
                   
                   // Remember Password Link
                   if (!_emailSent)
@@ -239,7 +241,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       children: [
                         Text(
                           'Remember your password? ',
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                         ),
                         TextButton(
                           onPressed: () => context.go('/login'),

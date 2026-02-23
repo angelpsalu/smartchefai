@@ -4,7 +4,7 @@ import 'package:smartchefai/services/firebase_service.dart';
 
 /// Manages the weekly meal plan and a local cache of assigned recipes.
 class MealPlanProvider extends ChangeNotifier {
-  final FirebaseService _service = FirebaseService();
+  final FirebaseService _service;
 
   MealPlan? _mealPlan;
   // keyed by recipeId — lets the UI render names/thumbnails without extra lookups
@@ -17,7 +17,8 @@ class MealPlanProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  MealPlanProvider() {
+  MealPlanProvider({FirebaseService? service})
+      : _service = service ?? FirebaseService() {
     loadMealPlan();
   }
 
