@@ -87,6 +87,140 @@ class _MealPlanTab extends StatelessWidget {
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
   ];
 
+  Future<void> _showRecipePickerSheet(
+    BuildContext context,
+    String day,
+    MealPlanProvider mealPlanProvider,
+  ) async {
+    final allRecipes = context.read<RecipeProvider>().recipes;
+
+    if (allRecipes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No recipes loaded yet. Go to Home tab and pull to refresh.'),
+        ),
+      );
+      return;
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        var query = '';
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final filtered = query.isEmpty
+                ? allRecipes
+                : allRecipes
+                    .where((r) => r.name.toLowerCase().contains(query.toLowerCase()))
+                    .toList();
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.75,
+              maxChildSize: 0.95,
+              minChildSize: 0.5,
+              expand: false,
+              builder: (_, scrollCtrl) {
+                return Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: AppSpacing.paddingHorizontalMd,
+                      child: Text(
+                        'Add recipe to $day',
+                        style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: TextField(
+                        autofocus: false,
+                        decoration: InputDecoration(
+                          hintText: 'Search recipes...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: AppSpacing.borderRadiusMd,
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor:
+                              Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.sm,
+                          ),
+                        ),
+                        onChanged: (v) => setSheetState(() => query = v),
+                      ),
+                    ),
+                    Expanded(
+                      child: filtered.isEmpty
+                          ? const Center(child: Text('No recipes found'))
+                          : ListView.builder(
+                              controller: scrollCtrl,
+                              itemCount: filtered.length,
+                              itemBuilder: (_, i) {
+                                final recipe = filtered[i];
+                                return ListTile(
+                                  leading: ClipRRect(
+                                    borderRadius: AppSpacing.borderRadiusSm,
+                                    child: Image.network(
+                                      recipe.imageUrl,
+                                      width: 48,
+                                      height: 48,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        width: 48,
+                                        height: 48,
+                                        color: AppColors.primaryOrange
+                                            .withValues(alpha: 0.15),
+                                        child: const Icon(Icons.restaurant),
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(recipe.name),
+                                  subtitle: Text(
+                                    '${recipe.prepTime + recipe.cookTime} min · ${recipe.difficulty}',
+                                  ),
+                                  onTap: () async {
+                                    Navigator.of(sheetCtx).pop();
+                                    await mealPlanProvider.assignRecipe(
+                                      day.toLowerCase(),
+                                      recipe,
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -147,7 +281,7 @@ class _MealPlanTab extends StatelessWidget {
                   ? const EmptyState(
                       icon: Icons.calendar_today_outlined,
                       title: 'No meal plan yet',
-                      subtitle: 'Open a recipe and tap "Add to Meal Plan" to get started',
+                      subtitle: 'Tap any day below to add a recipe',
                     )
                   : ListView.separated(
                       padding: AppSpacing.paddingMd,
@@ -163,12 +297,18 @@ class _MealPlanTab extends StatelessWidget {
 
                         return Card(
                           child: ListTile(
+                            onTap: () => _showRecipePickerSheet(
+                              context,
+                              day,
+                              provider,
+                            ),
                             leading: Container(
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
                                 color: hasRecipe
-                                    ? AppColors.primaryOrange.withValues(alpha: 0.15)
+                                    ? AppColors.primaryOrange
+                                        .withValues(alpha: 0.15)
                                     : colorScheme.surfaceContainerHighest,
                                 borderRadius: AppSpacing.borderRadiusMd,
                               ),
@@ -185,7 +325,7 @@ class _MealPlanTab extends StatelessWidget {
                               ),
                             ),
                             title: Text(
-                              hasRecipe ? recipeName! : 'No recipe planned',
+                              hasRecipe ? recipeName! : 'Tap to add a recipe',
                               style: textTheme.bodyMedium?.copyWith(
                                 color: hasRecipe
                                     ? colorScheme.onSurface
@@ -200,7 +340,7 @@ class _MealPlanTab extends StatelessWidget {
                                   )
                                 : Icon(
                                     Icons.add_circle_outline,
-                                    color: colorScheme.onSurfaceVariant,
+                                    color: colorScheme.primary,
                                   ),
                           ),
                         );
