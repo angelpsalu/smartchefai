@@ -724,60 +724,58 @@ class _NutritionTab extends StatelessWidget {
       );
     }
 
-    return Padding(
+    return ListView(
       padding: AppSpacing.paddingMd,
-      child: Column(
-        children: [
-          const Gap.md(),
-          Row(
-            children: [
-              Expanded(
-                child: NutritionCard(
-                  label: 'Calories',
-                  value: nutrition!.calories.toString(),
-                  unit: 'kcal',
-                  icon: Icons.local_fire_department,
-                  color: AppColors.primaryOrange,
-                ),
+      children: [
+        const Gap.md(),
+        Row(
+          children: [
+            Expanded(
+              child: NutritionCard(
+                label: 'Calories',
+                value: nutrition!.calories.toString(),
+                unit: 'kcal',
+                icon: Icons.local_fire_department,
+                color: AppColors.primaryOrange,
               ),
-              const HGap.md(),
-              Expanded(
-                child: NutritionCard(
-                  label: 'Protein',
-                  value: nutrition!.protein,
-                  unit: 'g',
-                  icon: Icons.fitness_center,
-                  color: AppColors.accentGreen,
-                ),
+            ),
+            const HGap.md(),
+            Expanded(
+              child: NutritionCard(
+                label: 'Protein',
+                value: nutrition!.protein,
+                unit: 'g',
+                icon: Icons.fitness_center,
+                color: AppColors.accentGreen,
               ),
-            ],
-          ),
-          const Gap.md(),
-          Row(
-            children: [
-              Expanded(
-                child: NutritionCard(
-                  label: 'Carbs',
-                  value: nutrition!.carbs,
-                  unit: 'g',
-                  icon: Icons.grain,
-                  color: AppColors.accentYellow,
-                ),
+            ),
+          ],
+        ),
+        const Gap.md(),
+        Row(
+          children: [
+            Expanded(
+              child: NutritionCard(
+                label: 'Carbs',
+                value: nutrition!.carbs,
+                unit: 'g',
+                icon: Icons.grain,
+                color: AppColors.accentYellow,
               ),
-              const HGap.md(),
-              Expanded(
-                child: NutritionCard(
-                  label: 'Fat',
-                  value: nutrition!.fat,
-                  unit: 'g',
-                  icon: Icons.water_drop,
-                  color: Colors.blue,
-                ),
+            ),
+            const HGap.md(),
+            Expanded(
+              child: NutritionCard(
+                label: 'Fat',
+                value: nutrition!.fat,
+                unit: 'g',
+                icon: Icons.water_drop,
+                color: Colors.blue,
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
