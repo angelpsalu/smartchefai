@@ -477,7 +477,8 @@ class UserProvider extends ChangeNotifier {
         ..sort((a, b) => (b['timestamp'] as String).compareTo(a['timestamp'] as String));
       _recentSearches = sorted
           .take(10)
-          .map((e) => e['query'] as String)
+          .map((e) => (e['query'] as String?) ?? '')
+          .where((q) => q.trim().isNotEmpty)
           .toList();
       notifyListeners();
     } catch (_) {
