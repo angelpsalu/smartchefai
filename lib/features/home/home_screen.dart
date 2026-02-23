@@ -90,6 +90,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SliverToBoxAdapter(child: Gap.lg()),
 
+              // Meal Plan Banner
+              SliverToBoxAdapter(
+                child: _buildMealPlanCard(context),
+              ),
+
+              const SliverToBoxAdapter(child: Gap.lg()),
+
               // Featured Recipes
               SliverToBoxAdapter(
                 child: _buildFeaturedSection(context),
@@ -331,6 +338,55 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
           childCount: recipes.length.clamp(0, 10),
+        ),
+      ),
+    );
+  }
+  Widget _buildMealPlanCard(BuildContext context) {
+    final provider = context.watch<MealPlanProvider>();
+    final assignedCount = provider.mealPlan?.days.values
+        .whereType<String>()
+        .length ?? 0;
+
+    return Padding(
+      padding: AppSpacing.paddingHorizontalMd,
+      child: GestureDetector(
+        onTap: () => context.push('/meal-plan'),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            gradient: AppColors.warmGradient,
+            borderRadius: AppSpacing.borderRadiusLg,
+          ),
+          child: Row(
+            children: [
+              const Text('🗓️', style: TextStyle(fontSize: 36)),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Weekly Meal Plan',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      assignedCount == 0
+                          ? 'Plan your meals for the week'
+                          : '$assignedCount of 7 days planned',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+            ],
+          ),
         ),
       ),
     );

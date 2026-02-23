@@ -92,11 +92,6 @@
 - [ ] `functions/` Cloud Function kept for optional Blaze plan upgrade in future
 - [ ] Confidence scores displayed in chip UI (out of scope this phase)
 
-### 2.2 Email Verification Flow
-
-- [ ] After sign-up, send verification email via Firebase Auth
-- [ ] Show "verify your email" banner on home screen if `user.emailVerified == false`
-- [ ] Resend verification email option in profile screen
 
 ### 2.3 Meal Planning Calendar
 

@@ -13,6 +13,7 @@ import '../features/profile/profile_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/dietary_preferences/dietary_preferences_screen.dart';
+import '../features/meal_plan/meal_plan_screen.dart';
 import '../features/auth/get_started_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
@@ -143,6 +144,13 @@ final GoRouter appRouter = GoRouter(
       name: 'grocery',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const GroceryListScreen(),
+    ),
+
+    GoRoute(
+      path: '/meal-plan',
+      name: 'meal-plan',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const MealPlanScreen(),
     ),
 
     // Dietary Preferences
@@ -427,6 +435,7 @@ class AppRoutes {
   static const String recipeDetail = 'recipe-detail';
   static const String scan = 'scan';
   static const String voiceSearch = 'voice-search';
+  static const String mealPlan = 'meal-plan';
 }
 
 /// Extension for easy navigation

@@ -56,6 +56,7 @@ class SmartChefApp extends StatelessWidget {
           },
         ),
         ChangeNotifierProvider(create: (_) => GroceryListProvider()),
+        ChangeNotifierProvider(create: (_) => MealPlanProvider()),
       ],
       child: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
