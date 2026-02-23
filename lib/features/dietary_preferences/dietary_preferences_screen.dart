@@ -138,6 +138,9 @@ class _DietaryPreferencesScreenState extends State<DietaryPreferencesScreen> {
                 },
                 selectedColor: AppColors.primaryOrange.withValues(alpha: 0.2),
                 checkmarkColor: AppColors.primaryOrange,
+                labelStyle: textTheme.labelMedium?.copyWith(
+                  color: isSelected ? AppColors.primaryOrange : colorScheme.onSurface,
+                ),
               );
             }).toList(),
           ),
@@ -167,10 +170,10 @@ class _DietaryPreferencesScreenState extends State<DietaryPreferencesScreen> {
             spacing: 8,
             runSpacing: 8,
             children: _commonAllergies.map((allergy) {
-              final isSelected = _selectedAllergies.contains(allergy);
+              final isSelectedAllergy = _selectedAllergies.contains(allergy);
               return FilterChip(
                 label: Text(allergy),
-                selected: isSelected,
+                selected: isSelectedAllergy,
                 onSelected: (selected) {
                   setState(() {
                     if (selected) {
@@ -182,6 +185,9 @@ class _DietaryPreferencesScreenState extends State<DietaryPreferencesScreen> {
                 },
                 selectedColor: Colors.red.withValues(alpha: 0.2),
                 checkmarkColor: Colors.red,
+                labelStyle: textTheme.labelMedium?.copyWith(
+                  color: isSelectedAllergy ? colorScheme.error : colorScheme.onSurface,
+                ),
               );
             }).toList(),
           ),
