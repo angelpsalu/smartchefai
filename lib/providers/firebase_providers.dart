@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,7 +19,6 @@ class RecipeProvider extends ChangeNotifier {
 
   // Getters
   List<Recipe> get recipes => _recipes;
-  List<Recipe> get favorites => _favorites;
   List<Recipe> get favoriteRecipes => _favorites;
   Recipe? get currentRecipe => _currentRecipe;
   bool get isLoading => _isLoading;
@@ -89,10 +90,7 @@ class RecipeProvider extends ChangeNotifier {
   }
 
   /// Search recipes by query
-  Future<List<Recipe>> searchRecipes(
-    String query, {
-    Map<String, dynamic>? filters,
-  }) async {
+  Future<List<Recipe>> searchRecipes(String query) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -145,7 +143,7 @@ class RecipeProvider extends ChangeNotifier {
       }
     }
     
-    _saveFavoriteIds();
+    await _saveFavoriteIds();
     notifyListeners();
   }
 
@@ -215,18 +213,6 @@ class RecipeProvider extends ChangeNotifier {
   Future<void> getFavorites(String userId) async {
     _favorites = _recipes.where((r) => _favoriteIds.contains(r.id)).toList();
     notifyListeners();
-  }
-
-  /// Add favorite
-  Future<bool> addFavorite(String userId, String recipeId) async {
-    toggleFavorite(recipeId);
-    return true;
-  }
-
-  /// Remove favorite
-  Future<bool> removeFavorite(String userId, String recipeId) async {
-    toggleFavorite(recipeId);
-    return true;
   }
 
   /// Set current recipe
@@ -625,25 +611,46 @@ class GroceryListProvider extends ChangeNotifier {
     final itemsJson = prefs.getStringList('grocery_items') ?? [];
 
     _items = itemsJson.map((itemStr) {
-      final parts = itemStr.split('|');
-      return GroceryItem(
-        name: parts.isNotEmpty ? parts[0] : '',
-        quantity: parts.length > 1 ? double.tryParse(parts[1]) ?? 1.0 : 1.0,
-        unit: parts.length > 2 ? parts[2] : '',
-        category: parts.length > 3 ? parts[3] : 'other',
-        checked: parts.length > 4 ? parts[4] == 'true' : false,
-        recipes: [],
-      );
+      try {
+        // Try JSON format first (new format)
+        final map = jsonDecode(itemStr) as Map<String, dynamic>;
+        return GroceryItem(
+          name: map['name'] ?? '',
+          quantity: (map['quantity'] as num?)?.toDouble() ?? 1.0,
+          unit: map['unit'] ?? '',
+          category: map['category'] ?? 'other',
+          checked: map['checked'] ?? false,
+          recipes: List<String>.from(map['recipes'] ?? []),
+        );
+      } catch (_) {
+        // Fallback: legacy pipe-delimited format
+        final parts = itemStr.split('|');
+        return GroceryItem(
+          name: parts.isNotEmpty ? parts[0] : '',
+          quantity: parts.length > 1 ? double.tryParse(parts[1]) ?? 1.0 : 1.0,
+          unit: parts.length > 2 ? parts[2] : '',
+          category: parts.length > 3 ? parts[3] : 'other',
+          checked: parts.length > 4 ? parts[4] == 'true' : false,
+          recipes: [],
+        );
+      }
     }).whereType<GroceryItem>().where((i) => i.name.isNotEmpty).toList();
 
     notifyListeners();
   }
 
-  /// Save items to SharedPreferences
+  /// Save items to SharedPreferences (JSON format)
   Future<void> _saveLocalItems() async {
     final prefs = await SharedPreferences.getInstance();
     final itemsJson = _items
-        .map((e) => '${e.name}|${e.quantity}|${e.unit}|${e.category}|${e.checked}')
+        .map((e) => jsonEncode({
+              'name': e.name,
+              'quantity': e.quantity,
+              'unit': e.unit,
+              'category': e.category,
+              'checked': e.checked,
+              'recipes': e.recipes,
+            }))
         .toList();
     await prefs.setStringList('grocery_items', itemsJson);
     if (_cloudListId != null) {

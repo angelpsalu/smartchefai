@@ -137,7 +137,7 @@ class NutritionProvider extends ChangeNotifier {
 
   /// Parse a gram string like "25g" or "25" into an int. Returns 0 on failure.
   int _parseGrams(String s) =>
-      int.tryParse(s.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      int.tryParse(s.replaceAll(RegExp(r'[^0-9.]'), '').split('.').first) ?? 0;
 
   /// Log a cooked recipe into today's intake.
   Future<void> logRecipe(Recipe recipe) async {

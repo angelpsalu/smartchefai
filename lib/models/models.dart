@@ -288,7 +288,7 @@ class GroceryList {
       byCategory: byCategory,
       totalItems: json['total_items'] ?? itemsList.length,
       recipes: List<String>.from(json['recipes'] ?? []),
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       status: json['status'] ?? 'active',
     );
   }
@@ -462,7 +462,7 @@ class AppUser {
   }
 
   factory AppUser.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
     return AppUser(
       id: doc.id,
       name: data['name'] ?? '',

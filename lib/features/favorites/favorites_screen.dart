@@ -44,14 +44,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Sort options
-            },
-            icon: const Icon(Icons.sort),
-          ),
-        ],
+        actions: const [],
       ),
       body: Consumer<RecipeProvider>(
         builder: (context, provider, child) {

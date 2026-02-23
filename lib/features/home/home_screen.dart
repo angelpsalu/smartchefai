@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: SmartSearchBar(
                     readOnly: true,
                     onTap: () => context.push('/search'),
-                    onVoiceTap: () => context.push('/voice-search'),
+                    onVoiceTap: () => context.push('/search'),
                     onCameraTap: () => context.push('/scan'),
                     hintText: 'What would you like to cook today?',
                   ),
@@ -161,13 +161,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           // Notification Bell
           IconButton(
-            onPressed: () {},
-            icon: Badge(
-              smallSize: 8,
-              child: Icon(
-                Icons.notifications_outlined,
-                color: colorScheme.onSurface,
-              ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Notifications coming soon!')),
+              );
+            },
+            icon: Icon(
+              Icons.notifications_outlined,
+              color: colorScheme.onSurface,
             ),
           ),
           // Profile Avatar
@@ -364,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             );
           },
-          childCount: recipes.length.clamp(0, 10),
+          childCount: recipes.length.clamp(0, 20),
         ),
       ),
     );

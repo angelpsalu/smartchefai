@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'theme/app_colors.dart';
@@ -31,7 +32,7 @@ final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(d
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/get-started',
-  debugLogDiagnostics: true,
+  debugLogDiagnostics: kDebugMode,
   redirect: (context, state) {
     final firebaseService = FirebaseService();
     final isSignedIn = firebaseService.isSignedIn;
@@ -197,13 +198,6 @@ final GoRouter appRouter = GoRouter(
       },
     ),
 
-    // Voice Search
-    GoRoute(
-      path: '/voice-search',
-      name: 'voice-search',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const SearchScreen(),
-    ),
   ],
   
   // Error handling
@@ -464,7 +458,6 @@ class AppRoutes {
   static const String dietaryPreferences = 'dietary-preferences';
   static const String recipeDetail = 'recipe-detail';
   static const String scan = 'scan';
-  static const String voiceSearch = 'voice-search';
   static const String mealPlan = 'meal-plan';
   static const String nutritionGoals = 'nutrition-goals';
 }

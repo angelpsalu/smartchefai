@@ -320,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               SettingsTile(
                 icon: Icons.help_outline,
                 title: 'Help & FAQ',
-                onTap: () => _launchUrl('https://github.com/topics/smartchefai'),
+                onTap: () => _launchUrl('https://smartchefai.web.app/help'),
               ),
               SettingsTile(
                 icon: Icons.feedback_outlined,
@@ -340,7 +340,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.info_outline,
                 title: 'About',
                 subtitle: 'Version 1.0.0',
-                onTap: () {},
+                onTap: () {
+                  showAboutDialog(
+                    context: context,
+                    applicationName: 'SmartChef AI',
+                    applicationVersion: '1.0.0',
+                    applicationIcon: Icon(
+                      Icons.restaurant_menu,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    children: [
+                      const Text('AI-powered recipe recommender that helps you discover, plan, and cook delicious meals.'),
+                    ],
+                  );
+                },
               ),
             ],
           ),
