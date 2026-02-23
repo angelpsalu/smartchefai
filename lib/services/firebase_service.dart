@@ -378,6 +378,9 @@ class FirebaseService {
 
   // ==================== RECIPES (Firestore + TheMealDB) ====================
 
+  /// Returns local recipes instantly (no network). Used for Phase 1 of loading.
+  Future<List<Recipe>> getLocalRecipes() => _loadLocalRecipes();
+
   /// Get all recipes from Firestore + TheMealDB
   /// Uses cache-first strategy with expiration
   Future<List<Recipe>> getAllRecipes({int limit = 100, bool forceRefresh = false}) async {
@@ -387,8 +390,9 @@ class FirebaseService {
     }
 
     try {
-      // Try Firestore first
-      final firestoreRecipes = await _getFirestoreRecipes(limit);
+      // Try Firestore first (usually fast if data exists)
+      final firestoreRecipes = await _getFirestoreRecipes(limit)
+          .timeout(const Duration(seconds: 5), onTimeout: () => []);
       
       if (firestoreRecipes.isNotEmpty) {
         _cachedRecipes = firestoreRecipes;
@@ -396,26 +400,18 @@ class FirebaseService {
         return _cachedRecipes;
       }
       
-      // Fallback to TheMealDB + local JSON
+      // Firestore empty — use local JSON (already loaded by caller as Phase 1)
       final localRecipes = await _loadLocalRecipes();
-      final mealDbRecipes = await _fetchMealDbRecipes();
-      
-      _cachedRecipes = [...localRecipes, ...mealDbRecipes];
+      _cachedRecipes = localRecipes;
       _cacheTimestamp = DateTime.now();
-      
-      // Seed Firestore with recipes for future use (non-blocking)
-      if (_cachedRecipes.isNotEmpty) {
-        _seedFirestoreRecipes(_cachedRecipes).catchError((e) {
-          debugPrint('Failed to seed Firestore: $e');
-        });
-      }
-      
       return _cachedRecipes.take(limit).toList();
     } catch (e) {
       // Ultimate fallback to local
       debugPrint('Error loading recipes: $e');
-      _cachedRecipes = await _loadLocalRecipes();
-      _cacheTimestamp = DateTime.now();
+      if (_cachedRecipes.isEmpty) {
+        _cachedRecipes = await _loadLocalRecipes();
+        _cacheTimestamp = DateTime.now();
+      }
       return _cachedRecipes.take(limit).toList();
     }
   }
@@ -438,22 +434,6 @@ class FirebaseService {
     }
   }
 
-  /// Seed Firestore with initial recipes
-  Future<void> _seedFirestoreRecipes(List<Recipe> recipes) async {
-    try {
-      final batch = _firestore.batch();
-      
-      for (final recipe in recipes.take(50)) {
-        final docRef = _firestore.collection(FirestoreCollections.recipes).doc(recipe.id);
-        batch.set(docRef, recipe.toJson(), SetOptions(merge: true));
-      }
-      
-      await batch.commit();
-    } catch (e) {
-      // Silent fail - seeding is optional
-    }
-  }
-
   /// Load recipes from local JSON file
   Future<List<Recipe>> _loadLocalRecipes() async {
     try {
@@ -464,61 +444,6 @@ class FirebaseService {
     } catch (e) {
       return [];
     }
-  }
-
-  /// Fetch recipes from TheMealDB API
-  Future<List<Recipe>> _fetchMealDbRecipes() async {
-    final recipes = <Recipe>[];
-    final categories = ['Chicken', 'Beef', 'Vegetarian', 'Seafood', 'Pasta', 'Dessert'];
-
-    for (final category in categories) {
-      try {
-        final response = await _dio.get(
-          '$_mealDbBaseUrl/filter.php',
-          queryParameters: {'c': category},
-        );
-
-        final meals = response.data['meals'] as List?;
-        if (meals != null) {
-          for (final meal in meals.take(5)) {
-            // Get full recipe details
-            try {
-              final detailResponse = await _dio.get(
-                '$_mealDbBaseUrl/lookup.php',
-                queryParameters: {'i': meal['idMeal']},
-              );
-              final detailMeals = detailResponse.data['meals'] as List?;
-              if (detailMeals != null && detailMeals.isNotEmpty) {
-                recipes.add(_mealDbDetailToRecipe(detailMeals.first));
-              }
-            } catch (e) {
-              recipes.add(_mealDbToRecipe(meal, category));
-            }
-          }
-        }
-      } catch (e) {
-        continue;
-      }
-    }
-
-    return recipes;
-  }
-
-  Recipe _mealDbToRecipe(Map<String, dynamic> meal, String category) {
-    return Recipe(
-      id: meal['idMeal'] ?? '',
-      name: meal['strMeal'] ?? '',
-      ingredients: [],
-      steps: [],
-      prepTime: 15,
-      cookTime: 30,
-      difficulty: 'medium',
-      cuisine: category,
-      dietaryTags: category == 'Vegetarian' ? ['vegetarian'] : [],
-      nutrition: Nutrition(calories: 350, protein: '25g', carbs: '30g', fat: '15g', fiber: '5g'),
-      servings: 4,
-      imageUrl: meal['strMealThumb'] ?? '',
-    );
   }
 
   Recipe _mealDbDetailToRecipe(Map<String, dynamic> meal) {
@@ -560,6 +485,23 @@ class FirebaseService {
     if (category.contains('vegan')) tags.add('vegan');
     if (category.contains('seafood')) tags.add('seafood');
     return tags;
+  }
+
+  Recipe _mealDbToRecipe(Map<String, dynamic> meal, String category) {
+    return Recipe(
+      id: meal['idMeal'] ?? '',
+      name: meal['strMeal'] ?? '',
+      ingredients: [],
+      steps: [],
+      prepTime: 15,
+      cookTime: 30,
+      difficulty: 'medium',
+      cuisine: category,
+      dietaryTags: category == 'Vegetarian' ? ['vegetarian'] : [],
+      nutrition: Nutrition(calories: 350, protein: '25g', carbs: '30g', fat: '15g', fiber: '5g'),
+      servings: 4,
+      imageUrl: meal['strMealThumb'] ?? '',
+    );
   }
 
   /// Get single recipe by ID

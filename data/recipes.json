@@ -1,249 +1,4116 @@
-[
-  {
-    "name": "Spaghetti Carbonara",
-    "ingredients": ["spaghetti 400g", "eggs 4", "parmesan 100g", "bacon 200g", "black pepper", "salt"],
-    "steps": ["1. Boil pasta in salted water until al dente", "2. Fry bacon until crispy", "3. Mix eggs with parmesan", "4. Combine pasta with bacon and egg mixture", "5. Season with black pepper and serve"],
-    "prep_time": "10 min",
-    "cook_time": "20 min",
-    "difficulty": "medium",
-    "cuisine": "Italian",
-    "dietary_tags": [],
-    "nutrition": {"calories": 450, "protein": "18g", "carbs": "55g", "fat": "16g", "fiber": "2g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg"
-  },
-  {
-    "name": "Margherita Pizza",
-    "ingredients": ["pizza dough 500g", "tomato sauce 200ml", "mozzarella 250g", "fresh basil", "olive oil", "salt"],
-    "steps": ["1. Preheat oven to 220°C", "2. Stretch pizza dough on baking sheet", "3. Spread tomato sauce evenly", "4. Add mozzarella and basil", "5. Bake for 12-15 minutes until crust is golden"],
-    "prep_time": "15 min",
-    "cook_time": "15 min",
-    "difficulty": "easy",
-    "cuisine": "Italian",
-    "dietary_tags": ["vegetarian"],
-    "nutrition": {"calories": 280, "protein": "12g", "carbs": "45g", "fat": "8g", "fiber": "2g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/lrfdwz1764438393.jpg"
-  },
-  {
-    "name": "Butter Chicken",
-    "ingredients": ["chicken 600g", "yogurt 200ml", "tomato sauce 300ml", "cream 100ml", "butter 50g", "ginger 2 tbsp", "garlic 3 cloves", "onion 2"],
-    "steps": ["1. Marinate chicken in yogurt and spices for 1 hour", "2. Fry onions and garlic until golden", "3. Add ginger and cook for 1 minute", "4. Add chicken and cook until brown", "5. Add tomato sauce and simmer for 15 minutes", "6. Add cream and butter, cook until thickened"],
-    "prep_time": "75 min",
-    "cook_time": "30 min",
-    "difficulty": "medium",
-    "cuisine": "Indian",
-    "dietary_tags": [],
-    "nutrition": {"calories": 380, "protein": "35g", "carbs": "15g", "fat": "22g", "fiber": "1g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg"
-  },
-  {
-    "name": "Pad Thai",
-    "ingredients": ["rice noodles 300g", "shrimp 300g", "eggs 2", "bean sprouts 100g", "peanuts 50g", "lime juice 2 tbsp", "fish sauce 2 tbsp", "garlic 3 cloves"],
-    "steps": ["1. Soak rice noodles in warm water for 30 minutes", "2. Heat oil in wok and fry garlic", "3. Add shrimp and cook until pink", "4. Push ingredients aside and scramble eggs", "5. Add noodles and sauce, toss to combine", "6. Add bean sprouts and peanuts, serve with lime"],
-    "prep_time": "35 min",
-    "cook_time": "10 min",
-    "difficulty": "medium",
-    "cuisine": "Thai",
-    "dietary_tags": [],
-    "nutrition": {"calories": 420, "protein": "28g", "carbs": "48g", "fat": "12g", "fiber": "2g"},
-    "servings": 3,
-    "image_url": "https://www.themealdb.com/images/media/meals/rg9ze01763479093.jpg"
-  },
-  {
-    "name": "Grilled Salmon with Lemon",
-    "ingredients": ["salmon fillets 600g", "lemon 2", "olive oil 3 tbsp", "garlic 2 cloves", "fresh dill", "salt", "pepper"],
-    "steps": ["1. Preheat grill to medium-high", "2. Mix olive oil, minced garlic, and dill", "3. Brush salmon with oil mixture", "4. Season with salt and pepper", "5. Grill for 6-8 minutes per side", "6. Serve with lemon wedges"],
-    "prep_time": "10 min",
-    "cook_time": "15 min",
-    "difficulty": "easy",
-    "cuisine": "Mediterranean",
-    "dietary_tags": ["gluten-free"],
-    "nutrition": {"calories": 320, "protein": "42g", "carbs": "2g", "fat": "18g", "fiber": "0g"},
-    "servings": 3,
-    "image_url": "https://www.themealdb.com/images/media/meals/ikizdm1763760862.jpg"
-  },
-  {
-    "name": "Vegetable Stir Fry",
-    "ingredients": ["broccoli 200g", "bell peppers 200g", "carrots 150g", "soy sauce 3 tbsp", "garlic 3 cloves", "ginger 1 tbsp", "oil 2 tbsp", "sesame seeds"],
-    "steps": ["1. Cut vegetables into bite-sized pieces", "2. Heat oil in wok", "3. Add garlic and ginger, cook for 1 minute", "4. Add harder vegetables first (carrots, broccoli)", "5. After 3 minutes add peppers", "6. Pour soy sauce and toss", "7. Garnish with sesame seeds"],
-    "prep_time": "15 min",
-    "cook_time": "10 min",
-    "difficulty": "easy",
-    "cuisine": "Asian",
-    "dietary_tags": ["vegetarian", "vegan", "gluten-free"],
-    "nutrition": {"calories": 180, "protein": "6g", "carbs": "22g", "fat": "8g", "fiber": "5g"},
-    "servings": 3,
-    "image_url": "https://www.themealdb.com/images/media/meals/rwvw8q1765660071.jpg"
-  },
-  {
-    "name": "Caesar Salad",
-    "ingredients": ["romaine lettuce 400g", "parmesan 50g", "croutons 100g", "caesar dressing 150ml", "anchovies 6", "lemon juice"],
-    "steps": ["1. Wash and tear romaine lettuce", "2. Toss with caesar dressing", "3. Add croutons and parmesan", "4. Top with anchovies", "5. Drizzle with lemon juice and serve"],
-    "prep_time": "10 min",
-    "cook_time": "0 min",
-    "difficulty": "easy",
-    "cuisine": "American",
-    "dietary_tags": ["gluten-free"],
-    "nutrition": {"calories": 280, "protein": "8g", "carbs": "15g", "fat": "21g", "fiber": "3g"},
-    "servings": 3,
-    "image_url": "https://www.themealdb.com/images/media/meals/zry07j1763779321.jpg"
-  },
-  {
-    "name": "Tacos al Pastor",
-    "ingredients": ["pork 600g", "pineapple 200g", "tortillas 12", "onion 2", "cilantro", "lime juice 3 tbsp", "chili powder 2 tbsp", "cumin 1 tbsp"],
-    "steps": ["1. Mix chili powder, cumin, and lime juice for marinade", "2. Marinate pork for 2 hours", "3. Grill pork until cooked through", "4. Slice pork thinly", "5. Grill pineapple slices", "6. Warm tortillas", "7. Assemble tacos with pork, pineapple, onion, and cilantro"],
-    "prep_time": "130 min",
-    "cook_time": "20 min",
-    "difficulty": "medium",
-    "cuisine": "Mexican",
-    "dietary_tags": [],
-    "nutrition": {"calories": 350, "protein": "32g", "carbs": "28g", "fat": "15g", "fiber": "2g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/uvuyxu1503067369.jpg"
-  },
-  {
-    "name": "Chicken Tikka Masala",
-    "ingredients": ["chicken 600g", "yogurt 200ml", "tikka paste 3 tbsp", "tomato sauce 300ml", "cream 100ml", "onion 2", "garlic 4 cloves"],
-    "steps": ["1. Marinate chicken in yogurt and tikka paste for 1 hour", "2. Cook chicken in tandoor or oven at 200°C for 15 minutes", "3. Sauté onions and garlic until golden", "4. Add tomato sauce and simmer for 10 minutes", "5. Add cooked chicken and cream", "6. Simmer for 5 minutes and serve with rice or naan"],
-    "prep_time": "70 min",
-    "cook_time": "30 min",
-    "difficulty": "medium",
-    "cuisine": "Indian",
-    "dietary_tags": [],
-    "nutrition": {"calories": 420, "protein": "38g", "carbs": "18g", "fat": "20g", "fiber": "1g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/sstssx1487349585.jpg"
-  },
-  {
-    "name": "Chocolate Chip Cookies",
-    "ingredients": ["butter 200g", "sugar 200g", "eggs 2", "vanilla extract 2 tsp", "flour 280g", "baking soda 1 tsp", "salt 1 tsp", "chocolate chips 340g"],
-    "steps": ["1. Preheat oven to 190°C", "2. Cream butter and sugar until fluffy", "3. Add eggs and vanilla extract", "4. Mix in flour, baking soda, and salt", "5. Fold in chocolate chips", "6. Drop spoonfuls on baking sheet", "7. Bake for 9-11 minutes until golden brown"],
-    "prep_time": "15 min",
-    "cook_time": "10 min",
-    "difficulty": "easy",
-    "cuisine": "American",
-    "dietary_tags": ["vegetarian"],
-    "nutrition": {"calories": 220, "protein": "2g", "carbs": "28g", "fat": "12g", "fiber": "1g"},
-    "servings": 24,
-    "image_url": "https://www.themealdb.com/images/media/meals/sktequ1764447186.jpg"
-  },
-  {
-    "name": "Greek Moussaka",
-    "ingredients": ["eggplant 800g", "ground beef 500g", "tomato sauce 400ml", "cream 200ml", "parmesan 100g", "onion 2", "garlic 3 cloves"],
-    "steps": ["1. Slice eggplant and fry until golden", "2. Brown ground beef with onions and garlic", "3. Add tomato sauce and simmer for 15 minutes", "4. Layer eggplant and meat sauce in baking dish", "5. Mix cream and parmesan for topping", "6. Bake at 180°C for 30 minutes until golden"],
-    "prep_time": "20 min",
-    "cook_time": "50 min",
-    "difficulty": "hard",
-    "cuisine": "Greek",
-    "dietary_tags": [],
-    "nutrition": {"calories": 480, "protein": "35g", "carbs": "25g", "fat": "28g", "fiber": "4g"},
-    "servings": 6,
-    "image_url": "https://www.themealdb.com/images/media/meals/ctg8jd1585563097.jpg"
-  },
-  {
-    "name": "Quinoa Buddha Bowl",
-    "ingredients": ["quinoa 200g", "chickpeas 200g", "sweet potato 300g", "kale 200g", "avocado 1", "tahini 3 tbsp", "lemon juice 2 tbsp"],
-    "steps": ["1. Cook quinoa according to package directions", "2. Roast sweet potato at 200°C for 25 minutes", "3. Roast chickpeas with spices for 20 minutes", "4. Massage kale with lemon juice and olive oil", "5. Make tahini dressing with lemon and water", "6. Assemble bowl with all ingredients", "7. Drizzle with tahini dressing"],
-    "prep_time": "15 min",
-    "cook_time": "30 min",
-    "difficulty": "easy",
-    "cuisine": "Mediterranean",
-    "dietary_tags": ["vegan", "vegetarian", "gluten-free"],
-    "nutrition": {"calories": 380, "protein": "14g", "carbs": "52g", "fat": "15g", "fiber": "12g"},
-    "servings": 2,
-    "image_url": "https://www.themealdb.com/images/media/meals/k29viq1585565980.jpg"
-  },
-  {
-    "name": "Beef Tacos",
-    "ingredients": ["ground beef 500g", "taco shells 12", "lettuce 200g", "tomato 300g", "cheddar cheese 100g", "sour cream 100ml", "salsa 200ml"],
-    "steps": ["1. Brown ground beef in skillet", "2. Season with cumin, chili powder, and garlic", "3. Warm taco shells according to package", "4. Dice lettuce and tomato", "5. Fill shells with beef", "6. Top with lettuce, tomato, cheese, and sour cream", "7. Serve with salsa"],
-    "prep_time": "10 min",
-    "cook_time": "10 min",
-    "difficulty": "easy",
-    "cuisine": "Mexican",
-    "dietary_tags": [],
-    "nutrition": {"calories": 320, "protein": "25g", "carbs": "22g", "fat": "18g", "fiber": "2g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/pbzcrx1763765096.jpg"
-  },
-  {
-    "name": "Pasta Primavera",
-    "ingredients": ["pasta 400g", "zucchini 200g", "bell peppers 200g", "cherry tomatoes 200g", "garlic 3 cloves", "olive oil 4 tbsp", "basil", "parmesan 50g"],
-    "steps": ["1. Cook pasta until al dente", "2. Cut vegetables into bite-sized pieces", "3. Sauté garlic in olive oil", "4. Add vegetables and cook for 5-7 minutes", "5. Toss pasta with vegetables", "6. Top with fresh basil and parmesan"],
-    "prep_time": "15 min",
-    "cook_time": "15 min",
-    "difficulty": "easy",
-    "cuisine": "Italian",
-    "dietary_tags": ["vegetarian"],
-    "nutrition": {"calories": 380, "protein": "12g", "carbs": "60g", "fat": "10g", "fiber": "5g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/wvqpwt1468339226.jpg"
-  },
-  {
-    "name": "Teriyaki Chicken Bowl",
-    "ingredients": ["chicken 600g", "teriyaki sauce 150ml", "rice 300g", "broccoli 200g", "carrots 150g", "sesame seeds"],
-    "steps": ["1. Cook rice according to package directions", "2. Cut chicken into bite-sized pieces", "3. Cook vegetables in a pan or steamer", "4. In a skillet, cook chicken pieces until golden", "5. Pour teriyaki sauce over chicken", "6. Assemble bowls with rice, vegetables, and chicken", "7. Garnish with sesame seeds"],
-    "prep_time": "15 min",
-    "cook_time": "30 min",
-    "difficulty": "easy",
-    "cuisine": "Japanese",
-    "dietary_tags": [],
-    "nutrition": {"calories": 450, "protein": "38g", "carbs": "55g", "fat": "8g", "fiber": "4g"},
-    "servings": 3,
-    "image_url": "https://www.themealdb.com/images/media/meals/xxyupu1468262513.jpg"
-  },
-  {
-    "name": "Caprese Sandwich",
-    "ingredients": ["ciabatta bread 400g", "tomato 3", "mozzarella 200g", "fresh basil", "balsamic vinegar 2 tbsp", "olive oil 3 tbsp"],
-    "steps": ["1. Slice ciabatta bread in half", "2. Brush with olive oil and balsamic vinegar", "3. Layer tomato slices and mozzarella", "4. Add fresh basil leaves", "5. Close sandwich and press gently", "6. Slice and serve"],
-    "prep_time": "10 min",
-    "cook_time": "0 min",
-    "difficulty": "easy",
-    "cuisine": "Italian",
-    "dietary_tags": ["vegetarian"],
-    "nutrition": {"calories": 420, "protein": "16g", "carbs": "45g", "fat": "20g", "fiber": "2g"},
-    "servings": 2,
-    "image_url": "https://www.themealdb.com/images/media/meals/j80gmw1764372176.jpg"
-  },
-  {
-    "name": "Beef Stroganoff",
-    "ingredients": ["beef sirloin 600g", "mushrooms 400g", "onion 2", "sour cream 200ml", "beef broth 200ml", "egg noodles 400g", "garlic 3 cloves"],
-    "steps": ["1. Cook egg noodles according to package directions", "2. Slice beef thinly and season with salt and pepper", "3. Brown beef in a skillet and set aside", "4. In same skillet, sauté onions and mushrooms", "5. Add garlic and cook for 1 minute", "6. Return beef to pan, add broth and simmer for 10 minutes", "7. Stir in sour cream and serve over noodles"],
-    "prep_time": "15 min",
-    "cook_time": "30 min",
-    "difficulty": "medium",
-    "cuisine": "Russian",
-    "dietary_tags": [],
-    "nutrition": {"calories": 520, "protein": "42g", "carbs": "45g", "fat": "20g", "fiber": "3g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/svprys1511176755.jpg"
-  },
-  {
-    "name": "Vegetable Curry",
-    "ingredients": ["potatoes 300g", "carrots 200g", "peas 150g", "onion 2", "tomato 300g", "coconut milk 400ml", "curry paste 3 tbsp", "garlic 3 cloves"],
-    "steps": ["1. Sauté curry paste, onions, and garlic in oil", "2. Add potatoes and carrots, cook for 5 minutes", "3. Pour in tomato and coconut milk", "4. Simmer for 15-20 minutes until vegetables are tender", "5. Add peas and cook for 3 more minutes", "6. Serve with rice or naan"],
-    "prep_time": "15 min",
-    "cook_time": "30 min",
-    "difficulty": "medium",
-    "cuisine": "Indian",
-    "dietary_tags": ["vegan", "vegetarian"],
-    "nutrition": {"calories": 280, "protein": "8g", "carbs": "35g", "fat": "12g", "fiber": "6g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg"
-  },
-  {
-    "name": "Blueberry Pancakes",
-    "ingredients": ["flour 250g", "eggs 2", "milk 300ml", "baking powder 2 tsp", "sugar 2 tbsp", "salt", "blueberries 200g", "butter 50g"],
-    "steps": ["1. Mix flour, baking powder, sugar, and salt in a bowl", "2. Whisk eggs and milk together", "3. Combine wet and dry ingredients until just mixed", "4. Fold in blueberries", "5. Heat butter on griddle", "6. Pour batter and cook until bubbles form", "7. Flip and cook until golden brown", "8. Serve with maple syrup"],
-    "prep_time": "10 min",
-    "cook_time": "15 min",
-    "difficulty": "easy",
-    "cuisine": "American",
-    "dietary_tags": ["vegetarian"],
-    "nutrition": {"calories": 320, "protein": "8g", "carbs": "48g", "fat": "10g", "fiber": "2g"},
-    "servings": 4,
-    "image_url": "https://www.themealdb.com/images/media/meals/rwuyqx1511383174.jpg"
-  }
-]
+{
+  "recipes": [
+    {
+      "id": "local-001",
+      "name": "Spaghetti Carbonara",
+      "ingredients": [
+        "spaghetti 400g",
+        "eggs 4",
+        "parmesan 100g",
+        "bacon 200g",
+        "black pepper",
+        "salt"
+      ],
+      "steps": [
+        "Boil pasta in salted water until al dente",
+        "Fry bacon until crispy",
+        "Mix eggs with parmesan",
+        "Combine pasta with bacon and egg mixture off heat",
+        "Season with black pepper and serve"
+      ],
+      "prep_time": 10,
+      "cook_time": 20,
+      "difficulty": "medium",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 450,
+        "protein": "18g",
+        "carbs": "55g",
+        "fat": "16g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg"
+    },
+    {
+      "id": "local-002",
+      "name": "Margherita Pizza",
+      "ingredients": [
+        "pizza dough 500g",
+        "tomato sauce 200ml",
+        "mozzarella 250g",
+        "fresh basil",
+        "olive oil",
+        "salt"
+      ],
+      "steps": [
+        "Preheat oven to 220C",
+        "Stretch pizza dough on baking sheet",
+        "Spread tomato sauce evenly",
+        "Add mozzarella and basil",
+        "Bake for 12-15 minutes until crust is golden"
+      ],
+      "prep_time": 15,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 280,
+        "protein": "12g",
+        "carbs": "45g",
+        "fat": "8g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/lrfdwz1764438393.jpg"
+    },
+    {
+      "id": "local-003",
+      "name": "Butter Chicken",
+      "ingredients": [
+        "chicken 600g",
+        "yogurt 200ml",
+        "tomato sauce 300ml",
+        "cream 100ml",
+        "butter 50g",
+        "ginger 2 tbsp",
+        "garlic 3 cloves",
+        "onion 2",
+        "garam masala 2 tsp",
+        "cumin 1 tsp"
+      ],
+      "steps": [
+        "Marinate chicken in yogurt and spices for 1 hour",
+        "Fry onions and garlic until golden",
+        "Add ginger and cook for 1 minute",
+        "Add chicken and cook until brown",
+        "Add tomato sauce and simmer for 15 minutes",
+        "Add cream and butter, cook until thickened"
+      ],
+      "prep_time": 75,
+      "cook_time": 30,
+      "difficulty": "medium",
+      "cuisine": "Indian",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 380,
+        "protein": "35g",
+        "carbs": "15g",
+        "fat": "22g",
+        "fiber": "1g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg"
+    },
+    {
+      "id": "local-004",
+      "name": "Pad Thai",
+      "ingredients": [
+        "rice noodles 300g",
+        "shrimp 300g",
+        "eggs 2",
+        "bean sprouts 100g",
+        "peanuts 50g",
+        "lime juice 2 tbsp",
+        "fish sauce 2 tbsp",
+        "garlic 3 cloves"
+      ],
+      "steps": [
+        "Soak rice noodles in warm water for 30 minutes",
+        "Heat oil in wok and fry garlic",
+        "Add shrimp and cook until pink",
+        "Push aside and scramble eggs",
+        "Add noodles and sauce, toss to combine",
+        "Add bean sprouts and peanuts, serve with lime"
+      ],
+      "prep_time": 35,
+      "cook_time": 10,
+      "difficulty": "medium",
+      "cuisine": "Thai",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 420,
+        "protein": "28g",
+        "carbs": "48g",
+        "fat": "12g",
+        "fiber": "2g"
+      },
+      "servings": 3,
+      "image_url": "https://www.themealdb.com/images/media/meals/rg9ze01763479093.jpg"
+    },
+    {
+      "id": "local-005",
+      "name": "Grilled Salmon",
+      "ingredients": [
+        "salmon fillets 600g",
+        "lemon 2",
+        "olive oil 3 tbsp",
+        "garlic 2 cloves",
+        "fresh dill",
+        "salt",
+        "pepper"
+      ],
+      "steps": [
+        "Preheat grill to medium-high",
+        "Mix olive oil, minced garlic, and dill",
+        "Brush salmon with oil mixture",
+        "Season with salt and pepper",
+        "Grill for 6-8 minutes per side",
+        "Serve with lemon wedges"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Mediterranean",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 320,
+        "protein": "42g",
+        "carbs": "2g",
+        "fat": "18g",
+        "fiber": "0g"
+      },
+      "servings": 3,
+      "image_url": "https://www.themealdb.com/images/media/meals/ikizdm1763760862.jpg"
+    },
+    {
+      "id": "local-006",
+      "name": "Vegetable Stir Fry",
+      "ingredients": [
+        "broccoli 200g",
+        "bell peppers 200g",
+        "carrots 150g",
+        "soy sauce 3 tbsp",
+        "garlic 3 cloves",
+        "ginger 1 tbsp",
+        "oil 2 tbsp",
+        "sesame seeds"
+      ],
+      "steps": [
+        "Cut vegetables into bite-sized pieces",
+        "Heat oil in wok",
+        "Add garlic and ginger, cook for 1 minute",
+        "Add harder vegetables first",
+        "After 3 minutes add peppers",
+        "Pour soy sauce and toss",
+        "Garnish with sesame seeds"
+      ],
+      "prep_time": 15,
+      "cook_time": 10,
+      "difficulty": "easy",
+      "cuisine": "Asian",
+      "dietary_tags": [
+        "vegetarian",
+        "vegan",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 180,
+        "protein": "6g",
+        "carbs": "22g",
+        "fat": "8g",
+        "fiber": "5g"
+      },
+      "servings": 3,
+      "image_url": "https://www.themealdb.com/images/media/meals/rwvw8q1765660071.jpg"
+    },
+    {
+      "id": "local-007",
+      "name": "Caesar Salad",
+      "ingredients": [
+        "romaine lettuce 400g",
+        "parmesan 50g",
+        "croutons 100g",
+        "caesar dressing 150ml",
+        "anchovies 6",
+        "lemon juice"
+      ],
+      "steps": [
+        "Wash and tear romaine lettuce",
+        "Toss with caesar dressing",
+        "Add croutons and parmesan",
+        "Top with anchovies",
+        "Drizzle with lemon juice and serve"
+      ],
+      "prep_time": 10,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 280,
+        "protein": "8g",
+        "carbs": "15g",
+        "fat": "21g",
+        "fiber": "3g"
+      },
+      "servings": 3,
+      "image_url": "https://www.themealdb.com/images/media/meals/zry07j1763779321.jpg"
+    },
+    {
+      "id": "local-008",
+      "name": "Tacos al Pastor",
+      "ingredients": [
+        "pork 600g",
+        "pineapple 200g",
+        "tortillas 12",
+        "onion 2",
+        "cilantro",
+        "lime juice 3 tbsp",
+        "chili powder 2 tbsp",
+        "cumin 1 tbsp"
+      ],
+      "steps": [
+        "Mix chili powder, cumin, and lime juice for marinade",
+        "Marinate pork for 2 hours",
+        "Grill pork until cooked through",
+        "Slice pork thinly",
+        "Grill pineapple slices",
+        "Warm tortillas",
+        "Assemble tacos with pork, pineapple, onion, and cilantro"
+      ],
+      "prep_time": 130,
+      "cook_time": 20,
+      "difficulty": "medium",
+      "cuisine": "Mexican",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 350,
+        "protein": "32g",
+        "carbs": "28g",
+        "fat": "15g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/uvuyxu1503067369.jpg"
+    },
+    {
+      "id": "local-009",
+      "name": "Chicken Tikka Masala",
+      "ingredients": [
+        "chicken 600g",
+        "yogurt 200ml",
+        "tikka paste 3 tbsp",
+        "tomato sauce 300ml",
+        "cream 100ml",
+        "onion 2",
+        "garlic 4 cloves"
+      ],
+      "steps": [
+        "Marinate chicken in yogurt and tikka paste for 1 hour",
+        "Bake chicken at 200C for 15 minutes",
+        "Saute onions and garlic until golden",
+        "Add tomato sauce and simmer for 10 minutes",
+        "Add cooked chicken and cream",
+        "Simmer for 5 minutes and serve"
+      ],
+      "prep_time": 70,
+      "cook_time": 30,
+      "difficulty": "medium",
+      "cuisine": "Indian",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 420,
+        "protein": "38g",
+        "carbs": "18g",
+        "fat": "20g",
+        "fiber": "1g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/sstssx1487349585.jpg"
+    },
+    {
+      "id": "local-010",
+      "name": "Chocolate Chip Cookies",
+      "ingredients": [
+        "butter 200g",
+        "sugar 200g",
+        "eggs 2",
+        "vanilla extract 2 tsp",
+        "flour 280g",
+        "baking soda 1 tsp",
+        "salt 1 tsp",
+        "chocolate chips 340g"
+      ],
+      "steps": [
+        "Preheat oven to 190C",
+        "Cream butter and sugar until fluffy",
+        "Add eggs and vanilla extract",
+        "Mix in flour, baking soda, and salt",
+        "Fold in chocolate chips",
+        "Drop spoonfuls on baking sheet",
+        "Bake for 9-11 minutes until golden brown"
+      ],
+      "prep_time": 15,
+      "cook_time": 10,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 220,
+        "protein": "2g",
+        "carbs": "28g",
+        "fat": "12g",
+        "fiber": "1g"
+      },
+      "servings": 24,
+      "image_url": "https://www.themealdb.com/images/media/meals/sktequ1764447186.jpg"
+    },
+    {
+      "id": "local-011",
+      "name": "Greek Moussaka",
+      "ingredients": [
+        "eggplant 800g",
+        "ground beef 500g",
+        "tomato sauce 400ml",
+        "cream 200ml",
+        "parmesan 100g",
+        "onion 2",
+        "garlic 3 cloves"
+      ],
+      "steps": [
+        "Slice eggplant and fry until golden",
+        "Brown ground beef with onions and garlic",
+        "Add tomato sauce and simmer for 15 minutes",
+        "Layer eggplant and meat sauce in baking dish",
+        "Mix cream and parmesan for topping",
+        "Bake at 180C for 30 minutes until golden"
+      ],
+      "prep_time": 20,
+      "cook_time": 50,
+      "difficulty": "hard",
+      "cuisine": "Greek",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 480,
+        "protein": "35g",
+        "carbs": "25g",
+        "fat": "28g",
+        "fiber": "4g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/ctg8jd1585563097.jpg"
+    },
+    {
+      "id": "local-012",
+      "name": "Quinoa Buddha Bowl",
+      "ingredients": [
+        "quinoa 200g",
+        "chickpeas 200g",
+        "sweet potato 300g",
+        "kale 200g",
+        "avocado 1",
+        "tahini 3 tbsp",
+        "lemon juice 2 tbsp"
+      ],
+      "steps": [
+        "Cook quinoa according to package directions",
+        "Roast sweet potato at 200C for 25 minutes",
+        "Roast chickpeas with spices for 20 minutes",
+        "Massage kale with lemon juice and olive oil",
+        "Make tahini dressing",
+        "Assemble bowl with all ingredients",
+        "Drizzle with tahini dressing"
+      ],
+      "prep_time": 15,
+      "cook_time": 30,
+      "difficulty": "easy",
+      "cuisine": "Mediterranean",
+      "dietary_tags": [
+        "vegan",
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "14g",
+        "carbs": "52g",
+        "fat": "15g",
+        "fiber": "12g"
+      },
+      "servings": 2,
+      "image_url": "https://www.themealdb.com/images/media/meals/k29viq1585565980.jpg"
+    },
+    {
+      "id": "local-013",
+      "name": "Beef Tacos",
+      "ingredients": [
+        "ground beef 500g",
+        "taco shells 12",
+        "lettuce 200g",
+        "tomato 300g",
+        "cheddar cheese 100g",
+        "sour cream 100ml",
+        "salsa 200ml"
+      ],
+      "steps": [
+        "Brown ground beef in skillet",
+        "Season with cumin, chili powder, and garlic",
+        "Warm taco shells",
+        "Dice lettuce and tomato",
+        "Fill shells with beef",
+        "Top with lettuce, tomato, cheese, and sour cream",
+        "Serve with salsa"
+      ],
+      "prep_time": 10,
+      "cook_time": 10,
+      "difficulty": "easy",
+      "cuisine": "Mexican",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 320,
+        "protein": "25g",
+        "carbs": "22g",
+        "fat": "18g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/pbzcrx1763765096.jpg"
+    },
+    {
+      "id": "local-014",
+      "name": "Pasta Primavera",
+      "ingredients": [
+        "pasta 400g",
+        "zucchini 200g",
+        "bell peppers 200g",
+        "cherry tomatoes 200g",
+        "garlic 3 cloves",
+        "olive oil 4 tbsp",
+        "basil",
+        "parmesan 50g"
+      ],
+      "steps": [
+        "Cook pasta until al dente",
+        "Cut vegetables into bite-sized pieces",
+        "Saute garlic in olive oil",
+        "Add vegetables and cook for 5-7 minutes",
+        "Toss pasta with vegetables",
+        "Top with fresh basil and parmesan"
+      ],
+      "prep_time": 15,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "12g",
+        "carbs": "60g",
+        "fat": "10g",
+        "fiber": "5g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/wvqpwt1468339226.jpg"
+    },
+    {
+      "id": "local-015",
+      "name": "Teriyaki Chicken Bowl",
+      "ingredients": [
+        "chicken 600g",
+        "teriyaki sauce 150ml",
+        "rice 300g",
+        "broccoli 200g",
+        "carrots 150g",
+        "sesame seeds"
+      ],
+      "steps": [
+        "Cook rice according to package directions",
+        "Cut chicken into bite-sized pieces",
+        "Steam vegetables",
+        "Cook chicken in skillet until golden",
+        "Pour teriyaki sauce over chicken",
+        "Assemble bowls with rice, vegetables, and chicken",
+        "Garnish with sesame seeds"
+      ],
+      "prep_time": 15,
+      "cook_time": 30,
+      "difficulty": "easy",
+      "cuisine": "Japanese",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 450,
+        "protein": "38g",
+        "carbs": "55g",
+        "fat": "8g",
+        "fiber": "4g"
+      },
+      "servings": 3,
+      "image_url": "https://www.themealdb.com/images/media/meals/xxyupu1468262513.jpg"
+    },
+    {
+      "id": "local-016",
+      "name": "Beef Stroganoff",
+      "ingredients": [
+        "beef sirloin 600g",
+        "mushrooms 400g",
+        "onion 2",
+        "sour cream 200ml",
+        "beef broth 200ml",
+        "egg noodles 400g",
+        "garlic 3 cloves"
+      ],
+      "steps": [
+        "Cook egg noodles according to package directions",
+        "Slice beef thinly and season",
+        "Brown beef in a skillet and set aside",
+        "In same skillet, saute onions and mushrooms",
+        "Add garlic and cook for 1 minute",
+        "Return beef to pan, add broth and simmer for 10 minutes",
+        "Stir in sour cream and serve over noodles"
+      ],
+      "prep_time": 15,
+      "cook_time": 30,
+      "difficulty": "medium",
+      "cuisine": "Russian",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 520,
+        "protein": "42g",
+        "carbs": "45g",
+        "fat": "20g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/svprys1511176755.jpg"
+    },
+    {
+      "id": "local-017",
+      "name": "Vegetable Curry",
+      "ingredients": [
+        "potatoes 300g",
+        "carrots 200g",
+        "peas 150g",
+        "onion 2",
+        "tomato 300g",
+        "coconut milk 400ml",
+        "curry paste 3 tbsp",
+        "garlic 3 cloves"
+      ],
+      "steps": [
+        "Saute curry paste, onions, and garlic in oil",
+        "Add potatoes and carrots, cook for 5 minutes",
+        "Pour in tomato and coconut milk",
+        "Simmer for 15-20 minutes until vegetables are tender",
+        "Add peas and cook for 3 more minutes",
+        "Serve with rice or naan"
+      ],
+      "prep_time": 15,
+      "cook_time": 30,
+      "difficulty": "medium",
+      "cuisine": "Indian",
+      "dietary_tags": [
+        "vegan",
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 280,
+        "protein": "8g",
+        "carbs": "35g",
+        "fat": "12g",
+        "fiber": "6g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg"
+    },
+    {
+      "id": "local-018",
+      "name": "Blueberry Pancakes",
+      "ingredients": [
+        "flour 250g",
+        "eggs 2",
+        "milk 300ml",
+        "baking powder 2 tsp",
+        "sugar 2 tbsp",
+        "salt",
+        "blueberries 200g",
+        "butter 50g"
+      ],
+      "steps": [
+        "Mix flour, baking powder, sugar, and salt",
+        "Whisk eggs and milk together",
+        "Combine wet and dry ingredients until just mixed",
+        "Fold in blueberries",
+        "Heat butter on griddle",
+        "Pour batter and cook until bubbles form",
+        "Flip and cook until golden brown",
+        "Serve with maple syrup"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 320,
+        "protein": "8g",
+        "carbs": "48g",
+        "fat": "10g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/rwuyqx1511383174.jpg"
+    },
+    {
+      "id": "local-019",
+      "name": "French Onion Soup",
+      "ingredients": [
+        "onions 1kg",
+        "beef broth 1.5L",
+        "gruyere cheese 200g",
+        "baguette slices 8",
+        "butter 50g",
+        "white wine 150ml",
+        "thyme 2 sprigs",
+        "garlic 2 cloves"
+      ],
+      "steps": [
+        "Slice onions thinly",
+        "Caramelize onions in butter for 40 minutes until golden",
+        "Add garlic and thyme, cook 2 minutes",
+        "Pour in wine and cook until reduced",
+        "Add beef broth and simmer 20 minutes",
+        "Ladle soup into oven-safe bowls",
+        "Top with baguette slices and cheese",
+        "Broil until cheese is bubbly and golden"
+      ],
+      "prep_time": 10,
+      "cook_time": 70,
+      "difficulty": "medium",
+      "cuisine": "French",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 350,
+        "protein": "18g",
+        "carbs": "32g",
+        "fat": "16g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/lklwwi1503564222.jpg"
+    },
+    {
+      "id": "local-020",
+      "name": "Avocado Toast",
+      "ingredients": [
+        "sourdough bread 4 slices",
+        "avocados 2",
+        "lemon juice 1 tbsp",
+        "cherry tomatoes 150g",
+        "red pepper flakes",
+        "salt",
+        "pepper",
+        "olive oil"
+      ],
+      "steps": [
+        "Toast bread until golden and crispy",
+        "Mash avocados with lemon juice, salt, and pepper",
+        "Spread avocado mash on toast",
+        "Top with halved cherry tomatoes",
+        "Drizzle with olive oil",
+        "Sprinkle red pepper flakes and serve"
+      ],
+      "prep_time": 5,
+      "cook_time": 5,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegan",
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 290,
+        "protein": "7g",
+        "carbs": "35g",
+        "fat": "15g",
+        "fiber": "8g"
+      },
+      "servings": 2,
+      "image_url": "https://www.themealdb.com/images/media/meals/s4ymg41716628294.jpg"
+    },
+    {
+      "id": "local-021",
+      "name": "Chicken Fried Rice",
+      "ingredients": [
+        "cooked rice 600g",
+        "chicken breast 400g",
+        "eggs 3",
+        "peas 100g",
+        "carrots 150g",
+        "soy sauce 4 tbsp",
+        "garlic 3 cloves",
+        "sesame oil 1 tbsp",
+        "green onions"
+      ],
+      "steps": [
+        "Dice chicken and cook in wok until done",
+        "Remove chicken and scramble eggs in same wok",
+        "Add garlic and stir fry for 30 seconds",
+        "Add carrots and peas, cook 2 minutes",
+        "Add rice and break up clumps",
+        "Return chicken, add soy sauce and sesame oil",
+        "Toss everything together",
+        "Garnish with green onions"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Chinese",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 420,
+        "protein": "32g",
+        "carbs": "55g",
+        "fat": "8g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/a9f7q01579567016.jpg"
+    },
+    {
+      "id": "local-022",
+      "name": "Shakshuka",
+      "ingredients": [
+        "eggs 6",
+        "tomatoes 500g",
+        "bell peppers 2",
+        "onion 1",
+        "garlic 4 cloves",
+        "cumin 1 tsp",
+        "paprika 1 tsp",
+        "chili flakes",
+        "feta cheese 100g",
+        "fresh parsley"
+      ],
+      "steps": [
+        "Saute onion and peppers until softened",
+        "Add garlic, cumin, paprika, and chili flakes",
+        "Pour in tomatoes and simmer 10 minutes",
+        "Make wells in the sauce",
+        "Crack eggs into the wells",
+        "Cover and cook until whites are set",
+        "Crumble feta on top",
+        "Garnish with parsley and serve with bread"
+      ],
+      "prep_time": 10,
+      "cook_time": 25,
+      "difficulty": "easy",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 280,
+        "protein": "18g",
+        "carbs": "20g",
+        "fat": "14g",
+        "fiber": "4g"
+      },
+      "servings": 3,
+      "image_url": "https://www.themealdb.com/images/media/meals/g373701551450225.jpg"
+    },
+    {
+      "id": "local-023",
+      "name": "Beef Burgers",
+      "ingredients": [
+        "ground beef 600g",
+        "burger buns 4",
+        "cheddar cheese 4 slices",
+        "lettuce",
+        "tomato 2",
+        "onion 1",
+        "pickles",
+        "ketchup",
+        "mustard",
+        "salt",
+        "pepper"
+      ],
+      "steps": [
+        "Season ground beef with salt and pepper",
+        "Form into 4 patties",
+        "Grill patties 4 minutes per side for medium",
+        "Add cheese in last minute of cooking",
+        "Toast burger buns on grill",
+        "Assemble burgers with lettuce, tomato, onion",
+        "Add condiments and serve"
+      ],
+      "prep_time": 10,
+      "cook_time": 10,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 550,
+        "protein": "38g",
+        "carbs": "38g",
+        "fat": "28g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/sywwoj1511461823.jpg"
+    },
+    {
+      "id": "local-024",
+      "name": "Mushroom Risotto",
+      "ingredients": [
+        "arborio rice 350g",
+        "mushrooms 400g",
+        "onion 1",
+        "garlic 3 cloves",
+        "white wine 150ml",
+        "vegetable broth 1.5L",
+        "parmesan 80g",
+        "butter 50g",
+        "olive oil",
+        "fresh thyme"
+      ],
+      "steps": [
+        "Heat broth in separate pan",
+        "Saute onion and garlic in olive oil",
+        "Add mushrooms and cook until golden",
+        "Add rice and toast for 2 minutes",
+        "Add wine and stir until absorbed",
+        "Add hot broth one ladle at a time",
+        "Stir constantly until each ladle is absorbed",
+        "Continue 18-20 minutes until creamy",
+        "Stir in butter and parmesan off heat"
+      ],
+      "prep_time": 10,
+      "cook_time": 30,
+      "difficulty": "hard",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "14g",
+        "carbs": "65g",
+        "fat": "12g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ebvuir1699013940.jpg"
+    },
+    {
+      "id": "local-025",
+      "name": "Chicken Fajitas",
+      "ingredients": [
+        "chicken breast 600g",
+        "bell peppers 3",
+        "onion 2",
+        "tortillas 8",
+        "sour cream 100ml",
+        "guacamole 200g",
+        "lime juice 3 tbsp",
+        "fajita spice mix 2 tbsp"
+      ],
+      "steps": [
+        "Slice chicken and vegetables into strips",
+        "Marinate chicken with lime juice and spice mix",
+        "Cook chicken in hot skillet until browned",
+        "Remove chicken and cook peppers and onions",
+        "Warm tortillas in a dry pan",
+        "Serve chicken and vegetables with tortillas",
+        "Add sour cream and guacamole on the side"
+      ],
+      "prep_time": 20,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Mexican",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 380,
+        "protein": "34g",
+        "carbs": "32g",
+        "fat": "12g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/qrqywr1503066605.jpg"
+    },
+    {
+      "id": "local-026",
+      "name": "Lemon Garlic Shrimp Pasta",
+      "ingredients": [
+        "spaghetti 400g",
+        "shrimp 400g",
+        "garlic 5 cloves",
+        "lemon 2",
+        "butter 60g",
+        "white wine 100ml",
+        "parsley",
+        "red pepper flakes",
+        "salt",
+        "pepper"
+      ],
+      "steps": [
+        "Cook pasta in salted boiling water",
+        "Saute garlic in butter over medium heat",
+        "Add shrimp and cook 2 minutes per side",
+        "Add white wine and lemon juice",
+        "Toss cooked pasta with shrimp sauce",
+        "Add lemon zest and parsley",
+        "Season and serve immediately"
+      ],
+      "prep_time": 10,
+      "cook_time": 20,
+      "difficulty": "easy",
+      "cuisine": "Italian",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 480,
+        "protein": "35g",
+        "carbs": "58g",
+        "fat": "14g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ll5ex01571745100.jpg"
+    },
+    {
+      "id": "local-027",
+      "name": "Mango Smoothie Bowl",
+      "ingredients": [
+        "frozen mango 300g",
+        "banana 1",
+        "coconut milk 100ml",
+        "granola 60g",
+        "fresh fruit for topping",
+        "chia seeds 1 tbsp",
+        "honey 1 tbsp"
+      ],
+      "steps": [
+        "Blend frozen mango and banana with coconut milk",
+        "Pour into a bowl",
+        "Top with granola, fresh fruit, and chia seeds",
+        "Drizzle with honey",
+        "Serve immediately"
+      ],
+      "prep_time": 5,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegan",
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "7g",
+        "carbs": "72g",
+        "fat": "8g",
+        "fiber": "8g"
+      },
+      "servings": 1,
+      "image_url": "https://www.themealdb.com/images/media/meals/jqlwrx1511038569.jpg"
+    },
+    {
+      "id": "local-028",
+      "name": "Lamb Kofta",
+      "ingredients": [
+        "ground lamb 500g",
+        "onion 1",
+        "garlic 3 cloves",
+        "cumin 1 tsp",
+        "coriander 1 tsp",
+        "cinnamon 0.5 tsp",
+        "mint",
+        "salt",
+        "pepper",
+        "flatbreads",
+        "yogurt sauce"
+      ],
+      "steps": [
+        "Mix lamb with finely grated onion and garlic",
+        "Add spices, mint, salt, and pepper",
+        "Shape mixture around skewers",
+        "Grill or broil for 8-10 minutes turning",
+        "Warm flatbreads",
+        "Serve kofta on flatbreads with yogurt sauce",
+        "Garnish with fresh mint and lemon"
+      ],
+      "prep_time": 20,
+      "cook_time": 15,
+      "difficulty": "medium",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "35g",
+        "carbs": "12g",
+        "fat": "26g",
+        "fiber": "1g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ysxwuq1487323065.jpg"
+    },
+    {
+      "id": "local-029",
+      "name": "Pho Bo (Vietnamese Beef Noodle Soup)",
+      "ingredients": [
+        "beef broth 2L",
+        "rice noodles 400g",
+        "beef sirloin 300g",
+        "bean sprouts 100g",
+        "lime 2",
+        "basil",
+        "hoisin sauce",
+        "sriracha",
+        "star anise 3",
+        "cinnamon stick",
+        "ginger"
+      ],
+      "steps": [
+        "Char ginger and spices in a pan",
+        "Add to broth and simmer 30 minutes",
+        "Strain broth and season with salt",
+        "Cook rice noodles according to package",
+        "Slice beef very thinly",
+        "Divide noodles into bowls",
+        "Pour hot broth over beef to cook it",
+        "Serve with bean sprouts, basil, lime, and sauces"
+      ],
+      "prep_time": 15,
+      "cook_time": 40,
+      "difficulty": "medium",
+      "cuisine": "Vietnamese",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "30g",
+        "carbs": "45g",
+        "fat": "8g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/qqpwsy1511796276.jpg"
+    },
+    {
+      "id": "local-030",
+      "name": "Banana Bread",
+      "ingredients": [
+        "ripe bananas 3",
+        "flour 280g",
+        "eggs 2",
+        "butter 115g",
+        "sugar 150g",
+        "baking soda 1 tsp",
+        "salt",
+        "vanilla extract",
+        "walnuts 100g"
+      ],
+      "steps": [
+        "Preheat oven to 175C",
+        "Mash bananas thoroughly",
+        "Mix melted butter with sugar",
+        "Add eggs and vanilla",
+        "Stir in mashed bananas",
+        "Fold in flour, baking soda, and salt",
+        "Stir in walnuts",
+        "Pour into loaf pan and bake 60-65 minutes"
+      ],
+      "prep_time": 15,
+      "cook_time": 65,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 290,
+        "protein": "5g",
+        "carbs": "42g",
+        "fat": "12g",
+        "fiber": "2g"
+      },
+      "servings": 8,
+      "image_url": "https://www.themealdb.com/images/media/meals/kqskto1519952038.jpg"
+    },
+    {
+      "id": "local-031",
+      "name": "Tom Yum Soup",
+      "ingredients": [
+        "shrimp 400g",
+        "lemongrass 2 stalks",
+        "galangal 4 slices",
+        "kaffir lime leaves 6",
+        "mushrooms 200g",
+        "tomatoes 200g",
+        "fish sauce 3 tbsp",
+        "lime juice 4 tbsp",
+        "chili 3",
+        "coconut milk 200ml",
+        "coriander"
+      ],
+      "steps": [
+        "Bruise lemongrass, galangal, and lime leaves",
+        "Bring broth to boil with aromatics",
+        "Add mushrooms and tomatoes",
+        "Add shrimp and cook 3 minutes",
+        "Remove aromatics",
+        "Season with fish sauce and lime juice",
+        "Add coconut milk for creaminess",
+        "Garnish with coriander and serve"
+      ],
+      "prep_time": 15,
+      "cook_time": 20,
+      "difficulty": "medium",
+      "cuisine": "Thai",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 220,
+        "protein": "28g",
+        "carbs": "12g",
+        "fat": "6g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/tqrrsq1511723764.jpg"
+    },
+    {
+      "id": "local-032",
+      "name": "Eggs Benedict",
+      "ingredients": [
+        "english muffins 4",
+        "eggs 4",
+        "canadian bacon 4 slices",
+        "butter 115g",
+        "egg yolks 3",
+        "lemon juice 1 tbsp",
+        "white vinegar",
+        "salt",
+        "cayenne pepper"
+      ],
+      "steps": [
+        "Make hollandaise: whisk yolks with lemon juice over bain marie",
+        "Slowly whisk in melted butter until thick",
+        "Season with salt and cayenne",
+        "Poach eggs in simmering water with vinegar",
+        "Toast English muffins",
+        "Warm Canadian bacon",
+        "Assemble: muffin, bacon, poached egg, hollandaise"
+      ],
+      "prep_time": 15,
+      "cook_time": 20,
+      "difficulty": "hard",
+      "cuisine": "American",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 480,
+        "protein": "22g",
+        "carbs": "28g",
+        "fat": "32g",
+        "fiber": "1g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/yywpss1511452222.jpg"
+    },
+    {
+      "id": "local-033",
+      "name": "Ramen",
+      "ingredients": [
+        "ramen noodles 400g",
+        "pork belly 300g",
+        "soft boiled eggs 4",
+        "soy sauce 5 tbsp",
+        "mirin 2 tbsp",
+        "chicken broth 1.5L",
+        "nori sheets",
+        "green onions",
+        "corn",
+        "bamboo shoots",
+        "sesame seeds"
+      ],
+      "steps": [
+        "Slow cook pork belly with soy and mirin for 2 hours",
+        "Make soft boiled eggs, marinate in soy sauce",
+        "Bring broth to boil and season",
+        "Cook noodles according to package",
+        "Slice pork belly",
+        "Assemble bowls with noodles and hot broth",
+        "Top with pork, egg, corn, and toppings",
+        "Garnish with nori and sesame seeds"
+      ],
+      "prep_time": 30,
+      "cook_time": 120,
+      "difficulty": "hard",
+      "cuisine": "Japanese",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 580,
+        "protein": "35g",
+        "carbs": "65g",
+        "fat": "20g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/hx335q1619789561.jpg"
+    },
+    {
+      "id": "local-034",
+      "name": "Greek Salad",
+      "ingredients": [
+        "cucumber 2",
+        "tomatoes 4",
+        "red onion 1",
+        "kalamata olives 150g",
+        "feta cheese 200g",
+        "olive oil 4 tbsp",
+        "red wine vinegar 2 tbsp",
+        "oregano",
+        "salt",
+        "pepper"
+      ],
+      "steps": [
+        "Chop cucumber, tomatoes, and red onion",
+        "Combine in large bowl",
+        "Add olives and crumbled feta",
+        "Whisk olive oil with vinegar and oregano",
+        "Drizzle dressing over salad",
+        "Season with salt and pepper",
+        "Toss gently and serve"
+      ],
+      "prep_time": 10,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "Greek",
+      "dietary_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 250,
+        "protein": "9g",
+        "carbs": "12g",
+        "fat": "20g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/urtwux1486983078.jpg"
+    },
+    {
+      "id": "local-035",
+      "name": "Beef Burritos",
+      "ingredients": [
+        "ground beef 500g",
+        "flour tortillas 6",
+        "black beans 400g",
+        "rice 200g",
+        "cheddar cheese 150g",
+        "sour cream 150ml",
+        "salsa 200ml",
+        "guacamole 200g",
+        "lettuce",
+        "cumin 1 tsp",
+        "chili powder 1 tsp"
+      ],
+      "steps": [
+        "Cook rice according to package directions",
+        "Brown ground beef with cumin and chili powder",
+        "Season black beans with salt and lime",
+        "Warm tortillas",
+        "Layer rice, beef, beans, and cheese on tortilla",
+        "Add lettuce, sour cream, salsa, and guacamole",
+        "Roll tightly folding in sides",
+        "Serve immediately or grill for a crispy burrito"
+      ],
+      "prep_time": 20,
+      "cook_time": 20,
+      "difficulty": "easy",
+      "cuisine": "Mexican",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 580,
+        "protein": "32g",
+        "carbs": "68g",
+        "fat": "22g",
+        "fiber": "8g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/wrutpt1511640712.jpg"
+    },
+    {
+      "id": "local-036",
+      "name": "Vegetarian Lasagna",
+      "ingredients": [
+        "lasagna sheets 12",
+        "ricotta cheese 500g",
+        "mozzarella 300g",
+        "parmesan 100g",
+        "tomato sauce 800ml",
+        "spinach 300g",
+        "zucchini 2",
+        "mushrooms 300g",
+        "garlic 3 cloves",
+        "eggs 2"
+      ],
+      "steps": [
+        "Preheat oven to 190C",
+        "Saute garlic, zucchini, and mushrooms",
+        "Wilt spinach and squeeze out excess water",
+        "Mix ricotta with eggs, parmesan, spinach",
+        "Spread tomato sauce in baking dish",
+        "Layer: noodles, ricotta mix, vegetables, sauce",
+        "Repeat layers ending with sauce",
+        "Top with mozzarella",
+        "Bake 45 minutes until bubbly and golden"
+      ],
+      "prep_time": 30,
+      "cook_time": 50,
+      "difficulty": "medium",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "25g",
+        "carbs": "48g",
+        "fat": "15g",
+        "fiber": "5g"
+      },
+      "servings": 8,
+      "image_url": "https://www.themealdb.com/images/media/meals/wtsvxx1511296896.jpg"
+    },
+    {
+      "id": "local-037",
+      "name": "Tiramisu",
+      "ingredients": [
+        "mascarpone 500g",
+        "eggs 4",
+        "sugar 120g",
+        "espresso 300ml",
+        "ladyfingers 300g",
+        "dark rum 3 tbsp",
+        "cocoa powder",
+        "dark chocolate"
+      ],
+      "steps": [
+        "Brew espresso and cool, mix with rum",
+        "Whisk egg yolks with sugar until pale and thick",
+        "Fold mascarpone into egg mixture",
+        "Whip egg whites to stiff peaks",
+        "Fold egg whites into mascarpone mixture",
+        "Dip ladyfingers briefly in espresso",
+        "Layer soaked ladyfingers in dish",
+        "Spread mascarpone mixture on top",
+        "Repeat layers and refrigerate 4 hours",
+        "Dust with cocoa powder before serving"
+      ],
+      "prep_time": 30,
+      "cook_time": 0,
+      "difficulty": "medium",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "9g",
+        "carbs": "40g",
+        "fat": "24g",
+        "fiber": "0g"
+      },
+      "servings": 8,
+      "image_url": "https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg"
+    },
+    {
+      "id": "local-038",
+      "name": "Cauliflower Soup",
+      "ingredients": [
+        "cauliflower 1 head",
+        "onion 1",
+        "garlic 4 cloves",
+        "vegetable broth 1L",
+        "cream 100ml",
+        "butter 30g",
+        "cheddar cheese 100g",
+        "chives",
+        "salt",
+        "pepper",
+        "nutmeg"
+      ],
+      "steps": [
+        "Chop cauliflower into florets",
+        "Saute onion and garlic in butter",
+        "Add cauliflower and broth",
+        "Simmer 20 minutes until very tender",
+        "Blend until smooth",
+        "Stir in cream and half the cheese",
+        "Season with salt, pepper, and nutmeg",
+        "Serve topped with remaining cheese and chives"
+      ],
+      "prep_time": 10,
+      "cook_time": 30,
+      "difficulty": "easy",
+      "cuisine": "British",
+      "dietary_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 240,
+        "protein": "10g",
+        "carbs": "18g",
+        "fat": "14g",
+        "fiber": "5g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/lvtls01721586088.jpg"
+    },
+    {
+      "id": "local-039",
+      "name": "Bibimbap",
+      "ingredients": [
+        "cooked rice 600g",
+        "beef mince 300g",
+        "spinach 200g",
+        "bean sprouts 200g",
+        "carrot 2",
+        "zucchini 1",
+        "shiitake mushrooms 150g",
+        "eggs 4",
+        "sesame oil",
+        "soy sauce",
+        "gochujang 3 tbsp",
+        "garlic",
+        "sesame seeds"
+      ],
+      "steps": [
+        "Season beef with soy sauce, sesame oil, and garlic",
+        "Cook each vegetable separately, season each",
+        "Fry eggs sunny side up",
+        "Warm bowls and add rice",
+        "Arrange vegetables and beef in sections on rice",
+        "Place egg on top",
+        "Mix gochujang with sesame oil for sauce",
+        "Add sauce and sesame seeds, mix before eating"
+      ],
+      "prep_time": 30,
+      "cook_time": 20,
+      "difficulty": "medium",
+      "cuisine": "Korean",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 520,
+        "protein": "35g",
+        "carbs": "65g",
+        "fat": "14g",
+        "fiber": "6g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/g0v3701640444665.jpg"
+    },
+    {
+      "id": "local-040",
+      "name": "Falafel Wrap",
+      "ingredients": [
+        "chickpeas 400g",
+        "onion 1",
+        "garlic 3 cloves",
+        "parsley",
+        "cumin 1 tsp",
+        "coriander 1 tsp",
+        "flour 3 tbsp",
+        "flatbreads 4",
+        "hummus 200g",
+        "lettuce",
+        "tomatoes",
+        "tahini sauce"
+      ],
+      "steps": [
+        "Blend chickpeas with onion, garlic, parsley, and spices",
+        "Add flour and form into balls",
+        "Refrigerate 30 minutes",
+        "Deep fry at 180C until golden and crispy",
+        "Warm flatbreads",
+        "Spread hummus on flatbreads",
+        "Add falafel, lettuce, and tomatoes",
+        "Drizzle with tahini sauce and serve"
+      ],
+      "prep_time": 40,
+      "cook_time": 15,
+      "difficulty": "medium",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "vegan",
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "14g",
+        "carbs": "55g",
+        "fat": "13g",
+        "fiber": "10g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/l8r3y71695966579.jpg"
+    },
+    {
+      "id": "local-041",
+      "name": "Overnight Oats",
+      "ingredients": [
+        "rolled oats 80g",
+        "milk 180ml",
+        "Greek yogurt 100g",
+        "honey 1 tbsp",
+        "chia seeds 1 tbsp",
+        "vanilla extract",
+        "mixed berries 100g",
+        "banana",
+        "almond butter 1 tbsp"
+      ],
+      "steps": [
+        "Combine oats, milk, yogurt, honey, chia seeds, and vanilla",
+        "Stir well to combine",
+        "Cover and refrigerate overnight",
+        "In the morning, stir and add milk if too thick",
+        "Top with berries, banana slices",
+        "Drizzle with almond butter and serve cold"
+      ],
+      "prep_time": 5,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "15g",
+        "carbs": "55g",
+        "fat": "10g",
+        "fiber": "8g"
+      },
+      "servings": 1,
+      "image_url": "https://www.themealdb.com/images/media/meals/kpjlqs1649394992.jpg"
+    },
+    {
+      "id": "local-042",
+      "name": "Pulled Pork",
+      "ingredients": [
+        "pork shoulder 2kg",
+        "brown sugar 3 tbsp",
+        "paprika 2 tbsp",
+        "garlic powder 1 tbsp",
+        "onion powder 1 tbsp",
+        "cumin 1 tsp",
+        "salt",
+        "pepper",
+        "apple cider vinegar 100ml",
+        "BBQ sauce 300ml",
+        "burger buns 8"
+      ],
+      "steps": [
+        "Mix dry spices to make rub",
+        "Coat pork shoulder with rub",
+        "Let marinate overnight in fridge",
+        "Cook in slow cooker with vinegar for 8 hours on low",
+        "Shred pork with two forks",
+        "Mix in BBQ sauce",
+        "Serve on buns with coleslaw"
+      ],
+      "prep_time": 20,
+      "cook_time": 480,
+      "difficulty": "medium",
+      "cuisine": "American",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 480,
+        "protein": "42g",
+        "carbs": "18g",
+        "fat": "28g",
+        "fiber": "1g"
+      },
+      "servings": 8,
+      "image_url": "https://www.themealdb.com/images/media/meals/b5hnpx1510605738.jpg"
+    },
+    {
+      "id": "local-043",
+      "name": "Caprese Salad",
+      "ingredients": [
+        "fresh mozzarella 400g",
+        "tomatoes 4 large",
+        "fresh basil",
+        "extra virgin olive oil 4 tbsp",
+        "balsamic glaze 2 tbsp",
+        "salt",
+        "black pepper"
+      ],
+      "steps": [
+        "Slice tomatoes and mozzarella to equal thickness",
+        "Arrange alternating on plate",
+        "Tuck basil leaves between slices",
+        "Drizzle with olive oil",
+        "Add balsamic glaze",
+        "Season with salt and pepper",
+        "Serve immediately"
+      ],
+      "prep_time": 10,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 280,
+        "protein": "16g",
+        "carbs": "8g",
+        "fat": "20g",
+        "fiber": "1g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/wvqpwt1468339226.jpg"
+    },
+    {
+      "id": "local-044",
+      "name": "Black Bean Soup",
+      "ingredients": [
+        "black beans 600g",
+        "onion 2",
+        "garlic 4 cloves",
+        "bell pepper 1",
+        "cumin 2 tsp",
+        "smoked paprika 1 tsp",
+        "vegetable broth 1L",
+        "lime juice 2 tbsp",
+        "cilantro",
+        "sour cream",
+        "tortilla chips"
+      ],
+      "steps": [
+        "Saute onion, garlic, and pepper until soft",
+        "Add cumin and paprika, cook 1 minute",
+        "Add black beans and broth",
+        "Simmer 20 minutes",
+        "Blend half the soup until smooth",
+        "Return to pot and season with lime juice",
+        "Serve topped with sour cream, cilantro",
+        "Serve with tortilla chips on the side"
+      ],
+      "prep_time": 10,
+      "cook_time": 30,
+      "difficulty": "easy",
+      "cuisine": "Mexican",
+      "dietary_tags": [
+        "vegan",
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 280,
+        "protein": "14g",
+        "carbs": "48g",
+        "fat": "4g",
+        "fiber": "15g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/swyx8q1561882820.jpg"
+    },
+    {
+      "id": "local-045",
+      "name": "Peking Duck",
+      "ingredients": [
+        "whole duck 2kg",
+        "hoisin sauce 150ml",
+        "spring onions 6",
+        "cucumber 1",
+        "thin pancakes 24",
+        "Chinese five-spice 1 tsp",
+        "honey 3 tbsp",
+        "soy sauce 2 tbsp"
+      ],
+      "steps": [
+        "Clean duck and pat dry",
+        "Mix honey, soy sauce, and five-spice",
+        "Coat duck with mixture",
+        "Hang or place on rack to dry overnight",
+        "Roast at 200C for 1.5 hours",
+        "Rest 10 minutes before carving",
+        "Slice skin and meat",
+        "Serve with warm pancakes, hoisin, cucumber, and spring onions"
+      ],
+      "prep_time": 1440,
+      "cook_time": 90,
+      "difficulty": "hard",
+      "cuisine": "Chinese",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 520,
+        "protein": "35g",
+        "carbs": "32g",
+        "fat": "28g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ts5p1q1561515805.jpg"
+    },
+    {
+      "id": "local-046",
+      "name": "Prawn Curry",
+      "ingredients": [
+        "prawns 600g",
+        "coconut milk 400ml",
+        "tomatoes 300g",
+        "onion 2",
+        "garlic 4 cloves",
+        "ginger 2 tbsp",
+        "curry powder 2 tbsp",
+        "turmeric 1 tsp",
+        "fresh coriander",
+        "lime juice"
+      ],
+      "steps": [
+        "Saute onion, garlic, and ginger until softened",
+        "Add curry powder and turmeric, cook 1 minute",
+        "Add tomatoes and cook until broken down",
+        "Pour in coconut milk and simmer 10 minutes",
+        "Add prawns and cook 4-5 minutes until pink",
+        "Squeeze lime juice",
+        "Garnish with coriander and serve with rice"
+      ],
+      "prep_time": 15,
+      "cook_time": 25,
+      "difficulty": "medium",
+      "cuisine": "Indian",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 320,
+        "protein": "32g",
+        "carbs": "15g",
+        "fat": "16g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/wjl9v01529429540.jpg"
+    },
+    {
+      "id": "local-047",
+      "name": "Chicken Caesar Wrap",
+      "ingredients": [
+        "chicken breast 400g",
+        "romaine lettuce 200g",
+        "parmesan 60g",
+        "caesar dressing 100ml",
+        "flour tortillas 4",
+        "croutons 80g",
+        "lemon juice",
+        "garlic powder"
+      ],
+      "steps": [
+        "Season chicken with garlic powder and lemon juice",
+        "Grill chicken 6-7 minutes per side",
+        "Rest and slice",
+        "Toss lettuce with dressing and parmesan",
+        "Warm tortillas",
+        "Layer chicken, caesar salad, and croutons on tortilla",
+        "Roll tightly and slice on diagonal",
+        "Serve immediately"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [],
+      "nutrition": {
+        "calories": 420,
+        "protein": "38g",
+        "carbs": "35g",
+        "fat": "14g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/s4ymg41716628294.jpg"
+    },
+    {
+      "id": "local-048",
+      "name": "Minestrone Soup",
+      "ingredients": [
+        "onion 1",
+        "celery 3 stalks",
+        "carrots 2",
+        "zucchini 1",
+        "canned tomatoes 400g",
+        "cannellini beans 400g",
+        "pasta 150g",
+        "vegetable broth 1.5L",
+        "garlic 3 cloves",
+        "parmesan rind",
+        "basil",
+        "olive oil"
+      ],
+      "steps": [
+        "Saute onion, celery, and carrots in olive oil",
+        "Add garlic and cook 1 minute",
+        "Add tomatoes, broth, and parmesan rind",
+        "Simmer 15 minutes",
+        "Add zucchini and beans",
+        "Add pasta and cook until al dente",
+        "Remove parmesan rind",
+        "Serve with fresh basil and grated parmesan"
+      ],
+      "prep_time": 15,
+      "cook_time": 35,
+      "difficulty": "easy",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 260,
+        "protein": "11g",
+        "carbs": "42g",
+        "fat": "5g",
+        "fiber": "9g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/xx0yjq1554958878.jpg"
+    },
+    {
+      "id": "local-049",
+      "name": "Chocolate Lava Cake",
+      "ingredients": [
+        "dark chocolate 200g",
+        "butter 120g",
+        "eggs 4",
+        "sugar 120g",
+        "flour 60g",
+        "vanilla extract",
+        "cocoa powder for dusting",
+        "ice cream for serving"
+      ],
+      "steps": [
+        "Preheat oven to 220C",
+        "Melt chocolate and butter together",
+        "Whisk eggs with sugar until thick and pale",
+        "Fold chocolate mixture into eggs",
+        "Fold in flour until just combined",
+        "Pour into greased and cocoa-dusted ramekins",
+        "Bake 12 minutes - edges set, center jiggly",
+        "Rest 1 minute, turn out onto plates",
+        "Serve immediately with ice cream"
+      ],
+      "prep_time": 15,
+      "cook_time": 12,
+      "difficulty": "medium",
+      "cuisine": "French",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 480,
+        "protein": "9g",
+        "carbs": "55g",
+        "fat": "26g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/lklwwi1503564222.jpg"
+    },
+    {
+      "id": "local-050",
+      "name": "Chicken Souvlaki",
+      "ingredients": [
+        "chicken breast 800g",
+        "olive oil 4 tbsp",
+        "lemon juice 3 tbsp",
+        "garlic 4 cloves",
+        "oregano 2 tsp",
+        "paprika 1 tsp",
+        "salt",
+        "pepper",
+        "pita bread 6",
+        "tzatziki 200ml",
+        "tomatoes",
+        "red onion",
+        "lettuce"
+      ],
+      "steps": [
+        "Cut chicken into 3cm chunks",
+        "Marinate with olive oil, lemon, garlic, and spices for 1 hour",
+        "Thread onto skewers",
+        "Grill over high heat 10-12 minutes turning",
+        "Rest 5 minutes",
+        "Warm pita bread",
+        "Serve souvlaki in pita with tzatziki, tomato, onion, and lettuce"
+      ],
+      "prep_time": 70,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Greek",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "42g",
+        "carbs": "22g",
+        "fat": "12g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ytstrv1511817810.jpg"
+    },
+    {
+      "id": "local-051",
+      "name": "Avocado Toast with Poached Egg",
+      "ingredients": [
+        "sourdough bread 2 slices",
+        "avocado 1 large",
+        "eggs 2",
+        "lemon juice 1 tbsp",
+        "red pepper flakes",
+        "salt",
+        "black pepper",
+        "fresh chives"
+      ],
+      "steps": [
+        "Toast bread until golden",
+        "Mash avocado with lemon juice, salt and pepper",
+        "Bring water to gentle simmer, add vinegar, poach eggs 3 minutes",
+        "Spread avocado on toast, top with poached egg",
+        "Sprinkle red pepper flakes and chives"
+      ],
+      "prep_time": 5,
+      "cook_time": 10,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 320,
+        "protein": "14g",
+        "carbs": "28g",
+        "fat": "18g",
+        "fiber": "8g"
+      },
+      "servings": 2,
+      "image_url": "https://www.themealdb.com/images/media/meals/uuuspp1511297945.jpg"
+    },
+    {
+      "id": "local-052",
+      "name": "Banana Pancakes",
+      "ingredients": [
+        "ripe bananas 2",
+        "eggs 2",
+        "oats 1 cup",
+        "baking powder 1 tsp",
+        "vanilla extract 1 tsp",
+        "cinnamon 1 tsp",
+        "maple syrup",
+        "butter"
+      ],
+      "steps": [
+        "Blend banana, eggs, oats, baking powder, vanilla and cinnamon",
+        "Heat buttered skillet over medium",
+        "Pour 1/4 cup batter per pancake, cook 2 minutes each side",
+        "Serve with maple syrup"
+      ],
+      "prep_time": 5,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 280,
+        "protein": "10g",
+        "carbs": "45g",
+        "fat": "7g",
+        "fiber": "5g"
+      },
+      "servings": 2,
+      "image_url": "https://www.themealdb.com/images/media/meals/rwuyqx1511383174.jpg"
+    },
+    {
+      "id": "local-053",
+      "name": "Greek Salad",
+      "ingredients": [
+        "cucumber 1 large",
+        "tomatoes 3",
+        "red onion 1",
+        "kalamata olives 100g",
+        "feta cheese 200g",
+        "olive oil 3 tbsp",
+        "red wine vinegar 1 tbsp",
+        "dried oregano",
+        "salt",
+        "black pepper"
+      ],
+      "steps": [
+        "Chop cucumber, tomatoes and red onion into chunks",
+        "Combine vegetables and olives in bowl",
+        "Top with feta cheese block",
+        "Drizzle with olive oil and vinegar",
+        "Season with oregano, salt and pepper"
+      ],
+      "prep_time": 10,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "Greek",
+      "dietary_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 220,
+        "protein": "8g",
+        "carbs": "12g",
+        "fat": "16g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/u1pv8v1548305341.jpg"
+    },
+    {
+      "id": "local-054",
+      "name": "Chicken Tikka Masala",
+      "ingredients": [
+        "chicken breast 600g",
+        "yogurt 200ml",
+        "tomatoes 400g can",
+        "heavy cream 150ml",
+        "onion 1",
+        "garlic 4 cloves",
+        "ginger 2cm",
+        "tikka masala paste 3 tbsp",
+        "oil",
+        "fresh coriander",
+        "rice to serve"
+      ],
+      "steps": [
+        "Marinate chicken in yogurt and tikka paste 30 minutes",
+        "Grill chicken until charred",
+        "Fry onion, garlic and ginger until soft",
+        "Add remaining paste and cook 2 minutes",
+        "Add tomatoes and simmer 15 minutes",
+        "Stir in cream and chicken, simmer 5 minutes",
+        "Serve with rice"
+      ],
+      "prep_time": 35,
+      "cook_time": 30,
+      "difficulty": "medium",
+      "cuisine": "Indian",
+      "dietary_tags": [
+        "gluten-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "38g",
+        "carbs": "18g",
+        "fat": "22g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/uuuspp1511297945.jpg"
+    },
+    {
+      "id": "local-055",
+      "name": "Beef Tacos",
+      "ingredients": [
+        "ground beef 500g",
+        "taco shells 8",
+        "cheddar cheese 100g",
+        "salsa 200g",
+        "sour cream 100g",
+        "lettuce shredded",
+        "tomato 2",
+        "cumin 1 tsp",
+        "paprika 1 tsp",
+        "garlic powder 1 tsp",
+        "salt"
+      ],
+      "steps": [
+        "Brown beef in skillet over high heat",
+        "Season with cumin, paprika, garlic powder and salt",
+        "Warm taco shells in oven 5 minutes",
+        "Assemble tacos with beef, cheese, salsa, sour cream and lettuce",
+        "Serve immediately"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Mexican",
+      "dietary_tags": [
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "28g",
+        "carbs": "25g",
+        "fat": "18g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/uvuyxu1503067369.jpg"
+    },
+    {
+      "id": "local-056",
+      "name": "Mushroom Risotto",
+      "ingredients": [
+        "arborio rice 300g",
+        "mixed mushrooms 400g",
+        "onion 1",
+        "garlic 3 cloves",
+        "white wine 150ml",
+        "vegetable stock 1L",
+        "parmesan 80g",
+        "butter 50g",
+        "olive oil",
+        "thyme",
+        "salt",
+        "black pepper"
+      ],
+      "steps": [
+        "Heat stock in separate pan",
+        "Saute onion and garlic in butter and oil",
+        "Add mushrooms and cook until golden",
+        "Add rice and toast 2 minutes",
+        "Add wine and stir until absorbed",
+        "Add stock ladle by ladle, stirring constantly 18 minutes",
+        "Stir in parmesan and butter",
+        "Season and rest 2 minutes"
+      ],
+      "prep_time": 10,
+      "cook_time": 30,
+      "difficulty": "hard",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 390,
+        "protein": "12g",
+        "carbs": "58g",
+        "fat": "14g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg"
+    },
+    {
+      "id": "local-057",
+      "name": "Salmon Teriyaki",
+      "ingredients": [
+        "salmon fillets 4",
+        "soy sauce 60ml",
+        "mirin 60ml",
+        "sake 2 tbsp",
+        "sugar 2 tbsp",
+        "sesame seeds",
+        "spring onions",
+        "steamed rice to serve"
+      ],
+      "steps": [
+        "Mix soy, mirin, sake and sugar for teriyaki sauce",
+        "Heat sauce until sugar dissolves, cool",
+        "Marinate salmon 15 minutes",
+        "Cook salmon skin-side down 4 minutes",
+        "Flip and brush with sauce, cook 3 minutes",
+        "Serve over rice with sesame seeds"
+      ],
+      "prep_time": 20,
+      "cook_time": 10,
+      "difficulty": "easy",
+      "cuisine": "Japanese",
+      "dietary_tags": [
+        "gluten-free",
+        "high-protein",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "34g",
+        "carbs": "28g",
+        "fat": "14g",
+        "fiber": "0g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/xxyupu1468262513.jpg"
+    },
+    {
+      "id": "local-058",
+      "name": "Lentil Soup",
+      "ingredients": [
+        "red lentils 300g",
+        "onion 1",
+        "carrots 2",
+        "celery 2 stalks",
+        "garlic 4 cloves",
+        "canned tomatoes 400g",
+        "vegetable stock 1.5L",
+        "cumin 2 tsp",
+        "turmeric 1 tsp",
+        "paprika 1 tsp",
+        "lemon juice",
+        "olive oil",
+        "fresh parsley"
+      ],
+      "steps": [
+        "Saute onion, carrots and celery in oil 8 minutes",
+        "Add garlic and spices, cook 1 minute",
+        "Add lentils, tomatoes and stock",
+        "Simmer 25 minutes until lentils soft",
+        "Blend half the soup",
+        "Season with lemon juice and serve"
+      ],
+      "prep_time": 10,
+      "cook_time": 35,
+      "difficulty": "easy",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "vegan",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 260,
+        "protein": "16g",
+        "carbs": "42g",
+        "fat": "5g",
+        "fiber": "12g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/vptwyt1511952067.jpg"
+    },
+    {
+      "id": "local-059",
+      "name": "Chocolate Lava Cake",
+      "ingredients": [
+        "dark chocolate 200g",
+        "butter 150g",
+        "eggs 4",
+        "egg yolks 4",
+        "caster sugar 100g",
+        "flour 50g",
+        "cocoa powder 2 tbsp",
+        "vanilla extract",
+        "powdered sugar",
+        "vanilla ice cream"
+      ],
+      "steps": [
+        "Preheat oven 200C, grease ramekins with butter and cocoa",
+        "Melt chocolate and butter together",
+        "Whisk eggs, yolks and sugar until pale",
+        "Fold chocolate into eggs",
+        "Fold in flour and vanilla",
+        "Fill ramekins 3/4 full, chill 30 minutes",
+        "Bake 12 minutes until edges set but centre jiggles",
+        "Invert onto plates and serve with ice cream"
+      ],
+      "prep_time": 15,
+      "cook_time": 12,
+      "difficulty": "hard",
+      "cuisine": "French",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 520,
+        "protein": "8g",
+        "carbs": "48g",
+        "fat": "32g",
+        "fiber": "4g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/xvsurr1511719182.jpg"
+    },
+    {
+      "id": "local-060",
+      "name": "Pad See Ew",
+      "ingredients": [
+        "wide rice noodles 400g",
+        "chicken breast 300g",
+        "Chinese broccoli 200g",
+        "eggs 2",
+        "dark soy sauce 2 tbsp",
+        "light soy sauce 2 tbsp",
+        "oyster sauce 2 tbsp",
+        "sugar 1 tsp",
+        "garlic 4 cloves",
+        "oil"
+      ],
+      "steps": [
+        "Soak noodles in hot water 20 minutes",
+        "Stir fry garlic in very hot wok",
+        "Add chicken and cook until done",
+        "Push to side, scramble eggs",
+        "Add noodles and broccoli",
+        "Add sauces and sugar, toss together",
+        "Serve immediately"
+      ],
+      "prep_time": 25,
+      "cook_time": 10,
+      "difficulty": "medium",
+      "cuisine": "Thai",
+      "dietary_tags": [
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 440,
+        "protein": "30g",
+        "carbs": "52g",
+        "fat": "12g",
+        "fiber": "3g"
+      },
+      "servings": 3,
+      "image_url": "https://www.themealdb.com/images/media/meals/uuuspp1511297945.jpg"
+    },
+    {
+      "id": "local-061",
+      "name": "Caesar Salad",
+      "ingredients": [
+        "romaine lettuce 1 head",
+        "parmesan 60g",
+        "croutons 100g",
+        "garlic 1 clove",
+        "lemon juice 1 tbsp",
+        "worcestershire sauce 1 tsp",
+        "anchovy paste 1 tsp",
+        "egg yolk 1",
+        "olive oil 60ml"
+      ],
+      "steps": [
+        "Blend garlic, anchovy, egg yolk, lemon and worcestershire",
+        "Slowly whisk in olive oil until emulsified",
+        "Tear lettuce into pieces",
+        "Toss lettuce with dressing and half the parmesan",
+        "Top with croutons and remaining parmesan"
+      ],
+      "prep_time": 15,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 290,
+        "protein": "10g",
+        "carbs": "18g",
+        "fat": "20g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/sywswr1511558740.jpg"
+    },
+    {
+      "id": "local-062",
+      "name": "Shakshuka",
+      "ingredients": [
+        "eggs 6",
+        "canned tomatoes 800g",
+        "red peppers 2",
+        "onion 1",
+        "garlic 4 cloves",
+        "cumin 1 tsp",
+        "paprika 2 tsp",
+        "chilli flakes",
+        "olive oil",
+        "fresh parsley",
+        "feta cheese 100g",
+        "crusty bread"
+      ],
+      "steps": [
+        "Fry onion and peppers in oil 8 minutes",
+        "Add garlic and spices, cook 1 minute",
+        "Pour in tomatoes, simmer 10 minutes",
+        "Make wells and crack in eggs",
+        "Cover and cook 6-8 minutes until whites set",
+        "Top with feta, parsley and serve with bread"
+      ],
+      "prep_time": 10,
+      "cook_time": 25,
+      "difficulty": "easy",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 280,
+        "protein": "16g",
+        "carbs": "22g",
+        "fat": "14g",
+        "fiber": "6g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/g373701551450225.jpg"
+    },
+    {
+      "id": "local-063",
+      "name": "Beef Stir Fry",
+      "ingredients": [
+        "beef sirloin 400g",
+        "broccoli 300g",
+        "bell peppers 2",
+        "snap peas 150g",
+        "garlic 3 cloves",
+        "ginger 2cm",
+        "soy sauce 3 tbsp",
+        "oyster sauce 2 tbsp",
+        "sesame oil 1 tsp",
+        "cornstarch 1 tbsp",
+        "oil",
+        "rice to serve"
+      ],
+      "steps": [
+        "Slice beef thinly, toss with cornstarch",
+        "Cook beef in batches in hot wok until browned",
+        "Remove beef, stir fry vegetables 3 minutes",
+        "Add garlic and ginger, cook 1 minute",
+        "Return beef, add sauces and sesame oil",
+        "Toss together and serve with rice"
+      ],
+      "prep_time": 20,
+      "cook_time": 15,
+      "difficulty": "medium",
+      "cuisine": "Chinese",
+      "dietary_tags": [
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 370,
+        "protein": "34g",
+        "carbs": "22g",
+        "fat": "14g",
+        "fiber": "5g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/1529442601.jpg"
+    },
+    {
+      "id": "local-064",
+      "name": "Mango Smoothie Bowl",
+      "ingredients": [
+        "frozen mango 300g",
+        "frozen banana 1",
+        "coconut milk 100ml",
+        "granola 50g",
+        "fresh mango slices",
+        "chia seeds 1 tbsp",
+        "shredded coconut 2 tbsp",
+        "honey 1 tsp"
+      ],
+      "steps": [
+        "Blend frozen mango, banana and coconut milk until thick",
+        "Pour into bowl",
+        "Top with granola, fresh mango, chia seeds and coconut",
+        "Drizzle with honey"
+      ],
+      "prep_time": 10,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "International",
+      "dietary_tags": [
+        "vegan",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 340,
+        "protein": "6g",
+        "carbs": "62g",
+        "fat": "9g",
+        "fiber": "8g"
+      },
+      "servings": 2,
+      "image_url": "https://www.themealdb.com/images/media/meals/uuuspp1511297945.jpg"
+    },
+    {
+      "id": "local-065",
+      "name": "Chicken Fajitas",
+      "ingredients": [
+        "chicken breast 500g",
+        "bell peppers 3",
+        "red onion 1",
+        "flour tortillas 8",
+        "lime 2",
+        "cumin 1 tsp",
+        "smoked paprika 1 tsp",
+        "garlic powder 1 tsp",
+        "chilli powder 1 tsp",
+        "oil",
+        "sour cream",
+        "guacamole",
+        "salsa"
+      ],
+      "steps": [
+        "Mix spices and lime juice, coat chicken and marinate",
+        "Cook chicken in hot skillet 6 minutes",
+        "Remove chicken, cook peppers and onion 5 minutes",
+        "Warm tortillas in dry pan",
+        "Serve chicken and vegetables in tortillas with toppings"
+      ],
+      "prep_time": 15,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Mexican",
+      "dietary_tags": [
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 390,
+        "protein": "32g",
+        "carbs": "38g",
+        "fat": "12g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ybkopq1583428771.jpg"
+    },
+    {
+      "id": "local-066",
+      "name": "Vegetable Curry",
+      "ingredients": [
+        "chickpeas 400g can",
+        "sweet potato 2",
+        "spinach 200g",
+        "coconut milk 400ml",
+        "onion 1",
+        "garlic 3 cloves",
+        "ginger 2cm",
+        "curry powder 2 tbsp",
+        "garam masala 1 tsp",
+        "tomatoes 400g can",
+        "oil",
+        "rice to serve"
+      ],
+      "steps": [
+        "Dice and boil sweet potato 10 minutes",
+        "Fry onion until golden",
+        "Add garlic, ginger and spices, cook 2 minutes",
+        "Add tomatoes, simmer 5 minutes",
+        "Add chickpeas, sweet potato and coconut milk",
+        "Simmer 10 minutes, stir in spinach",
+        "Serve with rice"
+      ],
+      "prep_time": 15,
+      "cook_time": 30,
+      "difficulty": "easy",
+      "cuisine": "Indian",
+      "dietary_tags": [
+        "vegan",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 350,
+        "protein": "12g",
+        "carbs": "52g",
+        "fat": "12g",
+        "fiber": "10g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/wuxrtu1483564410.jpg"
+    },
+    {
+      "id": "local-067",
+      "name": "French Onion Soup",
+      "ingredients": [
+        "onions 6 large",
+        "beef stock 1.5L",
+        "butter 50g",
+        "olive oil",
+        "white wine 150ml",
+        "thyme",
+        "bay leaf",
+        "sourdough bread 4 slices",
+        "gruyere cheese 200g",
+        "sugar 1 tsp",
+        "salt",
+        "black pepper"
+      ],
+      "steps": [
+        "Slice onions and cook in butter very low heat 45 minutes until golden",
+        "Add sugar and cook 5 more minutes",
+        "Add wine and reduce",
+        "Add stock, thyme and bay, simmer 20 minutes",
+        "Toast bread and top with cheese",
+        "Ladle soup into bowls, float cheesy toast on top",
+        "Grill until cheese bubbles"
+      ],
+      "prep_time": 10,
+      "cook_time": 75,
+      "difficulty": "medium",
+      "cuisine": "French",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 340,
+        "protein": "16g",
+        "carbs": "28g",
+        "fat": "18g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/sytuqu1511553755.jpg"
+    },
+    {
+      "id": "local-068",
+      "name": "Prawn Fried Rice",
+      "ingredients": [
+        "cooked rice 600g",
+        "prawns 300g",
+        "eggs 3",
+        "peas 100g",
+        "carrots 2",
+        "spring onions 4",
+        "soy sauce 3 tbsp",
+        "sesame oil 1 tsp",
+        "garlic 3 cloves",
+        "ginger 1cm",
+        "oil"
+      ],
+      "steps": [
+        "Stir fry garlic and ginger 30 seconds",
+        "Add prawns and cook until pink",
+        "Push to side, scramble eggs",
+        "Add cold rice, breaking up clumps",
+        "Add peas, carrots and soy sauce",
+        "Toss everything with sesame oil",
+        "Top with spring onions"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "medium",
+      "cuisine": "Chinese",
+      "dietary_tags": [
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 410,
+        "protein": "28g",
+        "carbs": "52g",
+        "fat": "10g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/g046bb1663960946.jpg"
+    },
+    {
+      "id": "local-069",
+      "name": "Tiramisu",
+      "ingredients": [
+        "ladyfingers 200g",
+        "mascarpone 500g",
+        "eggs 4 separated",
+        "caster sugar 100g",
+        "strong espresso 300ml",
+        "amaretto 2 tbsp",
+        "cocoa powder"
+      ],
+      "steps": [
+        "Make espresso and cool, add amaretto",
+        "Beat egg yolks with sugar until pale",
+        "Fold in mascarpone until smooth",
+        "Whisk egg whites to stiff peaks, fold into mascarpone",
+        "Dip ladyfingers in coffee, lay in dish",
+        "Spread half the cream mixture",
+        "Repeat layers",
+        "Dust with cocoa, refrigerate 4 hours"
+      ],
+      "prep_time": 30,
+      "cook_time": 0,
+      "difficulty": "medium",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 480,
+        "protein": "10g",
+        "carbs": "42g",
+        "fat": "28g",
+        "fiber": "1g"
+      },
+      "servings": 8,
+      "image_url": "https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg"
+    },
+    {
+      "id": "local-070",
+      "name": "BBQ Pulled Pork",
+      "ingredients": [
+        "pork shoulder 1.5kg",
+        "BBQ sauce 300ml",
+        "brown sugar 2 tbsp",
+        "paprika 2 tbsp",
+        "garlic powder 1 tbsp",
+        "onion powder 1 tbsp",
+        "cumin 1 tsp",
+        "salt",
+        "black pepper",
+        "brioche buns",
+        "coleslaw"
+      ],
+      "steps": [
+        "Mix spices and rub all over pork",
+        "Cook in slow cooker on low 8 hours",
+        "Pull pork apart with forks",
+        "Mix with half the BBQ sauce",
+        "Serve in buns with remaining sauce and coleslaw"
+      ],
+      "prep_time": 15,
+      "cook_time": 480,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 450,
+        "protein": "38g",
+        "carbs": "28g",
+        "fat": "20g",
+        "fiber": "2g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/n3xxd91598732796.jpg"
+    },
+    {
+      "id": "local-071",
+      "name": "Pesto Pasta",
+      "ingredients": [
+        "pasta 400g",
+        "fresh basil 100g",
+        "pine nuts 50g",
+        "parmesan 80g",
+        "garlic 2 cloves",
+        "olive oil 150ml",
+        "cherry tomatoes 200g",
+        "salt",
+        "black pepper"
+      ],
+      "steps": [
+        "Blend basil, pine nuts, parmesan, garlic and olive oil until smooth",
+        "Season pesto to taste",
+        "Cook pasta until al dente, reserve pasta water",
+        "Toss pasta with pesto and pasta water",
+        "Add halved cherry tomatoes",
+        "Serve with extra parmesan"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 520,
+        "protein": "16g",
+        "carbs": "58g",
+        "fat": "26g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ustsqw1468250014.jpg"
+    },
+    {
+      "id": "local-072",
+      "name": "Tom Kha Gai",
+      "ingredients": [
+        "chicken breast 400g",
+        "coconut milk 400ml",
+        "chicken stock 400ml",
+        "lemongrass 2 stalks",
+        "galangal 4 slices",
+        "kaffir lime leaves 6",
+        "fish sauce 2 tbsp",
+        "lime juice 2 tbsp",
+        "mushrooms 200g",
+        "chilli 2",
+        "fresh coriander"
+      ],
+      "steps": [
+        "Bruise lemongrass and simmer in stock 10 minutes",
+        "Add coconut milk, galangal and lime leaves",
+        "Add chicken and mushrooms, cook 8 minutes",
+        "Season with fish sauce and lime juice",
+        "Add chilli to taste",
+        "Serve in bowls topped with coriander"
+      ],
+      "prep_time": 10,
+      "cook_time": 20,
+      "difficulty": "medium",
+      "cuisine": "Thai",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 320,
+        "protein": "28g",
+        "carbs": "10g",
+        "fat": "20g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/1529444830.jpg"
+    },
+    {
+      "id": "local-073",
+      "name": "Eggs Benedict",
+      "ingredients": [
+        "eggs 4",
+        "english muffins 2",
+        "bacon 4 slices",
+        "butter 150g",
+        "egg yolks 3",
+        "lemon juice 2 tbsp",
+        "white vinegar",
+        "cayenne pepper",
+        "chives"
+      ],
+      "steps": [
+        "Make hollandaise: whisk yolks over double boiler until thick",
+        "Slowly whisk in melted butter, season with lemon and cayenne",
+        "Grill bacon and toast muffins",
+        "Poach eggs in simmering vinegar water 3 minutes",
+        "Assemble muffin, bacon, egg and hollandaise",
+        "Garnish with chives"
+      ],
+      "prep_time": 15,
+      "cook_time": 20,
+      "difficulty": "hard",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 520,
+        "protein": "22g",
+        "carbs": "24g",
+        "fat": "38g",
+        "fiber": "2g"
+      },
+      "servings": 2,
+      "image_url": "https://www.themealdb.com/images/media/meals/1548772327.jpg"
+    },
+    {
+      "id": "local-074",
+      "name": "Tabbouleh",
+      "ingredients": [
+        "bulgur wheat 150g",
+        "tomatoes 3",
+        "cucumber 1",
+        "fresh parsley 100g",
+        "fresh mint 30g",
+        "spring onions 4",
+        "olive oil 60ml",
+        "lemon juice 60ml",
+        "salt",
+        "black pepper"
+      ],
+      "steps": [
+        "Soak bulgur in boiling water 20 minutes, drain",
+        "Finely chop all vegetables and herbs",
+        "Mix bulgur with parsley, mint, tomatoes, cucumber and onions",
+        "Dress with olive oil and lemon juice",
+        "Season well and refrigerate 30 minutes"
+      ],
+      "prep_time": 30,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "Lebanese",
+      "dietary_tags": [
+        "vegan",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 200,
+        "protein": "5g",
+        "carbs": "28g",
+        "fat": "9g",
+        "fiber": "6g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg"
+    },
+    {
+      "id": "local-075",
+      "name": "Lamb Kebabs",
+      "ingredients": [
+        "ground lamb 600g",
+        "onion 1",
+        "garlic 4 cloves",
+        "cumin 2 tsp",
+        "coriander 1 tsp",
+        "paprika 1 tsp",
+        "cinnamon",
+        "fresh parsley",
+        "salt",
+        "pita bread",
+        "tzatziki",
+        "tomatoes",
+        "red onion"
+      ],
+      "steps": [
+        "Mix lamb with grated onion, garlic and spices",
+        "Shape around skewers",
+        "Grill on high heat 8-10 minutes turning occasionally",
+        "Rest 5 minutes",
+        "Serve in warm pita with tzatziki, tomatoes and onion"
+      ],
+      "prep_time": 20,
+      "cook_time": 10,
+      "difficulty": "medium",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "36g",
+        "carbs": "18g",
+        "fat": "22g",
+        "fiber": "2g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/1520084413.jpg"
+    },
+    {
+      "id": "local-076",
+      "name": "Black Bean Quesadillas",
+      "ingredients": [
+        "flour tortillas 8",
+        "black beans 400g can",
+        "cheddar cheese 200g",
+        "red pepper 1",
+        "red onion 1/2",
+        "cumin 1 tsp",
+        "garlic powder",
+        "oil",
+        "sour cream",
+        "fresh coriander",
+        "lime"
+      ],
+      "steps": [
+        "Drain and mash half the black beans",
+        "Mix with diced pepper, onion and spices",
+        "Spread on half a tortilla, add cheese",
+        "Fold and cook in oiled pan 3 minutes each side",
+        "Cut into wedges and serve with sour cream and lime"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Mexican",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "16g",
+        "carbs": "48g",
+        "fat": "14g",
+        "fiber": "10g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ybkopq1583428771.jpg"
+    },
+    {
+      "id": "local-077",
+      "name": "Prawn Linguine",
+      "ingredients": [
+        "linguine 400g",
+        "prawns 400g",
+        "garlic 4 cloves",
+        "cherry tomatoes 200g",
+        "white wine 100ml",
+        "chilli flakes",
+        "lemon zest",
+        "parsley",
+        "olive oil",
+        "salt",
+        "black pepper"
+      ],
+      "steps": [
+        "Cook linguine until al dente",
+        "Fry garlic and chilli in oil 1 minute",
+        "Add tomatoes and cook until bursting",
+        "Add wine and reduce by half",
+        "Add prawns and cook 3 minutes until pink",
+        "Toss with pasta, parsley and lemon zest"
+      ],
+      "prep_time": 10,
+      "cook_time": 20,
+      "difficulty": "easy",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "30g",
+        "carbs": "52g",
+        "fat": "10g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/ustsqw1468250014.jpg"
+    },
+    {
+      "id": "local-078",
+      "name": "Breakfast Burrito",
+      "ingredients": [
+        "flour tortillas 4 large",
+        "eggs 6",
+        "chorizo 200g",
+        "cheddar cheese 100g",
+        "black beans 200g",
+        "salsa 100g",
+        "avocado 1",
+        "spring onions 3",
+        "oil",
+        "salt",
+        "pepper"
+      ],
+      "steps": [
+        "Fry chorizo until crispy",
+        "Scramble eggs with salt and pepper",
+        "Warm beans in microwave",
+        "Warm tortillas in dry pan",
+        "Fill with eggs, chorizo, beans, cheese and salsa",
+        "Add avocado and spring onions",
+        "Roll tightly and serve"
+      ],
+      "prep_time": 10,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Mexican",
+      "dietary_tags": [
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 580,
+        "protein": "34g",
+        "carbs": "42g",
+        "fat": "28g",
+        "fiber": "8g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/txsupu1511815755.jpg"
+    },
+    {
+      "id": "local-079",
+      "name": "Vegetable Biryani",
+      "ingredients": [
+        "basmati rice 400g",
+        "mixed vegetables 400g",
+        "onions 3",
+        "yogurt 200g",
+        "biryani masala 3 tbsp",
+        "saffron pinch",
+        "warm milk 4 tbsp",
+        "ghee 3 tbsp",
+        "fresh mint",
+        "fresh coriander",
+        "fried onions"
+      ],
+      "steps": [
+        "Parboil rice with whole spices until 70% cooked",
+        "Fry sliced onions until golden brown",
+        "Cook vegetables with yogurt and biryani masala",
+        "Layer rice and vegetable mixture in pot",
+        "Drizzle saffron milk and ghee over top",
+        "Seal pot and cook on very low heat 25 minutes",
+        "Serve garnished with mint and fried onions"
+      ],
+      "prep_time": 30,
+      "cook_time": 45,
+      "difficulty": "hard",
+      "cuisine": "Indian",
+      "dietary_tags": [
+        "vegetarian",
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "10g",
+        "carbs": "72g",
+        "fat": "12g",
+        "fiber": "6g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/wvpsxx1468256321.jpg"
+    },
+    {
+      "id": "local-080",
+      "name": "Tuna Nicoise Salad",
+      "ingredients": [
+        "tuna steaks 2",
+        "green beans 200g",
+        "eggs 4",
+        "new potatoes 300g",
+        "tomatoes 3",
+        "black olives 80g",
+        "anchovies 50g",
+        "dijon mustard 1 tsp",
+        "red wine vinegar 2 tbsp",
+        "olive oil 5 tbsp",
+        "garlic 1 clove",
+        "lettuce leaves"
+      ],
+      "steps": [
+        "Boil potatoes 15 minutes, green beans 3 minutes, eggs 7 minutes",
+        "Sear tuna 2 minutes each side",
+        "Make dressing with mustard, vinegar, garlic and oil",
+        "Arrange lettuce on platter",
+        "Top with vegetables, eggs and tuna",
+        "Scatter olives and anchovies",
+        "Drizzle with dressing"
+      ],
+      "prep_time": 20,
+      "cook_time": 20,
+      "difficulty": "medium",
+      "cuisine": "French",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "36g",
+        "carbs": "22g",
+        "fat": "18g",
+        "fiber": "5g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/sywswr1511558740.jpg"
+    },
+    {
+      "id": "local-081",
+      "name": "Chana Masala",
+      "ingredients": [
+        "chickpeas 800g (2 cans)",
+        "onions 2",
+        "tomatoes 400g can",
+        "garlic 4 cloves",
+        "ginger 3cm",
+        "chana masala spice mix 2 tbsp",
+        "cumin seeds 1 tsp",
+        "lemon juice",
+        "oil",
+        "fresh coriander",
+        "naan or rice to serve"
+      ],
+      "steps": [
+        "Fry cumin seeds in oil until sputtering",
+        "Add onion and cook until golden",
+        "Add garlic, ginger and spice mix, cook 2 minutes",
+        "Add tomatoes, simmer 10 minutes",
+        "Add chickpeas and 200ml water",
+        "Simmer 15 minutes until thick",
+        "Squeeze in lemon, garnish with coriander"
+      ],
+      "prep_time": 10,
+      "cook_time": 35,
+      "difficulty": "easy",
+      "cuisine": "Indian",
+      "dietary_tags": [
+        "vegan",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 290,
+        "protein": "14g",
+        "carbs": "44g",
+        "fat": "8g",
+        "fiber": "12g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/wuxrtu1483564410.jpg"
+    },
+    {
+      "id": "local-082",
+      "name": "Overnight Oats",
+      "ingredients": [
+        "rolled oats 100g",
+        "milk 200ml",
+        "yogurt 100g",
+        "chia seeds 2 tbsp",
+        "honey 1 tbsp",
+        "vanilla extract 1 tsp",
+        "fresh berries",
+        "banana",
+        "nut butter 1 tbsp"
+      ],
+      "steps": [
+        "Mix oats, milk, yogurt, chia seeds, honey and vanilla",
+        "Transfer to jar or container",
+        "Refrigerate overnight or at least 4 hours",
+        "Top with fresh berries, sliced banana and nut butter",
+        "Serve cold"
+      ],
+      "prep_time": 5,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "International",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "14g",
+        "carbs": "55g",
+        "fat": "12g",
+        "fiber": "9g"
+      },
+      "servings": 1,
+      "image_url": "https://www.themealdb.com/images/media/meals/rwuyqx1511383174.jpg"
+    },
+    {
+      "id": "local-083",
+      "name": "Pho Bo",
+      "ingredients": [
+        "beef bones 1kg",
+        "beef sirloin 400g",
+        "rice noodles 400g",
+        "onion 2",
+        "ginger 10cm",
+        "cinnamon sticks 2",
+        "star anise 4",
+        "fish sauce 3 tbsp",
+        "sugar 2 tsp",
+        "bean sprouts",
+        "fresh basil",
+        "lime",
+        "chilli"
+      ],
+      "steps": [
+        "Char onion and ginger under broiler",
+        "Boil bones 5 minutes, drain and rinse",
+        "Simmer bones with charred vegetables and spices 3 hours",
+        "Strain broth, season with fish sauce and sugar",
+        "Slice raw sirloin very thinly",
+        "Cook noodles, place in bowls",
+        "Add raw beef slices, pour boiling broth over",
+        "Serve with accompaniments"
+      ],
+      "prep_time": 30,
+      "cook_time": 180,
+      "difficulty": "hard",
+      "cuisine": "Vietnamese",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "34g",
+        "carbs": "42g",
+        "fat": "8g",
+        "fiber": "3g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/1529444830.jpg"
+    },
+    {
+      "id": "local-084",
+      "name": "Hummus",
+      "ingredients": [
+        "chickpeas 400g can",
+        "tahini 3 tbsp",
+        "garlic 2 cloves",
+        "lemon juice 3 tbsp",
+        "olive oil 3 tbsp",
+        "cumin",
+        "salt",
+        "paprika",
+        "fresh parsley",
+        "pita bread"
+      ],
+      "steps": [
+        "Drain chickpeas, reserve liquid",
+        "Blend chickpeas, tahini, garlic, lemon, cumin and salt",
+        "Add reserved liquid to reach desired consistency",
+        "Blend 5 minutes until very smooth",
+        "Transfer to plate, drizzle with olive oil",
+        "Sprinkle paprika and parsley",
+        "Serve with pita"
+      ],
+      "prep_time": 10,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "vegan",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 180,
+        "protein": "7g",
+        "carbs": "20g",
+        "fat": "9g",
+        "fiber": "6g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/g373701551450225.jpg"
+    },
+    {
+      "id": "local-085",
+      "name": "Bulgogi",
+      "ingredients": [
+        "beef ribeye 500g",
+        "soy sauce 4 tbsp",
+        "pear 1/2 grated",
+        "sesame oil 2 tbsp",
+        "sugar 2 tbsp",
+        "garlic 4 cloves",
+        "ginger 1cm",
+        "spring onions",
+        "sesame seeds",
+        "rice to serve",
+        "lettuce leaves"
+      ],
+      "steps": [
+        "Slice beef very thinly",
+        "Mix soy, grated pear, sesame oil, sugar, garlic and ginger",
+        "Marinate beef at least 30 minutes",
+        "Cook beef on high heat until caramelized",
+        "Serve over rice with spring onions and sesame seeds",
+        "Wrap in lettuce leaves if desired"
+      ],
+      "prep_time": 40,
+      "cook_time": 10,
+      "difficulty": "medium",
+      "cuisine": "Korean",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "34g",
+        "carbs": "20g",
+        "fat": "18g",
+        "fiber": "1g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/1529444830.jpg"
+    },
+    {
+      "id": "local-086",
+      "name": "Spanakopita",
+      "ingredients": [
+        "spinach 500g",
+        "feta cheese 300g",
+        "eggs 3",
+        "onion 1",
+        "garlic 2 cloves",
+        "phyllo pastry 400g",
+        "olive oil 100ml",
+        "fresh dill",
+        "nutmeg",
+        "salt",
+        "black pepper"
+      ],
+      "steps": [
+        "Wilt spinach, squeeze out all water",
+        "Mix spinach with crumbled feta, eggs, onion, garlic, dill and nutmeg",
+        "Brush phyllo sheets with oil, layer 6 sheets",
+        "Add filling, top with 6 more oiled sheets",
+        "Score top, bake 180C 45 minutes until golden",
+        "Rest 10 minutes before cutting"
+      ],
+      "prep_time": 30,
+      "cook_time": 45,
+      "difficulty": "medium",
+      "cuisine": "Greek",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 380,
+        "protein": "14g",
+        "carbs": "28g",
+        "fat": "24g",
+        "fiber": "4g"
+      },
+      "servings": 8,
+      "image_url": "https://www.themealdb.com/images/media/meals/u1pv8v1548305341.jpg"
+    },
+    {
+      "id": "local-087",
+      "name": "Beef Bourguignon",
+      "ingredients": [
+        "beef chuck 1kg",
+        "red wine 750ml",
+        "beef stock 500ml",
+        "bacon lardons 200g",
+        "mushrooms 300g",
+        "pearl onions 200g",
+        "carrots 3",
+        "garlic 4 cloves",
+        "thyme",
+        "bay leaves",
+        "tomato paste 2 tbsp",
+        "flour 2 tbsp",
+        "butter",
+        "oil"
+      ],
+      "steps": [
+        "Brown bacon, remove and set aside",
+        "Brown beef in batches",
+        "Cook onions and garlic",
+        "Return beef, dust with flour",
+        "Add wine, stock, tomato paste and herbs",
+        "Simmer covered 2.5 hours until tender",
+        "Add mushrooms and carrots last 30 minutes",
+        "Serve with mashed potatoes"
+      ],
+      "prep_time": 30,
+      "cook_time": 180,
+      "difficulty": "hard",
+      "cuisine": "French",
+      "dietary_tags": [
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 520,
+        "protein": "42g",
+        "carbs": "14g",
+        "fat": "28g",
+        "fiber": "3g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/sutysm1468256592.jpg"
+    },
+    {
+      "id": "local-088",
+      "name": "Sushi Rolls",
+      "ingredients": [
+        "sushi rice 300g",
+        "rice vinegar 3 tbsp",
+        "sugar 2 tbsp",
+        "salt 1 tsp",
+        "nori sheets 6",
+        "salmon 200g sashimi grade",
+        "cucumber 1",
+        "avocado 1",
+        "cream cheese 100g",
+        "soy sauce",
+        "wasabi",
+        "pickled ginger"
+      ],
+      "steps": [
+        "Cook sushi rice, season with vinegar, sugar and salt",
+        "Cool rice to room temperature",
+        "Lay nori on bamboo mat, spread thin layer of rice",
+        "Add fillings along one edge",
+        "Roll tightly using mat",
+        "Cut each roll into 6-8 pieces with wet knife",
+        "Serve with soy sauce, wasabi and ginger"
+      ],
+      "prep_time": 30,
+      "cook_time": 20,
+      "difficulty": "hard",
+      "cuisine": "Japanese",
+      "dietary_tags": [
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 340,
+        "protein": "18g",
+        "carbs": "48g",
+        "fat": "10g",
+        "fiber": "3g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/g046bb1663960946.jpg"
+    },
+    {
+      "id": "local-089",
+      "name": "Minestrone Soup",
+      "ingredients": [
+        "canned tomatoes 400g",
+        "vegetable stock 1.5L",
+        "kidney beans 400g can",
+        "pasta 150g",
+        "courgette 1",
+        "carrots 2",
+        "celery 3 stalks",
+        "onion 1",
+        "garlic 3 cloves",
+        "cabbage 200g",
+        "basil",
+        "olive oil",
+        "salt"
+      ],
+      "steps": [
+        "Saute onion, carrots and celery in oil 8 minutes",
+        "Add garlic and cook 1 minute",
+        "Add tomatoes and stock",
+        "Simmer 15 minutes",
+        "Add courgette, beans and cabbage",
+        "Add pasta and cook 10 minutes",
+        "Season and serve with fresh basil"
+      ],
+      "prep_time": 15,
+      "cook_time": 40,
+      "difficulty": "easy",
+      "cuisine": "Italian",
+      "dietary_tags": [
+        "vegan",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 240,
+        "protein": "10g",
+        "carbs": "42g",
+        "fat": "5g",
+        "fiber": "10g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/sytuqu1511553755.jpg"
+    },
+    {
+      "id": "local-090",
+      "name": "Moussaka",
+      "ingredients": [
+        "ground lamb 500g",
+        "aubergines 3",
+        "potatoes 2",
+        "tomatoes 400g can",
+        "onion 1",
+        "garlic 3 cloves",
+        "cinnamon 1 tsp",
+        "red wine 100ml",
+        "milk 500ml",
+        "butter 60g",
+        "flour 60g",
+        "eggs 2",
+        "parmesan 80g",
+        "nutmeg"
+      ],
+      "steps": [
+        "Slice aubergines, salt and drain 30 minutes",
+        "Fry lamb with onion, garlic and spices",
+        "Add tomatoes and wine, simmer 15 minutes",
+        "Roast aubergine and potato slices until golden",
+        "Make bechamel with butter, flour and milk",
+        "Layer potato, meat, aubergine in baking dish",
+        "Top with bechamel, sprinkle parmesan",
+        "Bake 180C 45 minutes"
+      ],
+      "prep_time": 60,
+      "cook_time": 60,
+      "difficulty": "hard",
+      "cuisine": "Greek",
+      "dietary_tags": [
+        "gluten-free"
+      ],
+      "nutrition": {
+        "calories": 480,
+        "protein": "28g",
+        "carbs": "32g",
+        "fat": "26g",
+        "fiber": "6g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/ctg8jd1585563097.jpg"
+    },
+    {
+      "id": "local-091",
+      "name": "Granola",
+      "ingredients": [
+        "rolled oats 400g",
+        "honey 80ml",
+        "coconut oil 60ml",
+        "almonds 100g",
+        "cashews 80g",
+        "pumpkin seeds 60g",
+        "cinnamon 2 tsp",
+        "vanilla extract 1 tsp",
+        "dried cranberries 80g",
+        "dark chocolate chips 50g"
+      ],
+      "steps": [
+        "Preheat oven to 160C",
+        "Mix oats, nuts and seeds with coconut oil, honey, cinnamon and vanilla",
+        "Spread on baking trays",
+        "Bake 30 minutes, stirring halfway",
+        "Add cranberries when cool",
+        "Add chocolate chips when completely cool",
+        "Store in airtight container"
+      ],
+      "prep_time": 10,
+      "cook_time": 30,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegan",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 420,
+        "protein": "10g",
+        "carbs": "52g",
+        "fat": "20g",
+        "fiber": "6g"
+      },
+      "servings": 8,
+      "image_url": "https://www.themealdb.com/images/media/meals/rwuyqx1511383174.jpg"
+    },
+    {
+      "id": "local-092",
+      "name": "Baba Ganoush",
+      "ingredients": [
+        "aubergines 2 large",
+        "tahini 3 tbsp",
+        "garlic 3 cloves",
+        "lemon juice 3 tbsp",
+        "olive oil 3 tbsp",
+        "cumin",
+        "smoked paprika",
+        "fresh parsley",
+        "salt",
+        "pita bread"
+      ],
+      "steps": [
+        "Char aubergines directly over gas flame turning often",
+        "When collapsed and blackened (20 min), cool",
+        "Peel off charred skin",
+        "Squeeze out any bitter liquid",
+        "Blend aubergine with tahini, garlic, lemon, cumin and salt",
+        "Drizzle with olive oil, sprinkle paprika and parsley"
+      ],
+      "prep_time": 10,
+      "cook_time": 25,
+      "difficulty": "easy",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "vegan",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 160,
+        "protein": "5g",
+        "carbs": "18g",
+        "fat": "9g",
+        "fiber": "7g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/g373701551450225.jpg"
+    },
+    {
+      "id": "local-093",
+      "name": "Chicken Shawarma Wrap",
+      "ingredients": [
+        "chicken thighs 600g boneless",
+        "pita bread 4",
+        "yogurt 200g",
+        "cucumber 1",
+        "tomatoes 2",
+        "red onion 1",
+        "cumin 2 tsp",
+        "paprika 2 tsp",
+        "turmeric 1 tsp",
+        "garlic powder 1 tsp",
+        "lemon juice 3 tbsp",
+        "olive oil",
+        "parsley"
+      ],
+      "steps": [
+        "Mix spices, lemon juice and oil, coat chicken and marinate 2 hours",
+        "Grill chicken on high 6 minutes each side",
+        "Rest and slice thinly",
+        "Mix yogurt with grated cucumber for sauce",
+        "Warm pita, fill with chicken and salad",
+        "Drizzle yogurt sauce and serve"
+      ],
+      "prep_time": 125,
+      "cook_time": 15,
+      "difficulty": "easy",
+      "cuisine": "Middle Eastern",
+      "dietary_tags": [
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 480,
+        "protein": "36g",
+        "carbs": "42g",
+        "fat": "18g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/1520084413.jpg"
+    },
+    {
+      "id": "local-094",
+      "name": "Ramen",
+      "ingredients": [
+        "ramen noodles 400g",
+        "pork belly 300g",
+        "soft boiled eggs 4",
+        "chicken stock 1.5L",
+        "soy sauce 60ml",
+        "mirin 2 tbsp",
+        "sesame paste 2 tbsp",
+        "spring onions",
+        "nori sheets",
+        "corn kernels",
+        "bamboo shoots",
+        "sesame oil",
+        "garlic 4 cloves",
+        "ginger 4cm"
+      ],
+      "steps": [
+        "Simmer pork belly in soy and mirin 2 hours until tender, slice",
+        "Make soft boiled eggs, marinate in soy mixture",
+        "Simmer stock with garlic and ginger 30 minutes",
+        "Season broth with soy, mirin and sesame paste",
+        "Cook noodles per package",
+        "Assemble bowls with noodles, hot broth, pork, egg and toppings",
+        "Drizzle sesame oil"
+      ],
+      "prep_time": 30,
+      "cook_time": 150,
+      "difficulty": "hard",
+      "cuisine": "Japanese",
+      "dietary_tags": [
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 560,
+        "protein": "34g",
+        "carbs": "54g",
+        "fat": "22g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/xxyupu1468262513.jpg"
+    },
+    {
+      "id": "local-095",
+      "name": "Chocolate Chip Cookies",
+      "ingredients": [
+        "flour 280g",
+        "butter 225g softened",
+        "brown sugar 200g",
+        "caster sugar 100g",
+        "eggs 2",
+        "vanilla extract 2 tsp",
+        "baking soda 1 tsp",
+        "salt 1 tsp",
+        "dark chocolate chips 340g"
+      ],
+      "steps": [
+        "Beat butter with both sugars until light and fluffy",
+        "Add eggs and vanilla, beat well",
+        "Mix in flour, baking soda and salt until just combined",
+        "Fold in chocolate chips",
+        "Chill dough 30 minutes",
+        "Scoop onto lined baking sheets",
+        "Bake 180C 10-12 minutes until golden at edges",
+        "Cool on tray 5 minutes"
+      ],
+      "prep_time": 40,
+      "cook_time": 12,
+      "difficulty": "easy",
+      "cuisine": "American",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 280,
+        "protein": "3g",
+        "carbs": "38g",
+        "fat": "14g",
+        "fiber": "2g"
+      },
+      "servings": 24,
+      "image_url": "https://www.themealdb.com/images/media/meals/xvsurr1511719182.jpg"
+    },
+    {
+      "id": "local-096",
+      "name": "Fresh Spring Rolls",
+      "ingredients": [
+        "rice paper wrappers 12",
+        "cooked shrimp 200g",
+        "rice vermicelli 100g",
+        "avocado 1",
+        "cucumber 1",
+        "carrots 2",
+        "fresh mint",
+        "fresh basil",
+        "lettuce leaves",
+        "peanut sauce",
+        "sweet chilli sauce"
+      ],
+      "steps": [
+        "Cook vermicelli noodles, rinse with cold water",
+        "Prepare all fillings: slice vegetables",
+        "Dip rice paper in warm water 15 seconds until pliable",
+        "Lay on damp surface, add lettuce, noodles, vegetables and shrimp",
+        "Fold sides over filling, roll tightly",
+        "Serve immediately with dipping sauces"
+      ],
+      "prep_time": 30,
+      "cook_time": 5,
+      "difficulty": "medium",
+      "cuisine": "Vietnamese",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 220,
+        "protein": "14g",
+        "carbs": "32g",
+        "fat": "5g",
+        "fiber": "4g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/g046bb1663960946.jpg"
+    },
+    {
+      "id": "local-097",
+      "name": "Paella",
+      "ingredients": [
+        "arborio rice 400g",
+        "chicken thighs 400g",
+        "chorizo 200g",
+        "prawns 300g",
+        "mussels 300g",
+        "onion 1",
+        "garlic 4 cloves",
+        "red pepper 1",
+        "tomatoes 400g can",
+        "chicken stock 1L",
+        "saffron pinch",
+        "smoked paprika 2 tsp",
+        "olive oil",
+        "fresh parsley",
+        "lemon"
+      ],
+      "steps": [
+        "Heat saffron in warm stock",
+        "Fry chicken and chorizo until golden, remove",
+        "Fry onion, garlic and pepper",
+        "Add tomatoes and paprika, cook 5 minutes",
+        "Add rice and coat in oil",
+        "Add saffron stock, bring to boil",
+        "Add seafood and return chicken in final 10 minutes",
+        "Cook without stirring until stock absorbed",
+        "Garnish with parsley and lemon"
+      ],
+      "prep_time": 20,
+      "cook_time": 45,
+      "difficulty": "hard",
+      "cuisine": "Spanish",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 480,
+        "protein": "36g",
+        "carbs": "52g",
+        "fat": "14g",
+        "fiber": "4g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/xxrxux1503070723.jpg"
+    },
+    {
+      "id": "local-098",
+      "name": "Coconut Dahl",
+      "ingredients": [
+        "red lentils 300g",
+        "coconut milk 400ml",
+        "onion 1",
+        "garlic 4 cloves",
+        "ginger 3cm",
+        "turmeric 1 tsp",
+        "cumin 1 tsp",
+        "coriander 1 tsp",
+        "garam masala 1 tsp",
+        "tomatoes 400g can",
+        "spinach 100g",
+        "lime juice",
+        "oil",
+        "fresh coriander",
+        "naan to serve"
+      ],
+      "steps": [
+        "Fry onion in oil until soft",
+        "Add garlic, ginger and spices, cook 2 minutes",
+        "Add tomatoes and cook 5 minutes",
+        "Add lentils and 500ml water",
+        "Simmer 15 minutes until lentils soft",
+        "Stir in coconut milk and spinach",
+        "Season with lime juice",
+        "Garnish with coriander"
+      ],
+      "prep_time": 10,
+      "cook_time": 30,
+      "difficulty": "easy",
+      "cuisine": "Indian",
+      "dietary_tags": [
+        "vegan",
+        "gluten-free",
+        "dairy-free"
+      ],
+      "nutrition": {
+        "calories": 300,
+        "protein": "14g",
+        "carbs": "42g",
+        "fat": "10g",
+        "fiber": "12g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/wuxrtu1483564410.jpg"
+    },
+    {
+      "id": "local-099",
+      "name": "Smashed Avocado Wrap",
+      "ingredients": [
+        "whole wheat wraps 4",
+        "avocado 2",
+        "cherry tomatoes 200g",
+        "red onion 1/2",
+        "feta cheese 80g",
+        "mixed greens 100g",
+        "lemon juice 2 tbsp",
+        "olive oil",
+        "salt",
+        "black pepper",
+        "dried chilli flakes"
+      ],
+      "steps": [
+        "Mash avocado with lemon juice, salt and pepper",
+        "Halve cherry tomatoes, thinly slice onion",
+        "Layer greens in wrap",
+        "Add smashed avocado, tomatoes and onion",
+        "Crumble feta on top",
+        "Drizzle olive oil and sprinkle chilli flakes",
+        "Roll wrap tightly and serve"
+      ],
+      "prep_time": 10,
+      "cook_time": 0,
+      "difficulty": "easy",
+      "cuisine": "Mediterranean",
+      "dietary_tags": [
+        "vegetarian"
+      ],
+      "nutrition": {
+        "calories": 340,
+        "protein": "10g",
+        "carbs": "32g",
+        "fat": "20g",
+        "fiber": "9g"
+      },
+      "servings": 4,
+      "image_url": "https://www.themealdb.com/images/media/meals/uuuspp1511297945.jpg"
+    },
+    {
+      "id": "local-100",
+      "name": "Beef Rendang",
+      "ingredients": [
+        "beef chuck 1kg",
+        "coconut milk 400ml",
+        "lemongrass 3 stalks",
+        "galangal 4cm",
+        "kaffir lime leaves 8",
+        "turmeric leaf 1",
+        "dried chillies 8",
+        "shallots 8",
+        "garlic 5 cloves",
+        "ginger 4cm",
+        "toasted coconut 4 tbsp",
+        "salt",
+        "oil"
+      ],
+      "steps": [
+        "Blend chillies, shallots, garlic and ginger to paste",
+        "Fry paste in oil 10 minutes until fragrant",
+        "Add bruised lemongrass, galangal and lime leaves",
+        "Add beef and coat in paste",
+        "Add coconut milk and bring to boil",
+        "Simmer uncovered on low heat 3 hours stirring occasionally",
+        "Add toasted coconut when sauce nearly dry",
+        "Cook until beef is dark and coated in dry sauce"
+      ],
+      "prep_time": 30,
+      "cook_time": 200,
+      "difficulty": "hard",
+      "cuisine": "Malaysian",
+      "dietary_tags": [
+        "gluten-free",
+        "dairy-free",
+        "high-protein"
+      ],
+      "nutrition": {
+        "calories": 520,
+        "protein": "42g",
+        "carbs": "8g",
+        "fat": "34g",
+        "fiber": "3g"
+      },
+      "servings": 6,
+      "image_url": "https://www.themealdb.com/images/media/meals/1529444830.jpg"
+    }
+  ]
+}

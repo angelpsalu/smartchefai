@@ -55,22 +55,34 @@ class RecipeProvider extends ChangeNotifier {
     await prefs.setStringList('favorite_ids', _favoriteIds.toList());
   }
 
-  /// Load all recipes
+  /// Load all recipes — Phase 1: local JSON immediately, Phase 2: Firestore in background
   Future<void> loadRecipes() async {
+    if (_isLoading) return; // prevent duplicate loads
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _recipes = await _firebaseService.getAllRecipes();
-      
-      // Load favorites from recipes
-      _favorites = _recipes.where((r) => _favoriteIds.contains(r.id)).toList();
-      
-      _isLoading = false;
-      notifyListeners();
+      // Phase 1: Load local JSON instantly — user sees recipes immediately
+      if (_recipes.isEmpty) {
+        final local = await _firebaseService.getLocalRecipes();
+        if (local.isNotEmpty) {
+          _recipes = local;
+          _favorites = _recipes.where((r) => _favoriteIds.contains(r.id)).toList();
+          _isLoading = false;
+          notifyListeners(); // show local recipes right away
+        }
+      }
+
+      // Phase 2: Fetch from Firestore/network in background
+      final networkRecipes = await _firebaseService.getAllRecipes();
+      if (networkRecipes.isNotEmpty && networkRecipes.length >= _recipes.length) {
+        _recipes = networkRecipes;
+        _favorites = _recipes.where((r) => _favoriteIds.contains(r.id)).toList();
+      }
     } catch (e) {
       _error = e.toString();
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
