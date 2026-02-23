@@ -50,7 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 return SimpleDialogOption(
                   onPressed: () {
                     provider.setLanguage(lang);
-                    Navigator.pop(context);
+                    context.pop();
                   },
                   child: Row(
                     children: [
@@ -87,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Choose from Gallery'),
                 onTap: () async {
-                  Navigator.pop(ctx);
+                  ctx.pop();
                   final picker = ImagePicker();
                   final image = await picker.pickImage(
                     source: ImageSource.gallery,
@@ -108,7 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: TextStyle(color: colorScheme.error),
                   ),
                   onTap: () async {
-                    Navigator.pop(ctx);
+                    ctx.pop();
                     await context.read<UserProvider>().removePhoto();
                   },
                 ),
@@ -250,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.calculate,
                 title: 'Nutrition Goals',
                 subtitle: 'Daily calorie targets',
-                onTap: () {},
+                onTap: () => context.push('/nutrition-goals'),
               ),
             ],
           ),

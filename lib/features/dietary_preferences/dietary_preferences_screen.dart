@@ -63,7 +63,7 @@ class _DietaryPreferencesScreenState extends State<DietaryPreferencesScreen> {
     }
   }
 
-  void _savePreferences() async {
+  Future<void> _savePreferences() async {
     final userProvider = context.read<UserProvider>();
     final success = await userProvider.setPreferences(
       _selectedPreferences.toList(),

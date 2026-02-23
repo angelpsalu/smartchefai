@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/theme.dart';
+import '../../constants/firestore_constants.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 
@@ -284,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
         sliver: SliverGrid(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.75,
+            childAspectRatio: AppLayout.recipeCardAspectRatio,
             crossAxisSpacing: AppSpacing.md,
             mainAxisSpacing: AppSpacing.md,
           ),
@@ -316,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.75,
+          childAspectRatio: AppLayout.recipeCardAspectRatio,
           crossAxisSpacing: AppSpacing.md,
           mainAxisSpacing: AppSpacing.md,
         ),

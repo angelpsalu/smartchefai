@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'theme/app_spacing.dart';
 import '../models/models.dart';
 import '../services/firebase_service.dart';
 
@@ -14,6 +15,7 @@ import '../features/scan/scan_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/dietary_preferences/dietary_preferences_screen.dart';
 import '../features/meal_plan/meal_plan_screen.dart';
+import '../features/nutrition/nutrition_goals_screen.dart';
 import '../features/auth/get_started_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
@@ -37,7 +39,9 @@ final GoRouter appRouter = GoRouter(
         state.uri.path.startsWith('/forgot-password');
 
     // Redirect to get-started if not signed in and not already going to auth screens
-    if (!isSignedIn && !isGoingToAuth) {
+    // Exception: /recipe/:id is publicly accessible for shared links
+    final isPublicRecipe = state.uri.path.startsWith('/recipe/');
+    if (!isSignedIn && !isGoingToAuth && !isPublicRecipe) {
       return '/get-started';
     }
 
@@ -153,6 +157,13 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const MealPlanScreen(),
     ),
 
+    GoRoute(
+      path: '/nutrition-goals',
+      name: 'nutrition-goals',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const NutritionGoalsScreen(),
+    ),
+
     // Dietary Preferences
     GoRoute(
       path: '/dietary-preferences',
@@ -168,14 +179,10 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final recipe = state.extra as Recipe?;
-        if (recipe == null) {
-          return const Scaffold(
-            body: Center(
-              child: Text('Recipe not found'),
-            ),
-          );
-        }
-        return RecipeDetailScreen(recipe: recipe);
+        if (recipe != null) return RecipeDetailScreen(recipe: recipe);
+        // Direct web URL load — fetch by ID
+        final id = state.pathParameters['id']!;
+        return _RecipeLoaderWidget(recipeId: id);
       },
     ),
 
@@ -350,7 +357,7 @@ class _NavItem extends StatelessWidget {
           color: isSelected
               ? colorScheme.primaryContainer.withValues(alpha: 0.5)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppSpacing.borderRadiusMd,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -404,7 +411,7 @@ class _CenterButton extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppSpacing.borderRadiusLg,
           boxShadow: [
             BoxShadow(
               color: Color(0xFFFF6B35).withValues(alpha: 0.3),
@@ -436,6 +443,7 @@ class AppRoutes {
   static const String scan = 'scan';
   static const String voiceSearch = 'voice-search';
   static const String mealPlan = 'meal-plan';
+  static const String nutritionGoals = 'nutrition-goals';
 }
 
 /// Extension for easy navigation
@@ -450,5 +458,52 @@ extension NavigationExtension on BuildContext {
     } else {
       GoRouter.of(this).go('/search');
     }
+  }
+}
+
+/// Fetches a recipe by ID and renders RecipeDetailScreen.
+/// Used when the app is opened directly from a shared web link (no extra data).
+class _RecipeLoaderWidget extends StatefulWidget {
+  final String recipeId;
+
+  const _RecipeLoaderWidget({required this.recipeId});
+
+  @override
+  State<_RecipeLoaderWidget> createState() => _RecipeLoaderWidgetState();
+}
+
+class _RecipeLoaderWidgetState extends State<_RecipeLoaderWidget> {
+  Recipe? _recipe;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final recipe = await FirebaseService().getRecipe(widget.recipeId);
+    if (!mounted) return;
+    setState(() {
+      _recipe = recipe;
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_recipe == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text('Recipe not found')),
+      );
+    }
+    return RecipeDetailScreen(recipe: _recipe!);
   }
 }

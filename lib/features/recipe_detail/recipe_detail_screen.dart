@@ -7,6 +7,7 @@ import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 import '../../models/models.dart';
+import '../../services/firebase_service.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -81,26 +82,27 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                   child: const Icon(Icons.share, color: Colors.white),
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  context.read<RecipeProvider>().toggleFavorite(recipe.id);
-                },
-                icon: Container(
-                  padding: AppSpacing.paddingSm,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    context.watch<RecipeProvider>().isFavorite(recipe.id)
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: context.watch<RecipeProvider>().isFavorite(recipe.id)
-                        ? AppColors.primaryOrange
-                        : Colors.white,
+              if (FirebaseService().isSignedIn)
+                IconButton(
+                  onPressed: () {
+                    context.read<RecipeProvider>().toggleFavorite(recipe.id);
+                  },
+                  icon: Container(
+                    padding: AppSpacing.paddingSm,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      context.watch<RecipeProvider>().isFavorite(recipe.id)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: context.watch<RecipeProvider>().isFavorite(recipe.id)
+                          ? AppColors.primaryOrange
+                          : Colors.white,
+                    ),
                   ),
                 ),
-              ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
@@ -259,12 +261,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
 
                   const Gap.lg(),
 
-                  // Start Cooking Button
-                  GradientButton(
-                    text: 'Start Cooking',
-                    icon: Icons.play_arrow_rounded,
-                    onPressed: () => _startCooking(context),
-                  ),
+                  // Start Cooking Button (only for signed-in users)
+                  if (FirebaseService().isSignedIn)
+                    GradientButton(
+                      text: 'Start Cooking',
+                      icon: Icons.play_arrow_rounded,
+                      onPressed: () => _startCooking(context),
+                    ),
 
                   const Gap.md(),
                 ],
@@ -299,7 +302,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                   onServingsChanged: (value) {
                     setState(() => _servings = value);
                   },
-                  onAddToGrocery: () => _addToGroceryList(context, recipe),
+                  onAddToGrocery: FirebaseService().isSignedIn
+                      ? () => _addToGroceryList(context, recipe)
+                      : null,
                 ),
                 _InstructionsTab(instructions: recipe.instructions),
                 _NutritionTab(nutrition: recipe.nutrition),
@@ -314,8 +319,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
   Future<void> _startCooking(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     final userProvider = context.read<UserProvider>();
+    final nutritionProvider = context.read<NutritionProvider>();
     // Increment counter in Firestore
     await userProvider.incrementRecipesCooked();
+    if (!mounted) return;
+    // Log nutrition intake
+    await nutritionProvider.logRecipe(widget.recipe);
     if (!mounted) return;
     // Switch to instructions tab
     _tabController.animateTo(1);
@@ -348,7 +357,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
         ),
         action: SnackBarAction(
           label: 'View',
-          onPressed: () => context.go('/grocery'),
+          onPressed: () => context.push('/grocery'),
         ),
       ),
     );
@@ -433,13 +442,13 @@ class _IngredientsTab extends StatelessWidget {
   final List<String> ingredients;
   final int servings;
   final ValueChanged<int> onServingsChanged;
-  final VoidCallback onAddToGrocery;
+  final VoidCallback? onAddToGrocery;
 
   const _IngredientsTab({
     required this.ingredients,
     required this.servings,
     required this.onServingsChanged,
-    required this.onAddToGrocery,
+    this.onAddToGrocery,
   });
 
   @override
@@ -522,12 +531,13 @@ class _IngredientsTab extends StatelessWidget {
 
         const Gap.xl(),
 
-        // Add to Grocery Button
-        GradientButton(
-          text: 'Add to Grocery List',
-          icon: Icons.add_shopping_cart,
-          onPressed: onAddToGrocery,
-        ),
+        // Add to Grocery Button (only for signed-in users)
+        if (onAddToGrocery != null)
+          GradientButton(
+            text: 'Add to Grocery List',
+            icon: Icons.add_shopping_cart,
+            onPressed: onAddToGrocery!,
+          ),
 
         const Gap.lg(),
       ],

@@ -6,7 +6,7 @@ import 'package:smartchefai/services/firebase_service.dart';
 
 /// Recipe Provider - Manages recipe data and favorites
 class RecipeProvider extends ChangeNotifier {
-  final FirebaseService _firebaseService = FirebaseService();
+  final FirebaseService _firebaseService;
 
   List<Recipe> _recipes = [];
   List<Recipe> _favorites = [];
@@ -23,7 +23,8 @@ class RecipeProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  RecipeProvider() {
+  RecipeProvider({FirebaseService? service})
+      : _firebaseService = service ?? FirebaseService() {
     _loadFavoriteIds();
   }
 
@@ -98,7 +99,7 @@ class RecipeProvider extends ChangeNotifier {
   }
 
   /// Toggle favorite status
-  void toggleFavorite(String recipeId) async {
+  Future<void> toggleFavorite(String recipeId) async {
     if (_favoriteIds.contains(recipeId)) {
       _favoriteIds.remove(recipeId);
       _favorites.removeWhere((r) => r.id == recipeId);
@@ -225,7 +226,7 @@ class RecipeProvider extends ChangeNotifier {
 
 /// User Provider - Manages user profile and settings
 class UserProvider extends ChangeNotifier {
-  final FirebaseService _firebaseService = FirebaseService();
+  final FirebaseService _firebaseService;
 
   AppUser? _appUser;
   bool _isLoading = false;
@@ -246,7 +247,8 @@ class UserProvider extends ChangeNotifier {
   String get selectedLanguage => _selectedLanguage;
   bool get isUploadingPhoto => _isUploadingPhoto;
 
-  UserProvider() {
+  UserProvider({FirebaseService? service})
+      : _firebaseService = service ?? FirebaseService() {
     _initUser();
   }
 
@@ -507,7 +509,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   /// Toggle dark mode
-  void toggleDarkMode() async {
+  Future<void> toggleDarkMode() async {
     _isDarkMode = !_isDarkMode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('dark_mode', _isDarkMode);
@@ -575,7 +577,7 @@ class UserProvider extends ChangeNotifier {
 
 /// Grocery List Provider - Manages grocery lists with auto-sync
 class GroceryListProvider extends ChangeNotifier {
-  final FirebaseService _firebaseService = FirebaseService();
+  final FirebaseService _firebaseService;
 
   List<GroceryList> _lists = [];
   GroceryList? _currentList;
@@ -592,7 +594,8 @@ class GroceryListProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isSynced => _cloudListId != null;
 
-  GroceryListProvider() {
+  GroceryListProvider({FirebaseService? service})
+      : _firebaseService = service ?? FirebaseService() {
     _init();
   }
 
