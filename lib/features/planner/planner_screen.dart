@@ -25,6 +25,10 @@ class _PlannerScreenState extends State<PlannerScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MealPlanProvider>().loadMealPlan();
       context.read<GroceryListProvider>().syncOnLogin();
+      // Ensure recipes are available for the picker
+      if (context.read<RecipeProvider>().recipes.isEmpty) {
+        context.read<RecipeProvider>().loadRecipes();
+      }
     });
   }
 
