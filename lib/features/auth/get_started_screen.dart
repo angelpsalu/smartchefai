@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import '../../providers/app_providers.dart';
 import '../../app/theme/theme.dart';
 
 class GetStartedScreen extends StatefulWidget {
@@ -98,7 +96,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                               color: Colors.white,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const Gap.xl(),
                           
                           // App Name
                           Text(
@@ -143,7 +141,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                               description: 'Find recipes with voice or text',
                               colorScheme: colorScheme,
                             ),
-                            const SizedBox(height: 16),
+                            const Gap.md(),
                             _FeatureItem(
                               icon: Icons.camera_alt,
                               iconColor: AppColors.accentGreen,
@@ -151,7 +149,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                               description: 'Scan ingredients, get instant recipes',
                               colorScheme: colorScheme,
                             ),
-                            const SizedBox(height: 16),
+                            const Gap.md(),
                             _FeatureItem(
                               icon: Icons.favorite,
                               iconColor: AppColors.accentYellow,
@@ -185,7 +183,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                                   elevation: 4,
                                   shadowColor: AppColors.primaryOrange.withValues(alpha: 0.3),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: AppSpacing.borderRadiusLg,
                                   ),
                                 ),
                                 child: const Text(
@@ -198,7 +196,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const Gap.md(),
                             
                             // Secondary CTA
                             SizedBox(
@@ -210,7 +208,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                                   foregroundColor: AppColors.primaryOrange,
                                   side: BorderSide(color: AppColors.primaryOrange, width: 2),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: AppSpacing.borderRadiusLg,
                                   ),
                                 ),
                                 child: const Text(
@@ -221,41 +219,6 @@ class _GetStartedScreenState extends State<GetStartedScreen> with SingleTickerPr
                                     letterSpacing: 0.5,
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            
-                            // Guest Access
-                            TextButton(
-                              onPressed: () async {
-                                final userProvider = context.read<UserProvider>();
-                                await userProvider.signInAsGuest();
-                                if (context.mounted) {
-                                  context.go('/');
-                                }
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: colorScheme.onSurfaceVariant,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Continue as Guest',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    Icons.arrow_forward,
-                                    size: 18,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ],
                               ),
                             ),
                           ],
@@ -317,7 +280,7 @@ class _FeatureItem extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: AppSpacing.borderRadiusLg,
             ),
             child: Icon(
               icon,
@@ -325,7 +288,7 @@ class _FeatureItem extends StatelessWidget {
               size: 28,
             ),
           ),
-          const SizedBox(width: 16),
+          const HGap.md(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../app/theme/theme.dart';
+import '../../constants/firestore_constants.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 
@@ -15,7 +17,6 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
-  final _focusNode = FocusNode();
   String? _selectedCategory;
   bool _isListening = false;
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -32,26 +33,20 @@ class _SearchScreenState extends State<SearchScreen> {
     'Side',
   ];
 
-  final List<String> _recentSearches = [
-    'Chicken curry',
-    'Pasta carbonara',
-    'Vegetable stir fry',
-  ];
-
   @override
   void initState() {
     super.initState();
     _initSpeech();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNode.requestFocus();
+      context.read<UserProvider>().loadRecentSearches();
     });
   }
 
-  void _initSpeech() async {
+  Future<void> _initSpeech() async {
     await _speech.initialize();
   }
 
-  void _startListening() async {
+  Future<void> _startListening() async {
     if (!_speech.isAvailable) return;
 
     setState(() => _isListening = true);
@@ -71,27 +66,28 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  void _stopListening() async {
+  Future<void> _stopListening() async {
     await _speech.stop();
     setState(() => _isListening = false);
   }
 
   void _performSearch(String query) {
     if (query.isEmpty) return;
-    
+
     // Cancel previous timer
     _debounceTimer?.cancel();
-    
+
     // Start new timer for debouncing
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
       context.read<RecipeProvider>().searchRecipes(query);
+      context.read<UserProvider>().addRecentSearch(query);
     });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
-    _focusNode.dispose();
     _speech.stop();
     _debounceTimer?.cancel();
     super.dispose();
@@ -104,8 +100,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Scaffold(
       appBar: const SmartChefAppBar(
-        showBackButton: true,
-        title: 'Search Recipes',
+        title: 'Search',
       ),
       body: Column(
         children: [
@@ -114,7 +109,7 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: AppSpacing.paddingMd,
             child: SmartSearchBar(
               controller: _searchController,
-              autofocus: true,
+              autofocus: false,
               hintText: 'Search by name, ingredient, or cuisine...',
               onSubmitted: _performSearch,
               onChanged: (value) {
@@ -123,7 +118,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 }
               },
               onVoiceTap: _isListening ? _stopListening : _startListening,
-              onCameraTap: () => Navigator.pushNamed(context, '/scan'),
+              onCameraTap: () => context.push('/scan'),
             ),
           ),
 
@@ -188,6 +183,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     // Show recent searches if no search query
     if (_searchController.text.isEmpty && _selectedCategory == null) {
+      final recentSearches = context.watch<UserProvider>().recentSearches;
       return ListView(
         padding: AppSpacing.paddingMd,
         children: [
@@ -198,9 +194,12 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           const Gap.md(),
-          ..._recentSearches.map((search) => ListTile(
-                leading: const Icon(Icons.history),
-                title: Text(search),
+          ...recentSearches.map((search) => ListTile(
+                leading: Icon(Icons.history, color: colorScheme.onSurfaceVariant),
+                title: Text(
+                  search,
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+                ),
                 onTap: () {
                   _searchController.text = search;
                   _performSearch(search);
@@ -242,7 +241,7 @@ class _SearchScreenState extends State<SearchScreen> {
         padding: AppSpacing.paddingMd,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.75,
+          childAspectRatio: AppLayout.recipeCardAspectRatio,
           crossAxisSpacing: AppSpacing.md,
           mainAxisSpacing: AppSpacing.md,
         ),
@@ -289,7 +288,7 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: AppSpacing.paddingMd,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
+              childAspectRatio: AppLayout.recipeCardAspectRatio,
               crossAxisSpacing: AppSpacing.md,
               mainAxisSpacing: AppSpacing.md,
             ),
@@ -304,11 +303,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 difficulty: recipe.difficulty,
                 rating: recipe.rating,
                 isFavorite: context.watch<RecipeProvider>().isFavorite(recipe.id),
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  '/recipe/${recipe.id}',
-                  arguments: recipe,
-                ),
+                onTap: () => context.push('/recipe/${recipe.id}', extra: recipe),
                 onFavoriteTap: () {
                   context.read<RecipeProvider>().toggleFavorite(recipe.id);
                 },

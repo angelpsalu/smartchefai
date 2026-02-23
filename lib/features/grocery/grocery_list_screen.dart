@@ -14,7 +14,6 @@ class GroceryListScreen extends StatefulWidget {
 
 class _GroceryListScreenState extends State<GroceryListScreen> {
   final _textController = TextEditingController();
-
   @override
   void dispose() {
     _textController.dispose();
@@ -63,6 +62,24 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
           ],
         ),
         actions: [
+          Consumer<GroceryListProvider>(
+            builder: (context, provider, child) {
+              return Tooltip(
+                message: provider.isSynced ? 'Synced to cloud' : 'Local only',
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    provider.isSynced
+                        ? Icons.cloud_done_outlined
+                        : Icons.cloud_off_outlined,
+                    color: provider.isSynced
+                        ? AppColors.accentGreen
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              );
+            },
+          ),
           Consumer<GroceryListProvider>(
             builder: (context, provider, child) {
               final hasChecked = provider.items.any((item) => item.checked);
@@ -157,7 +174,9 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
                       ...uncheckedItems.map((item) {
                         return GroceryItemTile(
                           name: item.name,
-                          quantity: '${item.quantity} ${item.unit}'.trim(),
+                          quantity: item.unit.isNotEmpty
+                              ? '${item.quantity == item.quantity.roundToDouble() ? item.quantity.toInt() : item.quantity} ${item.unit}'
+                              : '',
                           isChecked: item.checked,
                           onChanged: (value) {
                             provider.toggleItem(item.name);
@@ -191,7 +210,9 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
                       ...checkedItems.map((item) {
                         return GroceryItemTile(
                           name: item.name,
-                          quantity: '${item.quantity} ${item.unit}'.trim(),
+                          quantity: item.unit.isNotEmpty
+                              ? '${item.quantity == item.quantity.roundToDouble() ? item.quantity.toInt() : item.quantity} ${item.unit}'
+                              : '',
                           isChecked: item.checked,
                           onChanged: (value) {
                             provider.toggleItem(item.name);
@@ -209,17 +230,6 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Voice add item
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Voice input coming soon!')),
-          );
-        },
-        icon: const Icon(Icons.mic),
-        label: const Text('Add by Voice'),
-      ),
-      bottomNavigationBar: const SmartChefBottomNav(currentIndex: 0),
     );
   }
 }

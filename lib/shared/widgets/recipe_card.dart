@@ -110,7 +110,7 @@ class RecipeCard extends StatelessWidget {
                 left: 0,
                 right: 0,
                 child: Padding(
-                  padding: AppSpacing.paddingMd,
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -118,44 +118,39 @@ class RecipeCard extends StatelessWidget {
                       // Title
                       Text(
                         title,
-                        style: textTheme.titleMedium?.copyWith(
+                        style: textTheme.titleSmall?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const Gap.sm(),
-                      // Meta info - Fixed overflow by making it wrap properly
+                      const SizedBox(height: 2),
+                      // Meta info row
                       Row(
                         children: [
+                          _MetaChip(
+                            icon: Icons.schedule,
+                            label: cookTime,
+                          ),
+                          const SizedBox(width: 6),
                           Flexible(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _MetaChip(
-                                  icon: Icons.schedule,
-                                  label: cookTime,
-                                ),
-                                const HGap.sm(),
-                                _MetaChip(
-                                  icon: Icons.signal_cellular_alt,
-                                  label: difficulty,
-                                ),
-                              ],
+                            child: _MetaChip(
+                              icon: Icons.signal_cellular_alt,
+                              label: difficulty,
                             ),
                           ),
                           if (rating != null) ...[
-                            const HGap.sm(),
+                            const SizedBox(width: 6),
                             Icon(
                               Icons.star_rounded,
-                              size: 16,
+                              size: 14,
                               color: AppColors.accentYellow,
                             ),
-                            const HGap.xxs(),
+                            const SizedBox(width: 2),
                             Text(
                               rating!.toStringAsFixed(1),
-                              style: textTheme.labelMedium?.copyWith(
+                              style: textTheme.labelSmall?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -226,12 +221,16 @@ class _MetaChip extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 14, color: Colors.white70),
-        const HGap.xxs(),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Colors.white70,
-              ),
+        const SizedBox(width: 2),
+        Flexible(
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.white70,
+                ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ),
       ],
     );

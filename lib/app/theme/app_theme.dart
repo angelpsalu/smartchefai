@@ -243,8 +243,13 @@ class AppTheme {
       shape: RoundedRectangleBorder(
         borderRadius: AppSpacing.borderRadiusMd,
       ),
-      titleTextStyle: AppTypography.textTheme.bodyLarge,
-      subtitleTextStyle: AppTypography.textTheme.bodyMedium,
+      textColor: AppColors.lightColorScheme.onSurface,
+      titleTextStyle: AppTypography.textTheme.bodyLarge?.copyWith(
+        color: AppColors.lightColorScheme.onSurface,
+      ),
+      subtitleTextStyle: AppTypography.textTheme.bodyMedium?.copyWith(
+        color: AppColors.lightColorScheme.onSurfaceVariant,
+      ),
     ),
     
     // Tab Bar Theme
@@ -349,7 +354,59 @@ class AppTheme {
         textStyle: AppTypography.textTheme.labelLarge,
       ),
     ),
-    
+
+    // Outlined Button Theme
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        minimumSize: const Size(88, AppSpacing.buttonHeightMd),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppSpacing.borderRadiusMd,
+        ),
+        textStyle: AppTypography.textTheme.labelLarge,
+      ),
+    ),
+
+    // Text Button Theme
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppSpacing.borderRadiusMd,
+        ),
+        textStyle: AppTypography.textTheme.labelLarge,
+      ),
+    ),
+
+    // Floating Action Button Theme
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      elevation: 2,
+      highlightElevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppSpacing.borderRadiusLg,
+      ),
+    ),
+
+    // Chip Theme
+    chipTheme: ChipThemeData(
+      elevation: 0,
+      pressElevation: 2,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppSpacing.borderRadiusSm,
+      ),
+      labelStyle: AppTypography.textTheme.labelMedium,
+    ),
+
     // Input Decoration Theme
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -442,6 +499,21 @@ class AppTheme {
     dividerTheme: DividerThemeData(
       thickness: 1,
       color: AppColors.darkColorScheme.outlineVariant,
+    ),
+
+    // List Tile Theme
+    listTileTheme: ListTileThemeData(
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppSpacing.borderRadiusMd,
+      ),
+      textColor: AppColors.darkColorScheme.onSurface,
+      titleTextStyle: AppTypography.textTheme.bodyLarge?.copyWith(
+        color: AppColors.darkColorScheme.onSurface,
+      ),
+      subtitleTextStyle: AppTypography.textTheme.bodyMedium?.copyWith(
+        color: AppColors.darkColorScheme.onSurfaceVariant,
+      ),
     ),
   );
 }

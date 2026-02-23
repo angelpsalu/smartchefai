@@ -3,3 +3,5 @@
 library;
 
 export 'firebase_providers.dart';
+export 'meal_plan_provider.dart';
+export 'nutrition_provider.dart';

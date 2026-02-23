@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../app/constants.dart';
 import '../../app/theme/theme.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 import '../../models/models.dart';
+import '../../services/firebase_service.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   final Recipe recipe;
@@ -40,15 +43,15 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
     final recipe = widget.recipe;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
           // Hero Image
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
             backgroundColor: colorScheme.surface,
             leading: IconButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => context.pop(),
               icon: Container(
                 padding: AppSpacing.paddingSm,
                 decoration: BoxDecoration(
@@ -61,9 +64,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
             actions: [
               IconButton(
                 onPressed: () {
+                  final cuisineInfo = recipe.cuisine.isNotEmpty
+                      ? '${recipe.cuisine} • '
+                      : '';
+                  final totalTime = recipe.prepTime + recipe.cookTime;
                   Share.share(
                     'Check out this recipe: ${recipe.name}\n\n'
-                    'Get it on SmartChef AI!',
+                    '$cuisineInfo$totalTime min\n\n'
+                    '${AppUrls.recipeShareUrl(recipe.id)}',
                   );
                 },
                 icon: Container(
@@ -75,26 +83,27 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                   child: const Icon(Icons.share, color: Colors.white),
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  context.read<RecipeProvider>().toggleFavorite(recipe.id);
-                },
-                icon: Container(
-                  padding: AppSpacing.paddingSm,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    context.watch<RecipeProvider>().isFavorite(recipe.id)
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: context.watch<RecipeProvider>().isFavorite(recipe.id)
-                        ? AppColors.primaryOrange
-                        : Colors.white,
+              if (FirebaseService().isSignedIn)
+                IconButton(
+                  onPressed: () {
+                    context.read<RecipeProvider>().toggleFavorite(recipe.id);
+                  },
+                  icon: Container(
+                    padding: AppSpacing.paddingSm,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      context.watch<RecipeProvider>().isFavorite(recipe.id)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: context.watch<RecipeProvider>().isFavorite(recipe.id)
+                          ? AppColors.primaryOrange
+                          : Colors.white,
+                    ),
                   ),
                 ),
-              ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
@@ -217,7 +226,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                         child: _InfoCard(
                           icon: Icons.schedule,
                           label: 'Prep',
-                          value: recipe.prepTime,
+                          value: '${recipe.prepTime} min',
                           color: colorScheme.primary,
                         ),
                       ),
@@ -226,8 +235,17 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                         child: _InfoCard(
                           icon: Icons.local_fire_department,
                           label: 'Cook',
-                          value: recipe.cookTime,
+                          value: '${recipe.cookTime} min',
                           color: AppColors.primaryOrange,
+                        ),
+                      ),
+                      const HGap.md(),
+                      Expanded(
+                        child: _InfoCard(
+                          icon: Icons.timer_outlined,
+                          label: 'Total',
+                          value: '${recipe.prepTime + recipe.cookTime} min',
+                          color: AppColors.accentYellow,
                         ),
                       ),
                       const HGap.md(),
@@ -243,12 +261,32 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
                   ),
 
                   const Gap.lg(),
+
+                  // Start Cooking Button (only for signed-in users)
+                  if (FirebaseService().isSignedIn) ...[
+                    GradientButton(
+                      text: 'Start Cooking',
+                      icon: Icons.play_arrow_rounded,
+                      onPressed: () => _startCooking(context),
+                    ),
+                    const Gap.sm(),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      label: const Text('Add to Meal Plan'),
+                      onPressed: () => _showAddToMealPlanSheet(context),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                    ),
+                  ],
+
+                  const Gap.md(),
                 ],
               ),
             ),
           ),
 
-          // Tab Bar
+          // Pinned Tab Bar
           SliverPersistentHeader(
             pinned: true,
             delegate: _TabBarDelegate(
@@ -263,27 +301,42 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
               colorScheme.surface,
             ),
           ),
-
-          // Tab Content
-          SliverFillRemaining(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _IngredientsTab(
-                  ingredients: recipe.ingredients,
-                  servings: _servings,
-                  onServingsChanged: (value) {
-                    setState(() => _servings = value);
-                  },
-                  onAddToGrocery: () => _addToGroceryList(context, recipe),
-                ),
-                _InstructionsTab(instructions: recipe.instructions),
-                _NutritionTab(nutrition: recipe.nutrition),
-              ],
-            ),
-          ),
         ],
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            _IngredientsTab(
+              ingredients: recipe.ingredients,
+              servings: _servings,
+              onServingsChanged: (value) {
+                setState(() => _servings = value);
+              },
+              onAddToGrocery: FirebaseService().isSignedIn
+                  ? () => _addToGroceryList(context, recipe)
+                  : null,
+            ),
+            _InstructionsTab(instructions: recipe.instructions),
+            _NutritionTab(nutrition: recipe.nutrition),
+          ],
+        ),
       ),
+    );
+  }
+
+  Future<void> _startCooking(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final userProvider = context.read<UserProvider>();
+    final nutritionProvider = context.read<NutritionProvider>();
+    // Run both in parallel for faster response
+    await Future.wait([
+      userProvider.incrementRecipesCooked(),
+      nutritionProvider.logRecipe(widget.recipe),
+    ]);
+    if (!mounted) return;
+    // Switch to instructions tab
+    _tabController.animateTo(1);
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Good luck! Follow the instructions below.')),
     );
   }
 
@@ -311,9 +364,134 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
         ),
         action: SnackBarAction(
           label: 'View',
-          onPressed: () => Navigator.pushNamed(context, '/grocery'),
+          onPressed: () => context.push('/grocery'),
         ),
       ),
+    );
+  }
+
+  Future<void> _showAddToMealPlanSheet(BuildContext context) async {
+    final mealPlanProvider = context.read<MealPlanProvider>();
+    const days = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+    ];
+    const slots = ['breakfast', 'lunch', 'dinner', 'snack'];
+    const slotIcons = {
+      'breakfast': Icons.free_breakfast,
+      'lunch': Icons.lunch_dining,
+      'dinner': Icons.dinner_dining,
+      'snack': Icons.coffee,
+    };
+
+    String? selectedDay;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    selectedDay == null ? 'Choose a Day' : 'Choose Meal Slot · $selectedDay',
+                    style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (selectedDay == null)
+                    ...days.map((day) {
+                      final key = day.toLowerCase();
+                      final daySlots = mealPlanProvider.mealPlan?.days[key] ?? {};
+                      final filledCount = daySlots.values.where((v) => v != null).length;
+                      return ListTile(
+                        leading: Icon(Icons.calendar_today_outlined,
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                        ),
+                        title: Text(day),
+                        subtitle: filledCount > 0
+                            ? Text('$filledCount meal${filledCount > 1 ? 's' : ''} planned')
+                            : null,
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => setSheetState(() => selectedDay = day),
+                      );
+                    })
+                  else
+                    ...slots.map((slot) {
+                      final key = selectedDay!.toLowerCase();
+                      final daySlots = mealPlanProvider.mealPlan?.days[key] ?? {};
+                      final assignedId = daySlots[slot];
+                      final assignedName = assignedId != null
+                          ? (mealPlanProvider.assignedRecipes[assignedId]?.name ?? 'Recipe')
+                          : null;
+                      final label = '${slot[0].toUpperCase()}${slot.substring(1)}';
+                      return ListTile(
+                        leading: Icon(
+                          slotIcons[slot] ?? Icons.restaurant,
+                          color: assignedId != null
+                              ? Theme.of(ctx).colorScheme.primary
+                              : Theme.of(ctx).colorScheme.onSurfaceVariant,
+                        ),
+                        title: Text(label),
+                        subtitle: assignedId != null
+                            ? Text(
+                                'Replace: $assignedName',
+                                style: TextStyle(
+                                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                                ),
+                              )
+                            : null,
+                        onTap: () async {
+                          Navigator.of(sheetCtx).pop();
+                          final messenger = ScaffoldMessenger.of(context);
+                          final router = GoRouter.of(context);
+                          final name = widget.recipe.name;
+                          try {
+                            await mealPlanProvider.assignRecipe(
+                              key, slot, widget.recipe,
+                            );
+                            if (!mounted) return;
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('$name added to $selectedDay · $label'),
+                                action: SnackBarAction(
+                                  label: 'View Planner',
+                                  onPressed: () => router.go('/planner'),
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            if (!mounted) return;
+                            messenger.showSnackBar(
+                              SnackBar(content: Text('Failed to save: $e')),
+                            );
+                          }
+                        },
+                      );
+                    }),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -396,13 +574,13 @@ class _IngredientsTab extends StatelessWidget {
   final List<String> ingredients;
   final int servings;
   final ValueChanged<int> onServingsChanged;
-  final VoidCallback onAddToGrocery;
+  final VoidCallback? onAddToGrocery;
 
   const _IngredientsTab({
     required this.ingredients,
     required this.servings,
     required this.onServingsChanged,
-    required this.onAddToGrocery,
+    this.onAddToGrocery,
   });
 
   @override
@@ -485,12 +663,13 @@ class _IngredientsTab extends StatelessWidget {
 
         const Gap.xl(),
 
-        // Add to Grocery Button
-        GradientButton(
-          text: 'Add to Grocery List',
-          icon: Icons.add_shopping_cart,
-          onPressed: onAddToGrocery,
-        ),
+        // Add to Grocery Button (only for signed-in users)
+        if (onAddToGrocery != null)
+          GradientButton(
+            text: 'Add to Grocery List',
+            icon: Icons.add_shopping_cart,
+            onPressed: onAddToGrocery!,
+          ),
 
         const Gap.lg(),
       ],
@@ -579,60 +758,58 @@ class _NutritionTab extends StatelessWidget {
       );
     }
 
-    return Padding(
+    return ListView(
       padding: AppSpacing.paddingMd,
-      child: Column(
-        children: [
-          const Gap.md(),
-          Row(
-            children: [
-              Expanded(
-                child: NutritionCard(
-                  label: 'Calories',
-                  value: nutrition!.calories.toString(),
-                  unit: 'kcal',
-                  icon: Icons.local_fire_department,
-                  color: AppColors.primaryOrange,
-                ),
+      children: [
+        const Gap.md(),
+        Row(
+          children: [
+            Expanded(
+              child: NutritionCard(
+                label: 'Calories',
+                value: nutrition!.calories.toString(),
+                unit: 'kcal',
+                icon: Icons.local_fire_department,
+                color: AppColors.primaryOrange,
               ),
-              const HGap.md(),
-              Expanded(
-                child: NutritionCard(
-                  label: 'Protein',
-                  value: nutrition!.protein,
-                  unit: 'g',
-                  icon: Icons.fitness_center,
-                  color: AppColors.accentGreen,
-                ),
+            ),
+            const HGap.md(),
+            Expanded(
+              child: NutritionCard(
+                label: 'Protein',
+                value: nutrition!.protein,
+                unit: 'g',
+                icon: Icons.fitness_center,
+                color: AppColors.accentGreen,
               ),
-            ],
-          ),
-          const Gap.md(),
-          Row(
-            children: [
-              Expanded(
-                child: NutritionCard(
-                  label: 'Carbs',
-                  value: nutrition!.carbs,
-                  unit: 'g',
-                  icon: Icons.grain,
-                  color: AppColors.accentYellow,
-                ),
+            ),
+          ],
+        ),
+        const Gap.md(),
+        Row(
+          children: [
+            Expanded(
+              child: NutritionCard(
+                label: 'Carbs',
+                value: nutrition!.carbs,
+                unit: 'g',
+                icon: Icons.grain,
+                color: AppColors.accentYellow,
               ),
-              const HGap.md(),
-              Expanded(
-                child: NutritionCard(
-                  label: 'Fat',
-                  value: nutrition!.fat,
-                  unit: 'g',
-                  icon: Icons.water_drop,
-                  color: Colors.blue,
-                ),
+            ),
+            const HGap.md(),
+            Expanded(
+              child: NutritionCard(
+                label: 'Fat',
+                value: nutrition!.fat,
+                unit: 'g',
+                icon: Icons.water_drop,
+                color: Colors.blue,
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

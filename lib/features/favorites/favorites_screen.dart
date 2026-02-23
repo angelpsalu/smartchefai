@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../app/theme/theme.dart';
+import '../../constants/firestore_constants.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RecipeProvider>().loadRecipes();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +44,7 @@ class FavoritesScreen extends StatelessWidget {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Sort options
-            },
-            icon: const Icon(Icons.sort),
-          ),
-        ],
+        actions: const [],
       ),
       body: Consumer<RecipeProvider>(
         builder: (context, provider, child) {
@@ -48,7 +56,7 @@ class FavoritesScreen extends StatelessWidget {
               title: 'No favorites yet',
               subtitle: 'Start exploring and save recipes you love!',
               actionText: 'Browse Recipes',
-              onAction: () => Navigator.pushNamed(context, '/'),
+              onAction: () => context.go('/'),
             );
           }
 
@@ -56,7 +64,7 @@ class FavoritesScreen extends StatelessWidget {
             padding: AppSpacing.paddingMd,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
+              childAspectRatio: AppLayout.recipeCardAspectRatio,
               crossAxisSpacing: AppSpacing.md,
               mainAxisSpacing: AppSpacing.md,
             ),
@@ -71,11 +79,7 @@ class FavoritesScreen extends StatelessWidget {
                 difficulty: recipe.difficulty,
                 rating: recipe.rating,
                 isFavorite: true,
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  '/recipe/${recipe.id}',
-                  arguments: recipe,
-                ),
+                onTap: () => context.push('/recipe/${recipe.id}', extra: recipe),
                 onFavoriteTap: () {
                   provider.toggleFavorite(recipe.id);
                 },

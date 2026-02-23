@@ -1,521 +1,325 @@
-# SmartChef AI - Project Documentation
+# SmartChef AI - Coding Guide
 
-> **AI-Powered Recipe Recommender with Smart Ingredient Detection**
-> 
-> **Architecture**: Firebase + Flutter | **Version**: 2.0 | **Updated**: 2025
+> **AI-Powered Recipe Recommender**
+> Architecture: Firebase + Flutter | Targets: Android + Web
+> Last updated: 2026-02-23
 
-## 📋 Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [Architecture](#architecture)
-3. [Project Structure](#project-structure)
-4. [Firebase Integration](#firebase-integration)
-5. [Theme System](#theme-system)
-6. [Navigation](#navigation)
-7. [State Management](#state-management)
-8. [Data Layer](#data-layer)
-9. [Features](#features)
-10. [Screens](#screens)
-11. [Widgets](#widgets)
-12. [Models](#models)
-13. [Best Practices](#best-practices)
-14. [Quick Start](#quick-start)
-15. [Future Enhancements](#future-enhancements)
+For deep technical details see [`ARCHITECTURE.md`](ARCHITECTURE.md).
+For feature planning see [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
-## 🎯 Project Overview
+## Running the App
 
-SmartChef AI is a personalized recipe recommendation application that uses AI-powered features to help users discover, plan, and cook meals. The app supports:
+```bash
+# Scan feature requires VISION_API_KEY — always run with:
+flutter run --dart-define-from-file=dart_defines/dev.json
 
-- **Text Search**: Traditional recipe search by name, ingredient, or cuisine
-- **Voice Input**: Hands-free recipe search using speech recognition
-- **Camera Scan**: AI-powered ingredient detection from photos
-- **Smart Recommendations**: Personalized suggestions based on preferences
-- **Grocery Management**: Auto-generate shopping lists from recipes
-- **Nutrition Tracking**: Calorie and macro information for recipes
+# VS Code: press F5 — .vscode/launch.json passes the flag automatically
+```
 
-### Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| Framework | Flutter 3.x (Dart) |
-| Backend | **Firebase** (Firestore, Auth, Storage) |
-| State Management | Provider + ChangeNotifier |
-| Navigation | GoRouter with ShellRoute |
-| Recipe API | TheMealDB (Free, backup source) |
-| Local Storage | SharedPreferences |
-| Voice Input | speech_to_text (On-device) |
-| Image Handling | image_picker + cached_network_image |
-| Animations | flutter_animate |
-| HTTP Client | Dio |
+Setup: copy `dart_defines/dev.json.example` → `dart_defines/dev.json`, paste your Vision API key.
+Requires Cloud Vision API enabled + billing linked on GCP project `smartchefai-344c5` (1,000 calls/month free).
 
 ---
 
-## 🏗 Architecture
-
-### Firebase-First Architecture
+## Project Structure
 
 ```
-┌─────────────────────────────────────┐
-│          Presentation Layer         │
-│  (Screens, Widgets, Providers)      │
-├─────────────────────────────────────┤
-│           Domain Layer              │
-│   (Models with copyWith methods)    │
-├─────────────────────────────────────┤
-│            Data Layer               │
-│   (FirebaseService - Singleton)     │
-│   - Firestore (Recipes, Users)      │
-│   - Firebase Auth (Authentication)  │
-│   - TheMealDB API (Recipe Fallback) │
-│   - Local Cache (Offline-first)     │
-└─────────────────────────────────────┘
-```
-
-### Key Design Principles
-
-1. **Serverless Architecture**: No backend server needed - Firebase handles everything
-2. **Offline-First**: Local cache with SharedPreferences + Firestore persistence
-3. **Immutable Models**: All models have `copyWith` methods for safe state updates
-4. **Singleton Service**: FirebaseService as single source of truth
-5. **Fallback Strategy**: TheMealDB API as backup when Firestore is empty
-
----
-
-## 📁 Project Structure
-
-```
+dart_defines/
+├── dev.json              # gitignored — add VISION_API_KEY here (copy from .example)
+└── dev.json.example      # committed template for new devs
+functions/                # Cloud Function TypeScript — NOT deployed (Spark plan); kept for Blaze upgrade
 lib/
-├── main.dart                    # App entry + Firebase init
-├── firebase_options.dart        # Firebase configuration
+├── main.dart                     # App entry, Firebase init, MultiProvider
+├── firebase_options.dart         # Firebase config (Android + Web real, iOS placeholder)
 ├── app/
-│   ├── routes.dart              # GoRouter with ShellRoute
+│   ├── constants.dart            # PrefKeys, AppUrls, AppMeta — centralized strings
+│   ├── routes.dart               # GoRouter with ShellRoute + auth redirect
 │   └── theme/
-│       ├── theme.dart           # Barrel export
-│       ├── app_colors.dart      # Color system
-│       ├── app_typography.dart  # Text styles
-│       ├── app_spacing.dart     # Spacing constants
-│       └── app_theme.dart       # ThemeData config
-├── features/
-│   ├── home/
-│   │   └── home_screen.dart
-│   ├── search/
-│   │   └── search_screen.dart
-│   ├── recipe_detail/
-│   │   └── recipe_detail_screen.dart
-│   ├── favorites/
-│   │   └── favorites_screen.dart
-│   ├── grocery/
-│   │   └── grocery_list_screen.dart
-│   ├── profile/
-│   │   └── profile_screen.dart
-│   ├── scan/
-│   │   └── scan_screen.dart
-│   └── onboarding/
-│       └── onboarding_screen.dart
-├── shared/
-│   └── widgets/
-│       ├── widgets.dart         # Barrel export
-│       ├── recipe_card.dart     # Recipe cards
-│       ├── common_widgets.dart  # Buttons, search bar
-│       ├── ingredient_nutrition_widgets.dart
-│       └── navigation_widgets.dart
-├── models/
-│   └── models.dart              # Immutable data models
+│       ├── app_colors.dart       # Color constants (AppColors)
+│       ├── app_typography.dart   # Text styles (AppTypography) — Poppins via google_fonts
+│       ├── app_spacing.dart      # Spacing constants (AppSpacing)
+│       └── app_theme.dart        # ThemeData (light + dark)
+├── features/                     # Feature-first screen structure
+│   ├── auth/                     # get_started, login, signup, forgot_password
+│   ├── home/home_screen.dart
+│   ├── search/search_screen.dart
+│   ├── recipe_detail/recipe_detail_screen.dart
+│   ├── favorites/favorites_screen.dart
+│   ├── grocery/grocery_list_screen.dart
+│   ├── profile/profile_screen.dart
+│   ├── scan/scan_screen.dart
+│   ├── planner/planner_screen.dart       # Meal plan + grocery tabs
+│   ├── meal_plan/meal_plan_screen.dart   # Redirects to /planner
+│   ├── onboarding/onboarding_screen.dart
+│   └── dietary_preferences/dietary_preferences_screen.dart
+├── shared/widgets/               # Reusable widgets (widgets.dart barrel export)
+│   ├── nutrition_goals_card.dart  # Daily nutrition progress rings
+│   └── ...
+├── utils/
+│   └── meal_classifier.dart      # Keyword-based recipe → meal slot classification
+├── models/models.dart            # All data models (barrel export)
 ├── providers/
-│   ├── app_providers.dart       # Re-export
-│   └── firebase_providers.dart  # State management
-├── services/
-│   └── firebase_service.dart    # Firebase + API integration
-└── widgets/
-    └── custom_widgets.dart      # Legacy shared widgets
+│   ├── firebase_providers.dart   # RecipeProvider, UserProvider, GroceryListProvider
+│   ├── meal_plan_provider.dart   # MealPlanProvider (multi-slot per day)
+│   ├── nutrition_provider.dart   # NutritionProvider (daily intake tracking)
+│   └── app_providers.dart        # Re-exports all providers
+└── services/
+    └── firebase_service.dart     # Singleton: Firestore + Auth + TheMealDB fallback
 ```
 
 ---
 
-## 🔥 Firebase Integration
+## Coding Rules
 
-### Services (firebase_service.dart)
+### 1. Navigation — Always use GoRouter
 
 ```dart
-class FirebaseService {
-  // Singleton pattern
-  static final FirebaseService _instance = FirebaseService._internal();
-  factory FirebaseService() => _instance;
-  
-  // Firebase instances
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
-  
-  // Features
-  Future<List<Recipe>> getAllRecipes({bool forceRefresh = false});
-  Future<Recipe?> getRecipe(String id);
-  Future<List<Recipe>> searchRecipes(String query);
-  Future<List<Recipe>> searchByIngredients(List<String> ingredients);
-  
-  // User management
-  Future<firebase_auth.UserCredential> signInAnonymously();
-  Future<AppUser?> getUserProfile();
-  Future<void> createUserProfile({...});
-  
-  // Favorites
-  Future<List<String>> getFavoriteIds();
-  Future<void> addFavorite(String recipeId);
-  Future<void> removeFavorite(String recipeId);
-  
-  // Grocery lists
-  Future<String> createGroceryList({...});
-  Future<List<GroceryList>> getGroceryLists();
+// ✅ Navigate (replaces stack)
+context.go('/search');
+
+// ✅ Push detail screen (back button works)
+context.push('/recipe/${recipe.id}', extra: recipe);
+
+// ❌ Never — bypasses ShellRoute and auth guard
+Navigator.pushNamed(context, '/search');
+Navigator.push(context, MaterialPageRoute(...));
+```
+
+### 2. Passing Data to Routes
+
+GoRouter uses `extra:`, not `arguments:`:
+
+```dart
+// ✅ Correct
+context.push('/recipe/${recipe.id}', extra: recipe);
+
+// In the receiving screen:
+final recipe = state.extra as Recipe?;
+
+// ❌ Wrong — extra will be null
+Navigator.pushNamed(context, '/recipe/${id}', arguments: recipe);
+```
+
+### 3. Opacity
+
+```dart
+// ✅ Use withValues() — withOpacity() is deprecated in Flutter 3.x
+Colors.black.withValues(alpha: 0.1)
+
+// ❌ Deprecated
+Colors.black.withOpacity(0.1)
+```
+
+### 4. Widget Constructor
+
+```dart
+// ✅ Modern
+const MyWidget({super.key});
+
+// ❌ Old style
+const MyWidget({Key? key}) : super(key: key);
+```
+
+### 5. BuildContext After Async
+
+```dart
+Future<void> _doSomething() async {
+  await someAsyncOperation();
+  if (!mounted) return;  // ✅ Always check before using context
+  ScaffoldMessenger.of(context).showSnackBar(...);
 }
 ```
 
-### Firestore Collections
-
-```
-firestore/
-├── recipes/
-│   └── {recipeId}
-│       ├── name: string
-│       ├── ingredients: string[]
-│       ├── steps: string[]
-│       ├── cuisine: string
-│       ├── nutrition: map
-│       └── ...
-├── users/
-│   └── {userId}
-│       ├── name: string
-│       ├── email: string
-│       ├── dietary_preferences: string[]
-│       ├── allergies: string[]
-│       ├── favorite_recipes: string[]
-│       └── search_history: map[]
-└── grocery_lists/
-    └── {listId}
-        ├── user_id: string
-        ├── name: string
-        ├── items: map[]
-        └── status: string
-```
-
-### Caching Strategy
+### 6. Immutable State Updates
 
 ```dart
-// Cache with expiration (30 minutes)
-List<Recipe> _cachedRecipes = [];
-DateTime? _cacheTimestamp;
-static const Duration _cacheExpiration = Duration(minutes: 30);
+// ✅ Use copyWith — creates new object, triggers Provider rebuild
+_items[index] = _items[index].copyWith(checked: true);
+notifyListeners();
 
-bool get _isCacheValid {
-  if (_cachedRecipes.isEmpty || _cacheTimestamp == null) return false;
-  return DateTime.now().difference(_cacheTimestamp!) < _cacheExpiration;
+// ❌ Direct mutation — Provider will NOT detect this
+_items[index].checked = true;
+```
+
+### 7. Spacing & Colors
+
+```dart
+// ✅ Use constants
+SizedBox(height: AppSpacing.md)    // 16.0
+color: AppColors.primaryOrange     // Color(0xFFFF6B35)
+
+// ❌ Raw values create inconsistency
+SizedBox(height: 16)
+color: Color(0xFFFF6B35)
+```
+
+### 8. Constants — No Hardcoded Strings
+
+```dart
+// ✅ Use PrefKeys from lib/app/constants.dart
+prefs.getBool(PrefKeys.darkMode)
+prefs.setString(PrefKeys.selectedLanguage, language)
+
+// ✅ Use AppUrls for external links
+_launchUrl(AppUrls.helpAndFaq)
+AppUrls.recipeShareUrl(recipe.id)
+
+// ✅ Use AppMeta for app-level values
+AppMeta.appName        // 'SmartChef AI'
+AppMeta.version        // '1.0.0'
+AppMeta.defaultLanguage
+
+// ❌ Scattered magic strings
+prefs.getBool('dark_mode')
+'https://smartchefai.web.app/help'
+```
+
+### 9. Error Handling in Providers
+
+```dart
+// ✅ Log non-critical errors for debugging
+} catch (e) {
+  debugPrint('Failed to sync favorites: $e');
 }
-```
 
----
-
-## 🎨 Theme System
-
-### Color Palette
-
-```dart
-// Primary Colors
-primaryOrange: Color(0xFFFF6B35)    // Main accent
-primaryOrangeDark: Color(0xFFE55B2B) // Dark variant
-
-// Accent Colors  
-accentGreen: Color(0xFF4CAF50)      // Success, nutrition
-accentYellow: Color(0xFFFFB800)     // Ratings, warnings
-
-// Use withValues() instead of deprecated withOpacity()
-Colors.black.withValues(alpha: 0.1)  // ✅ Correct
-Colors.black.withOpacity(0.1)        // ❌ Deprecated
-```
-
-### Spacing System
-
-```dart
-xxs: 4.0    // Micro spacing
-xs: 8.0     // Small spacing
-sm: 12.0    // Component padding
-md: 16.0    // Section spacing
-lg: 24.0    // Large gaps
-xl: 32.0    // Section dividers
-xxl: 48.0   // Page padding
-xxxl: 64.0  // Hero spacing
-```
-
----
-
-## 🧭 Navigation
-
-### GoRouter with ShellRoute
-
-```dart
-final GoRouter appRouter = GoRouter(
-  routes: [
-    ShellRoute(
-      builder: (context, state, child) => MainShell(child: child),
-      routes: [
-        GoRoute(path: '/', builder: (_, __) => HomeScreen()),
-        GoRoute(path: '/search', builder: (_, __) => SearchScreen()),
-        GoRoute(path: '/favorites', builder: (_, __) => FavoritesScreen()),
-        GoRoute(path: '/grocery', builder: (_, __) => GroceryListScreen()),
-        GoRoute(path: '/profile', builder: (_, __) => ProfileScreen()),
-      ],
-    ),
-    GoRoute(path: '/recipe/:id', builder: (_, state) => RecipeDetailScreen()),
-    GoRoute(path: '/scan', builder: (_, __) => ScanScreen()),
-    GoRoute(path: '/onboarding', builder: (_, __) => OnboardingScreen()),
-  ],
-);
-```
-
-### MainShell with Persistent Navigation
-
-```dart
-class MainShell extends StatelessWidget {
-  final Widget child;
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: SmartChefBottomNav(
-        currentIndex: _calculateIndex(context),
-        onTap: (index) => _navigateTo(context, index),
-      ),
-    );
-  }
+// ❌ Swallowed errors make debugging impossible
+} catch (e) {
+  // Continue
 }
 ```
 
 ---
 
-## 📊 State Management
+## State Management
 
-### Provider Structure
+Five providers. All extend `ChangeNotifier`. Registered in `main.dart`.
 
-#### RecipeProvider
-- Manages recipes list and favorites
-- Local + Firebase sync for favorites
-- Cache management
-
-```dart
-class RecipeProvider extends ChangeNotifier {
-  List<Recipe> _recipes = [];
-  Set<String> _favoriteIds = {};
-  
-  Future<void> loadRecipes() async {
-    _recipes = await _firebaseService.getAllRecipes();
-    notifyListeners();
-  }
-  
-  void toggleFavorite(String recipeId) {
-    // Local update first, then sync to Firebase
-    if (_favoriteIds.contains(recipeId)) {
-      _favoriteIds.remove(recipeId);
-    } else {
-      _favoriteIds.add(recipeId);
-    }
-    notifyListeners();
-    _syncToFirebase(recipeId);
-  }
-}
-```
-
-#### UserProvider
-- Authentication state
-- User profile management
-- Theme preferences
-
-#### GroceryListProvider
-- Local grocery items
-- Firebase grocery lists sync
-- Item toggle with immutable pattern
-
----
-
-## 📦 Models
-
-### Immutable Pattern
-
-All models use `const` constructors and `copyWith` methods:
+| Provider | What it owns |
+|----------|-------------|
+| `RecipeProvider` | `_recipes`, `_favoriteIds`, loading/error state, search results |
+| `UserProvider` | Auth state, `AppUser` profile, theme mode, recent searches |
+| `GroceryListProvider` | Grocery items, local + Firebase sync |
+| `MealPlanProvider` | Multi-slot meal plans (4 slots/day), grocery generation |
+| `NutritionProvider` | Daily intake tracking, nutrition goals |
 
 ```dart
-class Recipe {
-  final String id;
-  final String name;
-  final List<String> ingredients;
-  // ...
-  
-  const Recipe({
-    required this.id,
-    required this.name,
-    required this.ingredients,
-    // ...
-  });
-  
-  Recipe copyWith({
-    String? id,
-    String? name,
-    List<String>? ingredients,
-    // ...
-  }) {
-    return Recipe(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      ingredients: ingredients ?? this.ingredients,
-      // ...
-    );
-  }
-}
-```
+// Reading without subscribing
+context.read<RecipeProvider>().loadRecipes();
 
-### Available Models
+// Reading + subscribing to changes
+final recipes = context.watch<RecipeProvider>().recipes;
 
-| Model | Description |
-|-------|-------------|
-| Recipe | Recipe with ingredients, steps, nutrition |
-| Nutrition | Calorie and macro information |
-| User | User profile for compatibility |
-| AppUser | Firebase user with Firestore data |
-| GroceryList | List with items and categories |
-| GroceryItem | Individual grocery item (immutable) |
-| DetectedIngredient | AI detection result |
-| BoundingBox | Image detection coordinates |
-
----
-
-## ✅ Best Practices
-
-### Flutter Best Practices Used
-
-1. **super.key parameter**
-   ```dart
-   // ✅ Correct
-   const MyWidget({super.key});
-   
-   // ❌ Old way
-   const MyWidget({Key? key}) : super(key: key);
-   ```
-
-2. **BuildContext async safety**
-   ```dart
-   Future<void> _doSomething() async {
-     await someAsyncOperation();
-     if (!mounted) return;  // ✅ Check before using context
-     ScaffoldMessenger.of(context).showSnackBar(...);
-   }
-   ```
-
-3. **Immutable state updates**
-   ```dart
-   // ✅ Using copyWith
-   _items[index] = _items[index].copyWith(checked: !_items[index].checked);
-   
-   // ❌ Direct mutation
-   _items[index].checked = !_items[index].checked;
-   ```
-
-4. **Proper error handling**
-   ```dart
-   try {
-     final recipes = await _firebaseService.getAllRecipes();
-   } catch (e) {
-     debugPrint('Error: $e');
-     // Fallback to cached/local data
-   }
-   ```
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Flutter SDK >= 3.8.1
-- Dart >= 3.0
-- Firebase CLI (`npm install -g firebase-tools`)
-- FlutterFire CLI (`dart pub global activate flutterfire_cli`)
-
-### Firebase Setup
-
-```bash
-# 1. Login to Firebase
-firebase login
-
-# 2. Create project in Firebase Console
-# https://console.firebase.google.com
-
-# 3. Configure FlutterFire
-flutterfire configure --project=YOUR_PROJECT_ID
-
-# 4. Enable services in Firebase Console:
-# - Authentication (Anonymous)
-# - Cloud Firestore
-# - Firebase Storage (optional)
-```
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/yourusername/smartchefai.git
-cd smartchefai
-
-# Install dependencies
-flutter pub get
-
-# Run the app
-flutter run
-```
-
-### Build Commands
-
-```bash
-# Development
-flutter run -d chrome        # Web
-flutter run -d android       # Android
-flutter run -d ios           # iOS
-
-# Release
-flutter build apk --release  # Android APK
-flutter build appbundle      # Android App Bundle
-flutter build ios --release  # iOS
-flutter build web --release  # Web
+// Fine-grained subscription
+final isLoading = context.select<RecipeProvider, bool>((p) => p.isLoading);
 ```
 
 ---
 
-## 🔮 Future Enhancements
+## Meal Planner Architecture
 
-### Phase 2 Features
-- [ ] Real AI ingredient detection with Firebase ML Kit
-- [ ] Email/password authentication
-- [ ] Social login (Google, Apple)
-- [ ] Meal planning calendar
-- [ ] Recipe sharing with deep links
-
-### Phase 3 Features
-- [ ] Community recipes
-- [ ] In-app cooking timer with notifications
-- [ ] Shopping list sharing via cloud
-- [ ] Restaurant recommendations
-- [ ] Barcode scanning for packaged ingredients
+- **MealPlan model**: `days: Map<String, Map<String, String?>>` — day → slot → recipeId
+- **Meal slots**: `breakfast`, `lunch`, `dinner`, `snack` (defined in `MealPlan.mealSlots`)
+- **MealClassifier** (`lib/utils/meal_classifier.dart`): keyword-based classification, `sortedForSlot()` puts suggestions first
+- **Backward compat**: `fromFirestore` migrates legacy `String` (single recipe/day) → dinner slot
+- **Grocery generation**: `MealPlanProvider.generateGroceryItems()` iterates all slots, auto-categorizes ingredients
 
 ---
 
-## 📄 License
+## Firebase
 
-This project is licensed under the MIT License.
+### Service singleton
+
+```dart
+final service = FirebaseService();  // Always the same instance
+```
+
+Key capabilities (see `firebase_service.dart`):
+- `analyzeImage(XFile)` — Vision REST API, food-only allowlist filter, returns `List<DetectedIngredient>`
+- `getAllRecipes()` - cached, falls back to TheMealDB if Firestore empty
+- `searchRecipes(query)`, `searchByIngredients(ingredients)`
+- Email/password auth, Google Sign-In, password reset
+- `getUserProfile()`, `createUserProfile()`
+- `addFavorite()`, `removeFavorite()`, `getFavoriteIds()`
+- `createGroceryList()`, `getGroceryLists()`
+- `addSearchHistory()`, `getSearchHistory()`
+
+### Auth check
+
+```dart
+// Synchronous - safe to call immediately after Firebase.initializeApp()
+FirebaseService().isSignedIn  // bool
+FirebaseService().currentUser  // firebase_auth.User?
+```
+
+### Firebase project
+
+- Project ID: `smartchefai-344c5`
+- Android: configured (`google-services.json` present)
+- Web: configured (`firebase_options.dart`)
+- iOS/macOS/Windows: **NOT configured** (placeholder values only)
+- Firebase plan: **Spark (free)** — `firebase deploy --only functions` will fail; upgrade to Blaze to deploy Cloud Functions
 
 ---
 
-## 👥 Contributors
+## Models
 
-- **SmartChef AI Team**
+Location: `lib/models/models.dart`
+
+| Model | Purpose |
+|-------|---------|
+| `Recipe` | Recipe with ingredients, steps, nutrition, imageUrl. `prepTime`/`cookTime` are `int` (minutes) |
+| `Nutrition` | Calories (int), protein, carbs, fat, fiber (Strings like "25g") |
+| `AppUser` | Firebase user with Firestore profile data |
+| `GroceryList` | List of GroceryItems with Firestore sync |
+| `GroceryItem` | Immutable grocery item with `copyWith`, category field, recipes list |
+| `MealPlan` | Multi-slot daily meal plan (`Map<String, Map<String, String?>>`) |
+| `NutritionGoals` | Daily macro targets (calories, protein, carbs, fat) |
+| `DetectedIngredient` | Scan result with confidence score |
+
+All models: `const` constructor, named params, `copyWith()`, `fromJson()`, `toJson()`.
 
 ---
 
-*Last updated: 2025 | Architecture: Firebase + Flutter*
+## Recipe Loading
+
+Two-phase strategy for instant UX:
+1. **Phase 1**: Load 100 recipes from local JSON (`data/recipes.json`) — instant
+2. **Phase 2**: Try Firestore in background (5s timeout) — merges any cloud additions
+
+Search limit: 50 results. All recipes shown on home page (no clamp).
+
+---
+
+## Adding New Features
+
+1. Create screen in `lib/features/{name}/{name}_screen.dart`
+2. Add route to `lib/app/routes.dart`
+3. If needs state: add methods to existing provider or create new `ChangeNotifier` and register in `main.dart`
+4. If needs new Firestore collection: add CRUD methods to `FirebaseService`, update `firestore.rules`
+5. Add reusable widgets to `lib/shared/widgets/` and export via `widgets.dart`
+6. Add any new string constants to `lib/app/constants.dart`
+
+---
+
+## Dependencies In Use
+
+| Package | Used For |
+|---------|---------|
+| `firebase_core` | Firebase init |
+| `cloud_firestore` | Database |
+| `firebase_auth` | Authentication |
+| `firebase_storage` | Profile photo upload/delete (`users/{uid}/profile.jpg`) |
+| `google_sign_in` | Google OAuth |
+| `provider` | State management |
+| `go_router` | Navigation |
+| `dio` | HTTP client (TheMealDB API + Cloud Vision REST API + retry interceptor) |
+| `http` | HTTP client (secondary) |
+| `shared_preferences` | Onboarding flag, theme setting, offline favorites/grocery cache |
+| `cached_network_image` | Image loading with cache |
+| `image_picker` | Camera + gallery access |
+| `speech_to_text` | Voice search |
+| `share_plus` | Share recipe via system sheet |
+| `google_fonts` | Poppins font (loaded at runtime) |
+| `permission_handler` | Runtime permissions |

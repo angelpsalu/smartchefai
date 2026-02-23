@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Recipes ──────────────────────────────────────────────────────────────
+    // Readable by any authenticated user (including anonymous).
+    // Write access is restricted to server-side admin/seeding only.
+    match /recipes/{recipeId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ── Users ─────────────────────────────────────────────────────────────────
+    // Each user can only read and write their own profile document.
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
+    // ── Grocery Lists ─────────────────────────────────────────────────────────
+    // A grocery list is owned by the user whose uid matches the user_id field.
+    // Authenticated users can create lists (user_id must equal their uid).
+    match /grocery_lists/{listId} {
+      allow read, update, delete: if request.auth != null
+                                  && resource.data.user_id == request.auth.uid;
+      allow create: if request.auth != null
+                    && request.resource.data.user_id == request.auth.uid;
+    }
+
+    // ── Meal Plans ────────────────────────────────────────────────────────────
+    // Each document is keyed by the owner's uid — only that user can access it.
+    match /meal_plans/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Nutrition Goals ───────────────────────────────────────────────────────
+    // Each document is keyed by the owner's uid — only that user can access it.
+    match /nutrition_goals/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ── Default: deny everything else ─────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

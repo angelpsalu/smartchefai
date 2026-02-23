@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../app/theme/theme.dart';
 
@@ -155,6 +156,7 @@ class NutritionCard extends StatelessWidget {
 class GroceryItemTile extends StatelessWidget {
   final String name;
   final String? quantity;
+  final String? subtitle;
   final bool isChecked;
   final ValueChanged<bool?>? onChanged;
   final VoidCallback? onDelete;
@@ -163,6 +165,7 @@ class GroceryItemTile extends StatelessWidget {
     super.key,
     required this.name,
     this.quantity,
+    this.subtitle,
     required this.isChecked,
     this.onChanged,
     this.onDelete,
@@ -202,12 +205,29 @@ class GroceryItemTile extends StatelessWidget {
             color: isChecked ? colorScheme.onSurfaceVariant : null,
           ),
         ),
-        subtitle: quantity != null
-            ? Text(
-                quantity!,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+        subtitle: (quantity != null || subtitle != null)
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (quantity != null && quantity!.isNotEmpty)
+                    Text(
+                      quantity!,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        fontStyle: FontStyle.italic,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
               )
             : null,
         trailing: IconButton(
@@ -264,10 +284,10 @@ class ProfileAvatar extends StatelessWidget {
             ),
             child: imageUrl != null
                 ? ClipOval(
-                    child: Image.network(
-                      imageUrl!,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildInitials(
+                      errorWidget: (_, __, ___) => _buildInitials(
                         colorScheme,
                         textTheme,
                       ),

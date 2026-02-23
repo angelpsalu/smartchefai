@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Git worktrees
+.worktrees/
+
+# Local secrets — never commit these (but do commit *.example templates)
+dart_defines/*.json

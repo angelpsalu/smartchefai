@@ -53,11 +53,11 @@ class SmartChefBottomNav extends StatelessWidget {
                 onTap: () => context.go('/scan'),
               ),
               _NavItem(
-                icon: Icons.favorite_outline,
-                activeIcon: Icons.favorite_rounded,
-                label: 'Favorites',
+                icon: Icons.calendar_month_outlined,
+                activeIcon: Icons.calendar_month_rounded,
+                label: 'Planner',
                 isSelected: currentIndex == 3,
-                onTap: () => context.go('/favorites'),
+                onTap: () => context.go('/planner'),
               ),
               _NavItem(
                 icon: Icons.person_outline,

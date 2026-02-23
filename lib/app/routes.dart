@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'theme/app_colors.dart';
+import 'theme/app_spacing.dart';
 import '../models/models.dart';
 import '../services/firebase_service.dart';
 
@@ -8,11 +11,14 @@ import '../features/home/home_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/recipe_detail/recipe_detail_screen.dart';
 import '../features/favorites/favorites_screen.dart';
+import '../features/planner/planner_screen.dart';
 import '../features/grocery/grocery_list_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/dietary_preferences/dietary_preferences_screen.dart';
+import '../features/meal_plan/meal_plan_screen.dart';
+import '../features/nutrition/nutrition_goals_screen.dart';
 import '../features/auth/get_started_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
@@ -26,7 +32,7 @@ final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(d
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/get-started',
-  debugLogDiagnostics: true,
+  debugLogDiagnostics: kDebugMode,
   redirect: (context, state) {
     final firebaseService = FirebaseService();
     final isSignedIn = firebaseService.isSignedIn;
@@ -36,7 +42,9 @@ final GoRouter appRouter = GoRouter(
         state.uri.path.startsWith('/forgot-password');
 
     // Redirect to get-started if not signed in and not already going to auth screens
-    if (!isSignedIn && !isGoingToAuth) {
+    // Exception: /recipe/:id is publicly accessible for shared links
+    final isPublicRecipe = state.uri.path.startsWith('/recipe/');
+    if (!isSignedIn && !isGoingToAuth && !isPublicRecipe) {
       return '/get-started';
     }
 
@@ -110,12 +118,12 @@ final GoRouter appRouter = GoRouter(
           ),
         ),
         
-        // Favorites
+        // Planner (Meal Plan + Shopping List)
         GoRoute(
-          path: '/favorites',
-          name: 'favorites',
+          path: '/planner',
+          name: 'planner',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: const FavoritesScreen(),
+            child: const PlannerScreen(),
           ),
         ),
         
@@ -145,12 +153,35 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const GroceryListScreen(),
     ),
 
+    GoRoute(
+      path: '/meal-plan',
+      name: 'meal-plan',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const MealPlanScreen(),
+    ),
+
     // Dietary Preferences
     GoRoute(
       path: '/dietary-preferences',
       name: 'dietary-preferences',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const DietaryPreferencesScreen(),
+    ),
+
+    // Favorites (standalone, accessible from profile)
+    GoRoute(
+      path: '/favorites',
+      name: 'favorites',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const FavoritesScreen(),
+    ),
+
+    // Nutrition Goals
+    GoRoute(
+      path: '/nutrition-goals',
+      name: 'nutrition-goals',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const NutritionGoalsScreen(),
     ),
 
     // Recipe Detail
@@ -160,24 +191,13 @@ final GoRouter appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final recipe = state.extra as Recipe?;
-        if (recipe == null) {
-          return const Scaffold(
-            body: Center(
-              child: Text('Recipe not found'),
-            ),
-          );
-        }
-        return RecipeDetailScreen(recipe: recipe);
+        if (recipe != null) return RecipeDetailScreen(recipe: recipe);
+        // Direct web URL load — fetch by ID
+        final id = state.pathParameters['id']!;
+        return _RecipeLoaderWidget(recipeId: id);
       },
     ),
 
-    // Voice Search
-    GoRoute(
-      path: '/voice-search',
-      name: 'voice-search',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const SearchScreen(),
-    ),
   ],
   
   // Error handling
@@ -224,9 +244,20 @@ class ScaffoldWithNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: _buildBottomNavBar(context),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        final location = GoRouterState.of(context).uri.toString();
+        if (location != '/') {
+          context.go('/');
+        }
+        // When already on '/', HomeScreen's own PopScope handles exit logic
+      },
+      child: Scaffold(
+        body: child,
+        bottomNavigationBar: _buildBottomNavBar(context),
+      ),
     );
   }
 
@@ -236,7 +267,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
     int currentIndex = 0;
     if (location.startsWith('/search')) {
       currentIndex = 1;
-    } else if (location.startsWith('/favorites')) {
+    } else if (location.startsWith('/planner')) {
       currentIndex = 3;
     } else if (location.startsWith('/profile')) {
       currentIndex = 4;
@@ -291,11 +322,11 @@ class _BottomNavBar extends StatelessWidget {
                 onTap: () => context.push('/scan'),
               ),
               _NavItem(
-                icon: Icons.favorite_outline,
-                activeIcon: Icons.favorite_rounded,
-                label: 'Favorites',
+                icon: Icons.calendar_month_outlined,
+                activeIcon: Icons.calendar_month_rounded,
+                label: 'Planner',
                 isSelected: currentIndex == 3,
-                onTap: () => context.go('/favorites'),
+                onTap: () => context.go('/planner'),
               ),
               _NavItem(
                 icon: Icons.person_outline,
@@ -342,7 +373,7 @@ class _NavItem extends StatelessWidget {
           color: isSelected
               ? colorScheme.primaryContainer.withValues(alpha: 0.5)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppSpacing.borderRadiusMd,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -390,16 +421,16 @@ class _CenterButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFFF6B35),
-              Color(0xFFE55B2B),
+              AppColors.primaryOrange,
+              AppColors.primaryOrangeDark,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppSpacing.borderRadiusLg,
           boxShadow: [
             BoxShadow(
-              color: Color(0xFFFF6B35).withValues(alpha: 0.3),
+              color: AppColors.primaryOrange.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -420,13 +451,15 @@ class AppRoutes {
   static const String onboarding = 'onboarding';
   static const String home = 'home';
   static const String search = 'search';
+  static const String planner = 'planner';
   static const String favorites = 'favorites';
   static const String grocery = 'grocery';
   static const String profile = 'profile';
   static const String dietaryPreferences = 'dietary-preferences';
   static const String recipeDetail = 'recipe-detail';
   static const String scan = 'scan';
-  static const String voiceSearch = 'voice-search';
+  static const String mealPlan = 'meal-plan';
+  static const String nutritionGoals = 'nutrition-goals';
 }
 
 /// Extension for easy navigation
@@ -441,5 +474,52 @@ extension NavigationExtension on BuildContext {
     } else {
       GoRouter.of(this).go('/search');
     }
+  }
+}
+
+/// Fetches a recipe by ID and renders RecipeDetailScreen.
+/// Used when the app is opened directly from a shared web link (no extra data).
+class _RecipeLoaderWidget extends StatefulWidget {
+  final String recipeId;
+
+  const _RecipeLoaderWidget({required this.recipeId});
+
+  @override
+  State<_RecipeLoaderWidget> createState() => _RecipeLoaderWidgetState();
+}
+
+class _RecipeLoaderWidgetState extends State<_RecipeLoaderWidget> {
+  Recipe? _recipe;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final recipe = await FirebaseService().getRecipe(widget.recipeId);
+    if (!mounted) return;
+    setState(() {
+      _recipe = recipe;
+      _loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_recipe == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text('Recipe not found')),
+      );
+    }
+    return RecipeDetailScreen(recipe: _recipe!);
   }
 }

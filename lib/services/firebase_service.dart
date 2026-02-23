@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:smartchefai/constants/firestore_constants.dart';
 import 'package:smartchefai/models/models.dart';
 
 /// Firebase Service - Direct Firestore integration
@@ -23,10 +26,12 @@ class FirebaseService {
   // Firebase instances
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // TheMealDB API for recipe data (FREE backup source)
   static const String _mealDbBaseUrl = 'https://www.themealdb.com/api/json/v1/1';
+  static const double _minVisionConfidence = 0.65;
   late final Dio _dio;
 
   // Local cache with expiration
@@ -97,6 +102,144 @@ class FirebaseService {
     return DateTime.now().difference(_cacheTimestamp!) < _cacheExpiration;
   }
 
+  // ==================== AI IMAGE ANALYSIS ====================
+
+  // Google Cloud Vision REST API key.
+  // DO NOT hard-code this value. Pass it at build time:
+  //   flutter run --dart-define=VISION_API_KEY=your_key_here
+  //   flutter build apk --dart-define=VISION_API_KEY=your_key_here
+  // Store the key in a local file (e.g. dart_defines/dev.json) that is gitignored.
+  static const String _visionApiKey =
+      String.fromEnvironment('VISION_API_KEY');
+
+  static const String _visionApiBaseUrl =
+      'https://vision.googleapis.com/v1/images:annotate';
+
+  // Allowlist approach: only labels whose lowercase description contains one of
+  // these food-related keywords are kept. Everything else is dropped.
+  static const Set<String> _foodKeywords = {
+    // Generic food categories
+    'food', 'vegetable', 'fruit', 'ingredient', 'produce', 'grocery',
+    'cuisine', 'dish', 'meal', 'recipe', 'cooking', 'spice', 'herb',
+    'meat', 'fish', 'seafood', 'dairy', 'grain', 'nut', 'legume',
+    'staple food', 'whole food', 'superfood', 'natural food',
+    // Vegetables
+    'tomato', 'carrot', 'broccoli', 'onion', 'garlic', 'pepper',
+    'cucumber', 'celery', 'spinach', 'lettuce', 'cabbage', 'cauliflower',
+    'potato', 'corn', 'pea', 'zucchini', 'eggplant', 'asparagus',
+    'kale', 'radish', 'beet', 'mushroom', 'artichoke', 'leek',
+    'scallion', 'shallot', 'fennel', 'pumpkin', 'squash', 'bok choy',
+    'arugula', 'watercress', 'endive', 'chili', 'jalapeño', 'ginger',
+    // Fruits
+    'apple', 'banana', 'orange', 'lemon', 'lime', 'strawberry',
+    'blueberry', 'raspberry', 'grape', 'watermelon', 'mango',
+    'pineapple', 'avocado', 'peach', 'pear', 'cherry', 'plum',
+    'kiwi', 'papaya', 'coconut', 'pomegranate', 'fig', 'apricot',
+    'grapefruit', 'melon', 'berry', 'citrus',
+    // Proteins
+    'chicken', 'beef', 'pork', 'lamb', 'turkey', 'duck', 'salmon',
+    'tuna', 'shrimp', 'crab', 'lobster', 'egg', 'tofu', 'tempeh',
+    'sausage', 'bacon', 'ham', 'poultry', 'prawn',
+    // Dairy
+    'cheese', 'milk', 'butter', 'cream', 'yogurt', 'mozzarella',
+    'cheddar', 'parmesan', 'feta', 'ricotta',
+    // Grains & Starches
+    'rice', 'pasta', 'bread', 'noodle', 'flour', 'oat', 'wheat',
+    'barley', 'quinoa', 'couscous', 'tortilla', 'cereal',
+    // Herbs & Spices
+    'basil', 'oregano', 'cilantro', 'parsley', 'mint', 'thyme',
+    'rosemary', 'sage', 'dill', 'turmeric', 'cumin', 'paprika',
+    'cinnamon', 'coriander', 'cardamom', 'clove', 'nutmeg',
+    // Legumes & Nuts
+    'bean', 'lentil', 'chickpea', 'peanut', 'almond', 'walnut',
+    'cashew', 'pecan', 'hazelnut', 'pistachio',
+    // Condiments & Others
+    'olive', 'oil', 'vinegar', 'sauce', 'soup', 'salad', 'honey',
+    'jam', 'chocolate', 'sugar', 'salt', 'stock', 'broth',
+  };
+
+  /// Analyze an image for food ingredients using Google Cloud Vision.
+  ///
+  /// Returns detected ingredients sorted by confidence descending.
+  /// Throws on network error or invalid API key.
+  Future<List<DetectedIngredient>> analyzeImage(XFile imageFile) async {
+    if (_visionApiKey.isEmpty) {
+      throw Exception(
+        'VISION_API_KEY is not set. '
+        'Run with: flutter run --dart-define-from-file=dart_defines/dev.json',
+      );
+    }
+
+    final bytes = await imageFile.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    final response = await _dio.post<Map<String, dynamic>>(
+      _visionApiBaseUrl,
+      queryParameters: {'key': _visionApiKey},
+      data: {
+        'requests': [
+          {
+            'image': {'content': base64Image},
+            'features': [
+              {'type': 'LABEL_DETECTION', 'maxResults': 20}
+            ],
+          }
+        ]
+      },
+      options: Options(
+        receiveTimeout: const Duration(seconds: 30),
+        // Allow 4xx through so we can parse Google's error message body
+        validateStatus: (status) => status != null && status < 500,
+      ),
+    );
+
+    if (response.data == null) {
+      throw Exception('Empty response from Vision API');
+    }
+
+    // Surface 4xx errors with the actual Google error message
+    if ((response.statusCode ?? 0) >= 400) {
+      final body = response.data!;
+      final errMsg = ((body['error'] as Map?))?['message'] ?? 'HTTP ${response.statusCode}';
+      throw Exception('Vision API error: $errMsg');
+    }
+
+    final responses =
+        response.data!['responses'] as List<dynamic>? ?? [];
+    if (responses.isEmpty) return [];
+
+    final firstResponse = responses.first as Map<String, dynamic>;
+    // Vision API returns an error object in the response when the request fails
+    // (e.g. quota exceeded, invalid image). Surface it instead of returning [].
+    if (firstResponse.containsKey('error')) {
+      final err = firstResponse['error'] as Map<String, dynamic>;
+      throw Exception('Vision API error: ${err['message'] ?? err}');
+    }
+
+    final labels =
+        firstResponse['labelAnnotations'] as List<dynamic>? ?? [];
+
+    return _filterLabels(labels);
+  }
+
+  List<DetectedIngredient> _filterLabels(List<dynamic> labels) {
+    final filtered = labels
+        .map((l) => l as Map<String, dynamic>)
+        .where((l) => (l['score'] as num? ?? 0).toDouble() >= _minVisionConfidence)
+        .where((l) {
+          final desc = (l['description'] as String? ?? '').toLowerCase();
+          return _foodKeywords.any((keyword) => desc.contains(keyword));
+        })
+        .map((l) => DetectedIngredient(
+              name: l['description'] as String? ?? '',
+              confidence: (l['score'] as num).toDouble(),
+              bbox: BoundingBox(x1: 0, y1: 0, x2: 0, y2: 0),
+            ))
+        .toList();
+    filtered.sort((a, b) => b.confidence.compareTo(a.confidence));
+    return filtered;
+  }
+
   // ==================== AUTHENTICATION ====================
 
   /// Get current user
@@ -104,16 +247,6 @@ class FirebaseService {
   
   /// Check if user is signed in
   bool get isSignedIn => _auth.currentUser != null;
-
-  /// Sign in anonymously (for guest users)
-  Future<firebase_auth.UserCredential> signInAnonymously() async {
-    try {
-      return await _auth.signInAnonymously();
-    } catch (e) {
-      debugPrint('Error signing in anonymously: $e');
-      rethrow;
-    }
-  }
 
   /// Sign in with email/password
   Future<firebase_auth.UserCredential> signInWithEmail(String email, String password) async {
@@ -245,6 +378,9 @@ class FirebaseService {
 
   // ==================== RECIPES (Firestore + TheMealDB) ====================
 
+  /// Returns local recipes instantly (no network). Used for Phase 1 of loading.
+  Future<List<Recipe>> getLocalRecipes() => _loadLocalRecipes();
+
   /// Get all recipes from Firestore + TheMealDB
   /// Uses cache-first strategy with expiration
   Future<List<Recipe>> getAllRecipes({int limit = 100, bool forceRefresh = false}) async {
@@ -254,8 +390,9 @@ class FirebaseService {
     }
 
     try {
-      // Try Firestore first
-      final firestoreRecipes = await _getFirestoreRecipes(limit);
+      // Try Firestore first (usually fast if data exists)
+      final firestoreRecipes = await _getFirestoreRecipes(limit)
+          .timeout(const Duration(seconds: 5), onTimeout: () => []);
       
       if (firestoreRecipes.isNotEmpty) {
         _cachedRecipes = firestoreRecipes;
@@ -263,26 +400,18 @@ class FirebaseService {
         return _cachedRecipes;
       }
       
-      // Fallback to TheMealDB + local JSON
+      // Firestore empty — use local JSON (already loaded by caller as Phase 1)
       final localRecipes = await _loadLocalRecipes();
-      final mealDbRecipes = await _fetchMealDbRecipes();
-      
-      _cachedRecipes = [...localRecipes, ...mealDbRecipes];
+      _cachedRecipes = localRecipes;
       _cacheTimestamp = DateTime.now();
-      
-      // Seed Firestore with recipes for future use (non-blocking)
-      if (_cachedRecipes.isNotEmpty) {
-        _seedFirestoreRecipes(_cachedRecipes).catchError((e) {
-          debugPrint('Failed to seed Firestore: $e');
-        });
-      }
-      
       return _cachedRecipes.take(limit).toList();
     } catch (e) {
       // Ultimate fallback to local
       debugPrint('Error loading recipes: $e');
-      _cachedRecipes = await _loadLocalRecipes();
-      _cacheTimestamp = DateTime.now();
+      if (_cachedRecipes.isEmpty) {
+        _cachedRecipes = await _loadLocalRecipes();
+        _cacheTimestamp = DateTime.now();
+      }
       return _cachedRecipes.take(limit).toList();
     }
   }
@@ -291,7 +420,7 @@ class FirebaseService {
   Future<List<Recipe>> _getFirestoreRecipes(int limit) async {
     try {
       final snapshot = await _firestore
-          .collection('recipes')
+          .collection(FirestoreCollections.recipes)
           .limit(limit)
           .get();
       
@@ -305,22 +434,6 @@ class FirebaseService {
     }
   }
 
-  /// Seed Firestore with initial recipes
-  Future<void> _seedFirestoreRecipes(List<Recipe> recipes) async {
-    try {
-      final batch = _firestore.batch();
-      
-      for (final recipe in recipes.take(50)) {
-        final docRef = _firestore.collection('recipes').doc(recipe.id);
-        batch.set(docRef, recipe.toJson(), SetOptions(merge: true));
-      }
-      
-      await batch.commit();
-    } catch (e) {
-      // Silent fail - seeding is optional
-    }
-  }
-
   /// Load recipes from local JSON file
   Future<List<Recipe>> _loadLocalRecipes() async {
     try {
@@ -331,61 +444,6 @@ class FirebaseService {
     } catch (e) {
       return [];
     }
-  }
-
-  /// Fetch recipes from TheMealDB API
-  Future<List<Recipe>> _fetchMealDbRecipes() async {
-    final recipes = <Recipe>[];
-    final categories = ['Chicken', 'Beef', 'Vegetarian', 'Seafood', 'Pasta', 'Dessert'];
-
-    for (final category in categories) {
-      try {
-        final response = await _dio.get(
-          '$_mealDbBaseUrl/filter.php',
-          queryParameters: {'c': category},
-        );
-
-        final meals = response.data['meals'] as List?;
-        if (meals != null) {
-          for (final meal in meals.take(5)) {
-            // Get full recipe details
-            try {
-              final detailResponse = await _dio.get(
-                '$_mealDbBaseUrl/lookup.php',
-                queryParameters: {'i': meal['idMeal']},
-              );
-              final detailMeals = detailResponse.data['meals'] as List?;
-              if (detailMeals != null && detailMeals.isNotEmpty) {
-                recipes.add(_mealDbDetailToRecipe(detailMeals.first));
-              }
-            } catch (e) {
-              recipes.add(_mealDbToRecipe(meal, category));
-            }
-          }
-        }
-      } catch (e) {
-        continue;
-      }
-    }
-
-    return recipes;
-  }
-
-  Recipe _mealDbToRecipe(Map<String, dynamic> meal, String category) {
-    return Recipe(
-      id: meal['idMeal'] ?? '',
-      name: meal['strMeal'] ?? '',
-      ingredients: [],
-      steps: [],
-      prepTime: '15 mins',
-      cookTime: '30 mins',
-      difficulty: 'medium',
-      cuisine: category,
-      dietaryTags: category == 'Vegetarian' ? ['vegetarian'] : [],
-      nutrition: Nutrition(calories: 350, protein: '25g', carbs: '30g', fat: '15g', fiber: '5g'),
-      servings: 4,
-      imageUrl: meal['strMealThumb'] ?? '',
-    );
   }
 
   Recipe _mealDbDetailToRecipe(Map<String, dynamic> meal) {
@@ -409,8 +467,8 @@ class FirebaseService {
       name: meal['strMeal'] ?? '',
       ingredients: ingredients,
       steps: steps,
-      prepTime: '15 mins',
-      cookTime: '30 mins',
+      prepTime: 15,
+      cookTime: 30,
       difficulty: 'medium',
       cuisine: meal['strArea'] ?? 'International',
       dietaryTags: _extractDietaryTags(meal),
@@ -429,6 +487,23 @@ class FirebaseService {
     return tags;
   }
 
+  Recipe _mealDbToRecipe(Map<String, dynamic> meal, String category) {
+    return Recipe(
+      id: meal['idMeal'] ?? '',
+      name: meal['strMeal'] ?? '',
+      ingredients: [],
+      steps: [],
+      prepTime: 15,
+      cookTime: 30,
+      difficulty: 'medium',
+      cuisine: category,
+      dietaryTags: category == 'Vegetarian' ? ['vegetarian'] : [],
+      nutrition: Nutrition(calories: 350, protein: '25g', carbs: '30g', fat: '15g', fiber: '5g'),
+      servings: 4,
+      imageUrl: meal['strMealThumb'] ?? '',
+    );
+  }
+
   /// Get single recipe by ID
   Future<Recipe?> getRecipe(String recipeId) async {
     // Check cache first
@@ -437,7 +512,7 @@ class FirebaseService {
 
     // Try Firestore
     try {
-      final doc = await _firestore.collection('recipes').doc(recipeId).get();
+      final doc = await _firestore.collection(FirestoreCollections.recipes).doc(recipeId).get();
       if (doc.exists) {
         final data = doc.data()!;
         data['id'] = doc.id;
@@ -465,7 +540,7 @@ class FirebaseService {
   }
 
   /// Search recipes
-  Future<List<Recipe>> searchRecipes(String query, {int limit = 15}) async {
+  Future<List<Recipe>> searchRecipes(String query, {int limit = 50}) async {
     final results = <Recipe>[];
 
     // Search TheMealDB
@@ -501,7 +576,7 @@ class FirebaseService {
   }
 
   /// Search recipes by ingredients
-  Future<List<Recipe>> searchByIngredients(List<String> ingredients, {int limit = 15}) async {
+  Future<List<Recipe>> searchByIngredients(List<String> ingredients, {int limit = 50}) async {
     final results = <Recipe>[];
 
     if (ingredients.isNotEmpty) {
@@ -561,13 +636,16 @@ class FirebaseService {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    await _firestore.collection('users').doc(user.uid).set({
+    await _firestore.collection(FirestoreCollections.users).doc(user.uid).set({
       'name': name,
       'email': email,
       'dietary_preferences': dietaryPreferences ?? [],
       'allergies': allergies ?? [],
       'favorite_recipes': [],
       'search_history': [],
+      'recipes_cooked': 0,
+      'current_streak': 0,
+      'last_cooked_date': null,
       'created_at': FieldValue.serverTimestamp(),
       'updated_at': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
@@ -579,7 +657,7 @@ class FirebaseService {
     if (user == null) return null;
 
     try {
-      final doc = await _firestore.collection('users').doc(user.uid).get();
+      final doc = await _firestore.collection(FirestoreCollections.users).doc(user.uid).get();
       if (doc.exists) {
         return AppUser.fromFirestore(doc);
       }
@@ -597,9 +675,83 @@ class FirebaseService {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    await _firestore.collection('users').doc(user.uid).update({
+    await _firestore.collection(FirestoreCollections.users).doc(user.uid).update({
       'dietary_preferences': dietaryPreferences,
       'allergies': allergies,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Increment recipes cooked counter and update streak
+  Future<AppUser?> incrementRecipesCooked() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+
+    final doc = await _firestore.collection(FirestoreCollections.users).doc(user.uid).get();
+    if (!doc.exists) return null;
+
+    final data = doc.data()!;
+    final now = DateTime.now();
+    final lastCooked = (data['last_cooked_date'] as Timestamp?)?.toDate();
+    int currentStreak = (data['current_streak'] as num?)?.toInt() ?? 0;
+
+    // Streak logic: increment if last cooked yesterday or today, reset if gap > 1 day
+    if (lastCooked != null) {
+      final daysSinceLast = now.difference(lastCooked).inDays;
+      if (daysSinceLast <= 1) {
+        // Continue or maintain streak
+        if (daysSinceLast == 1) currentStreak++;
+        // Same day: keep streak as-is
+      } else {
+        currentStreak = 1; // Reset streak
+      }
+    } else {
+      currentStreak = 1; // First time cooking
+    }
+
+    await _firestore.collection(FirestoreCollections.users).doc(user.uid).update({
+      'recipes_cooked': FieldValue.increment(1),
+      'current_streak': currentStreak,
+      'last_cooked_date': Timestamp.fromDate(now),
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+
+    return getUserProfile();
+  }
+
+  /// Upload user profile photo to Firebase Storage and save URL to Firestore.
+  /// Returns the public download URL.
+  Future<String> uploadProfilePhoto(XFile imageFile) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    final bytes = await imageFile.readAsBytes();
+    final ref = _storage.ref().child('users/${user.uid}/profile.jpg');
+    await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
+    final downloadUrl = await ref.getDownloadURL();
+
+    await _firestore.collection(FirestoreCollections.users).doc(user.uid).update({
+      'photo_url': downloadUrl,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+
+    return downloadUrl;
+  }
+
+  /// Remove user profile photo from Firebase Storage and clear the URL in Firestore.
+  Future<void> removeProfilePhoto() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final ref = _storage.ref().child('users/${user.uid}/profile.jpg');
+      await ref.delete();
+    } catch (_) {
+      // File may not exist — ignore
+    }
+
+    await _firestore.collection(FirestoreCollections.users).doc(user.uid).update({
+      'photo_url': null,
       'updated_at': FieldValue.serverTimestamp(),
     });
   }
@@ -612,7 +764,7 @@ class FirebaseService {
     if (user == null) return [];
 
     try {
-      final doc = await _firestore.collection('users').doc(user.uid).get();
+      final doc = await _firestore.collection(FirestoreCollections.users).doc(user.uid).get();
       if (doc.exists) {
         return List<String>.from(doc.data()?['favorite_recipes'] ?? []);
       }
@@ -627,7 +779,7 @@ class FirebaseService {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    await _firestore.collection('users').doc(user.uid).update({
+    await _firestore.collection(FirestoreCollections.users).doc(user.uid).update({
       'favorite_recipes': FieldValue.arrayUnion([recipeId]),
     });
   }
@@ -637,7 +789,7 @@ class FirebaseService {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    await _firestore.collection('users').doc(user.uid).update({
+    await _firestore.collection(FirestoreCollections.users).doc(user.uid).update({
       'favorite_recipes': FieldValue.arrayRemove([recipeId]),
     });
   }
@@ -666,7 +818,7 @@ class FirebaseService {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
-    final docRef = await _firestore.collection('grocery_lists').add({
+    final docRef = await _firestore.collection(FirestoreCollections.groceryLists).add({
       'user_id': user.uid,
       'name': name,
       'items': items.map((e) => e.toJson()).toList(),
@@ -685,7 +837,7 @@ class FirebaseService {
 
     try {
       final snapshot = await _firestore
-          .collection('grocery_lists')
+          .collection(FirestoreCollections.groceryLists)
           .where('user_id', isEqualTo: user.uid)
           .orderBy('created_at', descending: true)
           .get();
@@ -703,7 +855,7 @@ class FirebaseService {
   /// Get single grocery list
   Future<GroceryList?> getGroceryList(String listId) async {
     try {
-      final doc = await _firestore.collection('grocery_lists').doc(listId).get();
+      final doc = await _firestore.collection(FirestoreCollections.groceryLists).doc(listId).get();
       if (doc.exists) {
         final data = doc.data()!;
         data['id'] = doc.id;
@@ -726,12 +878,12 @@ class FirebaseService {
     if (name != null) updates['name'] = name;
     if (items != null) updates['items'] = items.map((e) => e.toJson()).toList();
 
-    await _firestore.collection('grocery_lists').doc(listId).update(updates);
+    await _firestore.collection(FirestoreCollections.groceryLists).doc(listId).update(updates);
   }
 
   /// Delete grocery list
   Future<void> deleteGroceryList(String listId) async {
-    await _firestore.collection('grocery_lists').doc(listId).delete();
+    await _firestore.collection(FirestoreCollections.groceryLists).doc(listId).delete();
   }
 
   /// Toggle grocery item checked status (immutable pattern)
@@ -756,7 +908,7 @@ class FirebaseService {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    await _firestore.collection('users').doc(user.uid).update({
+    await _firestore.collection(FirestoreCollections.users).doc(user.uid).update({
       'search_history': FieldValue.arrayUnion([
         {
           'query': query,
@@ -772,7 +924,7 @@ class FirebaseService {
     if (user == null) return [];
 
     try {
-      final doc = await _firestore.collection('users').doc(user.uid).get();
+      final doc = await _firestore.collection(FirestoreCollections.users).doc(user.uid).get();
       if (doc.exists) {
         return List<Map<String, dynamic>>.from(doc.data()?['search_history'] ?? []);
       }
@@ -782,43 +934,62 @@ class FirebaseService {
     return [];
   }
 
-  // ==================== INGREDIENT DETECTION (Mock) ====================
-  
-  /// Detect ingredients from image
-  /// Note: For MVP, returns mock data. 
-  /// In production, integrate with:
-  /// - Google Cloud Vision API
-  /// - Firebase ML Kit
-  /// - Custom TensorFlow model
-  Future<List<DetectedIngredient>> detectIngredients(List<int> imageBytes) async {
-    // Simulate detection delay
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    // Mock detected ingredients
-    return [
-      DetectedIngredient(
-        name: 'tomato',
-        confidence: 0.95,
-        bbox: BoundingBox(x1: 0.1, y1: 0.1, x2: 0.3, y2: 0.3),
-      ),
-      DetectedIngredient(
-        name: 'onion',
-        confidence: 0.88,
-        bbox: BoundingBox(x1: 0.4, y1: 0.2, x2: 0.6, y2: 0.4),
-      ),
-      DetectedIngredient(
-        name: 'garlic',
-        confidence: 0.82,
-        bbox: BoundingBox(x1: 0.7, y1: 0.3, x2: 0.9, y2: 0.5),
-      ),
-    ];
+  // ==================== MEAL PLAN (Firestore) ====================
+
+  /// Fetch the current user's meal plan. Returns null if none saved yet.
+  Future<MealPlan?> getMealPlan() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    try {
+      final doc = await _firestore.collection(FirestoreCollections.mealPlans).doc(user.uid).get();
+      if (!doc.exists) return null;
+      return MealPlan.fromFirestore(doc.data()!);
+    } catch (e) {
+      debugPrint('getMealPlan error: $e');
+      return null;
+    }
   }
 
-  /// Detect ingredients and find matching recipes
-  Future<List<Recipe>> detectIngredientsAndFindRecipes(List<int> imageBytes) async {
-    final ingredients = await detectIngredients(imageBytes);
-    final ingredientNames = ingredients.map((i) => i.name).toList();
-    return searchByIngredients(ingredientNames);
+  /// Save (overwrite) the user's meal plan to Firestore.
+  Future<void> saveMealPlan(MealPlan plan) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    try {
+      await _firestore
+          .collection(FirestoreCollections.mealPlans)
+          .doc(user.uid)
+          .set(plan.toFirestore());
+    } catch (e) {
+      debugPrint('saveMealPlan error: $e');
+      rethrow;
+    }
+  }
+
+  // ==================== NUTRITION GOALS (Firestore) ====================
+
+  /// Fetch the current user's nutrition goals. Returns null if none saved.
+  Future<NutritionGoals?> getNutritionGoals() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    try {
+      final doc =
+          await _firestore.collection(FirestoreCollections.nutritionGoals).doc(user.uid).get();
+      if (!doc.exists) return null;
+      return NutritionGoals.fromFirestore(doc.data()!);
+    } catch (e) {
+      debugPrint('getNutritionGoals error: $e');
+      return null;
+    }
+  }
+
+  /// Save (overwrite) the user's nutrition goals to Firestore.
+  Future<void> saveNutritionGoals(NutritionGoals goals) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    await _firestore
+        .collection(FirestoreCollections.nutritionGoals)
+        .doc(user.uid)
+        .set(goals.toFirestore());
   }
 
   // ==================== HEALTH CHECK ====================
@@ -826,7 +997,7 @@ class FirebaseService {
   Future<bool> healthCheck() async {
     try {
       // Check Firestore connection
-      await _firestore.collection('_health').doc('check').get();
+      await _firestore.collection(FirestoreCollections.health).doc('check').get();
       return true;
     } catch (e) {
       // Fallback to TheMealDB check
@@ -845,49 +1016,3 @@ class FirebaseService {
   }
 }
 
-/// AppUser model for Firestore
-class AppUser {
-  final String id;
-  final String name;
-  final String email;
-  final List<String> dietaryPreferences;
-  final List<String> allergies;
-  final List<String> favoriteRecipes;
-  final List<Map<String, dynamic>> searchHistory;
-  final DateTime? createdAt;
-
-  AppUser({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.dietaryPreferences,
-    required this.allergies,
-    required this.favoriteRecipes,
-    required this.searchHistory,
-    this.createdAt,
-  });
-
-  factory AppUser.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
-    return AppUser(
-      id: doc.id,
-      name: data['name'] ?? '',
-      email: data['email'] ?? '',
-      dietaryPreferences: List<String>.from(data['dietary_preferences'] ?? []),
-      allergies: List<String>.from(data['allergies'] ?? []),
-      favoriteRecipes: List<String>.from(data['favorite_recipes'] ?? []),
-      searchHistory: List<Map<String, dynamic>>.from(data['search_history'] ?? []),
-      createdAt: (data['created_at'] as Timestamp?)?.toDate(),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'email': email,
-    'dietary_preferences': dietaryPreferences,
-    'allergies': allergies,
-    'favorite_recipes': favoriteRecipes,
-    'search_history': searchHistory,
-  };
-}

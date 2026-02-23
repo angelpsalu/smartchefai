@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/theme.dart';
+import '../../constants/firestore_constants.dart';
+import '../../services/firebase_service.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 
@@ -14,12 +16,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime? _lastBackPress;
+  String? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<RecipeProvider>().loadRecipes();
+      context.read<GroceryListProvider>().syncOnLogin();
+      context.read<MealPlanProvider>().loadMealPlan();
     });
   }
 
@@ -73,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: SmartSearchBar(
                     readOnly: true,
                     onTap: () => context.push('/search'),
-                    onVoiceTap: () => context.push('/voice-search'),
+                    onVoiceTap: () => context.push('/search'),
                     onCameraTap: () => context.push('/scan'),
                     hintText: 'What would you like to cook today?',
                   ),
@@ -82,9 +87,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SliverToBoxAdapter(child: Gap.lg()),
 
+              // Nutrition Goals (only for signed-in users)
+              if (FirebaseService().isSignedIn)
+                const SliverToBoxAdapter(
+                  child: NutritionGoalsCard(),
+                ),
+
+              const SliverToBoxAdapter(child: Gap.lg()),
+
               // Categories
               SliverToBoxAdapter(
                 child: _buildCategoriesSection(context),
+              ),
+
+              const SliverToBoxAdapter(child: Gap.lg()),
+
+              // Meal Plan Banner
+              SliverToBoxAdapter(
+                child: _buildMealPlanCard(context),
               ),
 
               const SliverToBoxAdapter(child: Gap.lg()),
@@ -150,21 +170,22 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           // Notification Bell
           IconButton(
-            onPressed: () {},
-            icon: Badge(
-              smallSize: 8,
-              child: Icon(
-                Icons.notifications_outlined,
-                color: colorScheme.onSurface,
-              ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Notifications coming soon!')),
+              );
+            },
+            icon: Icon(
+              Icons.notifications_outlined,
+              color: colorScheme.onSurface,
             ),
           ),
           // Profile Avatar
           GestureDetector(
             onTap: () => context.push('/profile'),
-            child: const ProfileAvatar(
+            child: ProfileAvatar(
               size: 44,
-              initials: 'SC',
+              initials: _getInitials(context.watch<UserProvider>().currentUser?.name),
             ),
           ),
         ],
@@ -172,11 +193,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
+  String _getGreeting() {    final hour = DateTime.now().hour;
     if (hour < 12) return 'Good morning 👋';
     if (hour < 17) return 'Good afternoon 👋';
     return 'Good evening 👋';
+  }
+
+  String _getInitials(String? name) {
+    if (name == null || name.trim().isEmpty) return '?';
+    final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    final p = parts[0];
+    return p.substring(0, p.length >= 2 ? 2 : 1).toUpperCase();
   }
 
   Widget _buildCategoriesSection(BuildContext context) {
@@ -192,9 +220,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(
-          title: 'Categories',
+        SectionHeader(
+          title: _selectedCategory != null
+              ? 'Showing: $_selectedCategory'
+              : 'Categories',
           icon: Icons.grid_view_rounded,
+          actionText: _selectedCategory != null ? 'Clear' : null,
+          onActionTap: _selectedCategory != null
+              ? () {
+                  setState(() => _selectedCategory = null);
+                  context.read<RecipeProvider>().loadRecipes();
+                }
+              : null,
         ),
         const Gap.md(),
         SizedBox(
@@ -205,11 +242,19 @@ class _HomeScreenState extends State<HomeScreen> {
             itemCount: categories.length,
             separatorBuilder: (_, __) => const HGap.md(),
             itemBuilder: (context, index) {
+              final cat = categories[index];
+              final isSelected = _selectedCategory == cat.name;
               return _CategoryCard(
-                category: categories[index],
+                category: cat,
+                isSelected: isSelected,
                 onTap: () {
-                  context.read<RecipeProvider>().searchRecipes(categories[index].name);
-                  context.push('/search');
+                  if (isSelected) {
+                    setState(() => _selectedCategory = null);
+                    context.read<RecipeProvider>().loadRecipes();
+                  } else {
+                    setState(() => _selectedCategory = cat.name);
+                    context.read<RecipeProvider>().searchRecipes(cat.name);
+                  }
                 },
               );
             },
@@ -276,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
         sliver: SliverGrid(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.75,
+            childAspectRatio: AppLayout.recipeCardAspectRatio,
             crossAxisSpacing: AppSpacing.md,
             mainAxisSpacing: AppSpacing.md,
           ),
@@ -308,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.75,
+          childAspectRatio: AppLayout.recipeCardAspectRatio,
           crossAxisSpacing: AppSpacing.md,
           mainAxisSpacing: AppSpacing.md,
         ),
@@ -329,7 +374,56 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             );
           },
-          childCount: recipes.length.clamp(0, 10),
+          childCount: recipes.length,
+        ),
+      ),
+    );
+  }
+  Widget _buildMealPlanCard(BuildContext context) {
+    final provider = context.watch<MealPlanProvider>();
+    final assignedCount = provider.mealPlan?.days.values
+        .whereType<String>()
+        .length ?? 0;
+
+    return Padding(
+      padding: AppSpacing.paddingHorizontalMd,
+      child: GestureDetector(
+        onTap: () => context.go('/planner'),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            gradient: AppColors.warmGradient,
+            borderRadius: AppSpacing.borderRadiusLg,
+          ),
+          child: Row(
+            children: [
+              const Text('🗓️', style: TextStyle(fontSize: 36)),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Weekly Meal Plan',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      assignedCount == 0
+                          ? 'Plan your meals for the week'
+                          : '$assignedCount of 7 days planned',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -346,10 +440,12 @@ class _CategoryItem {
 class _CategoryCard extends StatelessWidget {
   final _CategoryItem category;
   final VoidCallback onTap;
+  final bool isSelected;
 
   const _CategoryCard({
     required this.category,
     required this.onTap,
+    this.isSelected = false,
   });
 
   @override
@@ -362,10 +458,15 @@ class _CategoryCard extends StatelessWidget {
       child: Container(
         width: 80,
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
+          color: isSelected
+              ? AppColors.primaryOrange.withValues(alpha: 0.15)
+              : colorScheme.surfaceContainerHighest,
           borderRadius: AppSpacing.borderRadiusLg,
           border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            color: isSelected
+                ? AppColors.primaryOrange
+                : colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: isSelected ? 1.5 : 1.0,
           ),
         ),
         child: Column(
@@ -379,7 +480,8 @@ class _CategoryCard extends StatelessWidget {
             Text(
               category.name,
               style: textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? AppColors.primaryOrange : null,
               ),
               textAlign: TextAlign.center,
             ),
