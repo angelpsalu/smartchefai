@@ -6,8 +6,21 @@ import '../../constants/firestore_constants.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RecipeProvider>().loadRecipes();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
