@@ -9,6 +9,7 @@ import '../features/home/home_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/recipe_detail/recipe_detail_screen.dart';
 import '../features/favorites/favorites_screen.dart';
+import '../features/planner/planner_screen.dart';
 import '../features/grocery/grocery_list_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/scan/scan_screen.dart';
@@ -115,12 +116,12 @@ final GoRouter appRouter = GoRouter(
           ),
         ),
         
-        // Favorites
+        // Planner (Meal Plan + Shopping List)
         GoRoute(
-          path: '/favorites',
-          name: 'favorites',
+          path: '/planner',
+          name: 'planner',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: const FavoritesScreen(),
+            child: const PlannerScreen(),
           ),
         ),
         
@@ -162,6 +163,14 @@ final GoRouter appRouter = GoRouter(
       name: 'nutrition-goals',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const NutritionGoalsScreen(),
+    ),
+
+    // Favorites (standalone, accessible from profile via push)
+    GoRoute(
+      path: '/favorites',
+      name: 'favorites',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const FavoritesScreen(),
     ),
 
     // Dietary Preferences
@@ -251,7 +260,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
     int currentIndex = 0;
     if (location.startsWith('/search')) {
       currentIndex = 1;
-    } else if (location.startsWith('/favorites')) {
+    } else if (location.startsWith('/planner')) {
       currentIndex = 3;
     } else if (location.startsWith('/profile')) {
       currentIndex = 4;
@@ -306,11 +315,11 @@ class _BottomNavBar extends StatelessWidget {
                 onTap: () => context.push('/scan'),
               ),
               _NavItem(
-                icon: Icons.favorite_outline,
-                activeIcon: Icons.favorite_rounded,
-                label: 'Favorites',
+                icon: Icons.calendar_month_outlined,
+                activeIcon: Icons.calendar_month_rounded,
+                label: 'Planner',
                 isSelected: currentIndex == 3,
-                onTap: () => context.go('/favorites'),
+                onTap: () => context.go('/planner'),
               ),
               _NavItem(
                 icon: Icons.person_outline,
@@ -435,6 +444,7 @@ class AppRoutes {
   static const String onboarding = 'onboarding';
   static const String home = 'home';
   static const String search = 'search';
+  static const String planner = 'planner';
   static const String favorites = 'favorites';
   static const String grocery = 'grocery';
   static const String profile = 'profile';
