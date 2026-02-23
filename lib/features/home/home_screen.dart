@@ -365,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             );
           },
-          childCount: recipes.length.clamp(0, 20),
+          childCount: recipes.length,
         ),
       ),
     );

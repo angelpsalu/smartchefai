@@ -42,8 +42,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
     final recipe = widget.recipe;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
           // Hero Image
           SliverAppBar(
             expandedHeight: 300,
@@ -285,7 +285,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
             ),
           ),
 
-          // Tab Bar
+          // Pinned Tab Bar
           SliverPersistentHeader(
             pinned: true,
             delegate: _TabBarDelegate(
@@ -300,28 +300,24 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
               colorScheme.surface,
             ),
           ),
-
-          // Tab Content
-          SliverFillRemaining(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _IngredientsTab(
-                  ingredients: recipe.ingredients,
-                  servings: _servings,
-                  onServingsChanged: (value) {
-                    setState(() => _servings = value);
-                  },
-                  onAddToGrocery: FirebaseService().isSignedIn
-                      ? () => _addToGroceryList(context, recipe)
-                      : null,
-                ),
-                _InstructionsTab(instructions: recipe.instructions),
-                _NutritionTab(nutrition: recipe.nutrition),
-              ],
-            ),
-          ),
         ],
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            _IngredientsTab(
+              ingredients: recipe.ingredients,
+              servings: _servings,
+              onServingsChanged: (value) {
+                setState(() => _servings = value);
+              },
+              onAddToGrocery: FirebaseService().isSignedIn
+                  ? () => _addToGroceryList(context, recipe)
+                  : null,
+            ),
+            _InstructionsTab(instructions: recipe.instructions),
+            _NutritionTab(nutrition: recipe.nutrition),
+          ],
+        ),
       ),
     );
   }
@@ -330,11 +326,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
     final messenger = ScaffoldMessenger.of(context);
     final userProvider = context.read<UserProvider>();
     final nutritionProvider = context.read<NutritionProvider>();
-    // Increment counter in Firestore
-    await userProvider.incrementRecipesCooked();
-    if (!mounted) return;
-    // Log nutrition intake
-    await nutritionProvider.logRecipe(widget.recipe);
+    // Run both in parallel for faster response
+    await Future.wait([
+      userProvider.incrementRecipesCooked(),
+      nutritionProvider.logRecipe(widget.recipe),
+    ]);
     if (!mounted) return;
     // Switch to instructions tab
     _tabController.animateTo(1);

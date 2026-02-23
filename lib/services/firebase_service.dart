@@ -540,7 +540,7 @@ class FirebaseService {
   }
 
   /// Search recipes
-  Future<List<Recipe>> searchRecipes(String query, {int limit = 15}) async {
+  Future<List<Recipe>> searchRecipes(String query, {int limit = 50}) async {
     final results = <Recipe>[];
 
     // Search TheMealDB
@@ -576,7 +576,7 @@ class FirebaseService {
   }
 
   /// Search recipes by ingredients
-  Future<List<Recipe>> searchByIngredients(List<String> ingredients, {int limit = 15}) async {
+  Future<List<Recipe>> searchByIngredients(List<String> ingredients, {int limit = 50}) async {
     final results = <Recipe>[];
 
     if (ingredients.isNotEmpty) {
