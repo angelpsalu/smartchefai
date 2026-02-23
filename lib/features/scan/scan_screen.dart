@@ -57,15 +57,18 @@ class _ScanScreenState extends State<ScanScreen> {
         } catch (e) {
           if (!mounted) return;
           setState(() => _isProcessing = false);
+          final msg = e.toString().contains('VISION_API_KEY')
+              ? 'Ingredient scanning is unavailable. Please try again later.'
+              : 'Could not analyse image. Please try a clearer photo.';
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Analysis failed: ${e.toString()}')),
+            SnackBar(content: Text(msg)),
           );
         }
       }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick image: $e')),
+        const SnackBar(content: Text('Could not open camera. Please try again.')),
       );
     }
   }
