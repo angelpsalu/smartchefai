@@ -1012,10 +1012,15 @@ class FirebaseService {
   Future<void> saveMealPlan(MealPlan plan) async {
     final user = _auth.currentUser;
     if (user == null) return;
-    await _firestore
-        .collection(FirestoreCollections.mealPlans)
-        .doc(user.uid)
-        .set(plan.toFirestore());
+    try {
+      await _firestore
+          .collection(FirestoreCollections.mealPlans)
+          .doc(user.uid)
+          .set(plan.toFirestore());
+    } catch (e) {
+      debugPrint('saveMealPlan error: $e');
+      rethrow;
+    }
   }
 
   // ==================== NUTRITION GOALS (Firestore) ====================

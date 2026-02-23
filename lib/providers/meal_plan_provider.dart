@@ -70,7 +70,13 @@ class MealPlanProvider extends ChangeNotifier {
       days: {..._mealPlan!.days, day: recipe.id},
     );
     notifyListeners();
-    await _service.saveMealPlan(_mealPlan!);
+    try {
+      await _service.saveMealPlan(_mealPlan!);
+    } catch (e) {
+      _error = 'Failed to save meal plan: $e';
+      debugPrint('assignRecipe save error: $e');
+      notifyListeners();
+    }
   }
 
   /// Remove the recipe from [day] and persist.
@@ -80,7 +86,13 @@ class MealPlanProvider extends ChangeNotifier {
       days: {..._mealPlan!.days, day: null},
     );
     notifyListeners();
-    await _service.saveMealPlan(_mealPlan!);
+    try {
+      await _service.saveMealPlan(_mealPlan!);
+    } catch (e) {
+      _error = 'Failed to save meal plan: $e';
+      debugPrint('removeRecipe save error: $e');
+      notifyListeners();
+    }
   }
 
   /// Returns grocery items for all assigned recipes (one item per ingredient).
