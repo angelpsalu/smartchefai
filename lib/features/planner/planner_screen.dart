@@ -277,19 +277,13 @@ class _MealPlanTab extends StatelessWidget {
                 ),
               ),
             Expanded(
-              child: plan == null
-                  ? const EmptyState(
-                      icon: Icons.calendar_today_outlined,
-                      title: 'No meal plan yet',
-                      subtitle: 'Tap any day below to add a recipe',
-                    )
-                  : ListView.separated(
+              child: ListView.separated(
                       padding: AppSpacing.paddingMd,
                       itemCount: 7,
                       separatorBuilder: (_, __) => const Gap.sm(),
                       itemBuilder: (context, index) {
                         final day = _dayLabels[index];
-                        final recipeId = plan.days[day.toLowerCase()];
+                        final recipeId = plan?.days[day.toLowerCase()];
                         final hasRecipe = recipeId != null;
                         final recipeName = hasRecipe
                             ? (provider.assignedRecipes[recipeId]?.name ?? recipeId)
