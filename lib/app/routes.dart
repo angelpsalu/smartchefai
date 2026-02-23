@@ -158,21 +158,6 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const MealPlanScreen(),
     ),
 
-    GoRoute(
-      path: '/nutrition-goals',
-      name: 'nutrition-goals',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const NutritionGoalsScreen(),
-    ),
-
-    // Favorites (standalone, accessible from profile via push)
-    GoRoute(
-      path: '/favorites',
-      name: 'favorites',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const FavoritesScreen(),
-    ),
-
     // Dietary Preferences
     GoRoute(
       path: '/dietary-preferences',
