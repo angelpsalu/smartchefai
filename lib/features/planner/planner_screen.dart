@@ -23,7 +23,12 @@ class _PlannerScreenState extends State<PlannerScreen>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MealPlanProvider>().loadMealPlan();
+      // Only load if not yet loaded — avoids overwriting in-memory state
+      // that was just set by assignRecipe() (race condition with ShellRoute rebuild)
+      final mealPlanProv = context.read<MealPlanProvider>();
+      if (!mealPlanProv.hasLoaded && !mealPlanProv.isLoading) {
+        mealPlanProv.loadMealPlan();
+      }
       context.read<GroceryListProvider>().syncOnLogin();
       // Ensure recipes are available for the picker
       if (context.read<RecipeProvider>().recipes.isEmpty) {

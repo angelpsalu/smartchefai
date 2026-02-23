@@ -10,11 +10,13 @@ class MealPlanProvider extends ChangeNotifier {
   // keyed by recipeId — lets the UI render names/thumbnails without extra lookups
   final Map<String, Recipe> _assignedRecipes = {};
   bool _isLoading = false;
+  bool _hasLoaded = false; // true once a successful Firestore load has completed
   String? _error;
 
   MealPlan? get mealPlan => _mealPlan;
   Map<String, Recipe> get assignedRecipes => _assignedRecipes;
   bool get isLoading => _isLoading;
+  bool get hasLoaded => _hasLoaded;
   String? get error => _error;
 
   MealPlanProvider({FirebaseService? service})
@@ -23,14 +25,18 @@ class MealPlanProvider extends ChangeNotifier {
   }
 
   /// Fetch meal plan from Firestore. Initialises an empty plan if none exists.
-  Future<void> loadMealPlan() async {
+  /// Safe to call multiple times — skips if already loaded and not forced.
+  Future<void> loadMealPlan({bool force = false}) async {
     if (_service.currentUser == null) return;
+    // Skip redundant loads unless explicitly forced (e.g., pull-to-refresh)
+    if (_hasLoaded && !force) return;
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
       _mealPlan = await _service.getMealPlan() ??
           MealPlan.empty(_service.currentUser!.uid);
+      _hasLoaded = true;
       // Rebuild _assignedRecipes cache from known recipe IDs
       for (final entry in _mealPlan!.days.entries) {
         final id = entry.value;
@@ -51,12 +57,13 @@ class MealPlanProvider extends ChangeNotifier {
   Future<void> assignRecipe(String day, Recipe recipe) async {
     // If not loaded yet, try to load first; fall back to creating an empty plan
     if (_mealPlan == null) {
-      await loadMealPlan();
+      await loadMealPlan(force: true);
     }
     if (_mealPlan == null) {
       final user = _service.currentUser;
       if (user == null) return;
       _mealPlan = MealPlan.empty(user.uid);
+      _hasLoaded = true;
     }
     _assignedRecipes[recipe.id] = recipe;
     _mealPlan = _mealPlan!.copyWith(
