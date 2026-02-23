@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme/theme.dart';
 import '../../constants/firestore_constants.dart';
+import '../../services/firebase_service.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
 
@@ -83,6 +84,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+
+              const SliverToBoxAdapter(child: Gap.lg()),
+
+              // Nutrition Goals (only for signed-in users)
+              if (FirebaseService().isSignedIn)
+                const SliverToBoxAdapter(
+                  child: NutritionGoalsCard(),
+                ),
 
               const SliverToBoxAdapter(child: Gap.lg()),
 

@@ -374,6 +374,15 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
     const days = [
       'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
     ];
+    const slots = ['breakfast', 'lunch', 'dinner', 'snack'];
+    const slotIcons = {
+      'breakfast': Icons.free_breakfast,
+      'lunch': Icons.lunch_dining,
+      'dinner': Icons.dinner_dining,
+      'snack': Icons.coffee,
+    };
+
+    String? selectedDay;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -382,80 +391,104 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetCtx) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Choose a Day',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...days.map((day) {
-                final key = day.toLowerCase();
-                final assignedId = mealPlanProvider.mealPlan?.days[key];
-                final assignedName = assignedId != null
-                    ? (mealPlanProvider.assignedRecipes[assignedId]?.name ?? 'Recipe')
-                    : null;
-                return ListTile(
-                  leading: Icon(
-                    assignedId != null ? Icons.swap_horiz : Icons.add_circle_outline,
-                    color: assignedId != null
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(ctx).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                  title: Text(day),
-                  subtitle: assignedId != null
-                      ? Text(
-                          assignedName!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        )
-                      : null,
-                  onTap: () async {
-                    Navigator.of(sheetCtx).pop();
-                    final messenger = ScaffoldMessenger.of(context);
-                    final router = GoRouter.of(context);
-                    final name = widget.recipe.name;
-                    try {
-                      await mealPlanProvider.assignRecipe(key, widget.recipe);
-                      if (!mounted) return;
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text('$name added to $day'),
-                          action: SnackBarAction(
-                            label: 'View Planner',
-                            onPressed: () => router.go('/planner'),
-                          ),
+                  const SizedBox(height: 16),
+                  Text(
+                    selectedDay == null ? 'Choose a Day' : 'Choose Meal Slot · $selectedDay',
+                    style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (selectedDay == null)
+                    ...days.map((day) {
+                      final key = day.toLowerCase();
+                      final daySlots = mealPlanProvider.mealPlan?.days[key] ?? {};
+                      final filledCount = daySlots.values.where((v) => v != null).length;
+                      return ListTile(
+                        leading: Icon(Icons.calendar_today_outlined,
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                         ),
+                        title: Text(day),
+                        subtitle: filledCount > 0
+                            ? Text('$filledCount meal${filledCount > 1 ? 's' : ''} planned')
+                            : null,
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => setSheetState(() => selectedDay = day),
                       );
-                    } catch (e) {
-                      if (!mounted) return;
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to save: $e'),
+                    })
+                  else
+                    ...slots.map((slot) {
+                      final key = selectedDay!.toLowerCase();
+                      final daySlots = mealPlanProvider.mealPlan?.days[key] ?? {};
+                      final assignedId = daySlots[slot];
+                      final assignedName = assignedId != null
+                          ? (mealPlanProvider.assignedRecipes[assignedId]?.name ?? 'Recipe')
+                          : null;
+                      final label = '${slot[0].toUpperCase()}${slot.substring(1)}';
+                      return ListTile(
+                        leading: Icon(
+                          slotIcons[slot] ?? Icons.restaurant,
+                          color: assignedId != null
+                              ? Theme.of(ctx).colorScheme.primary
+                              : Theme.of(ctx).colorScheme.onSurfaceVariant,
                         ),
+                        title: Text(label),
+                        subtitle: assignedId != null
+                            ? Text(
+                                'Replace: $assignedName',
+                                style: TextStyle(
+                                  color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                                ),
+                              )
+                            : null,
+                        onTap: () async {
+                          Navigator.of(sheetCtx).pop();
+                          final messenger = ScaffoldMessenger.of(context);
+                          final router = GoRouter.of(context);
+                          final name = widget.recipe.name;
+                          try {
+                            await mealPlanProvider.assignRecipe(
+                              key, slot, widget.recipe,
+                            );
+                            if (!mounted) return;
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('$name added to $selectedDay · $label'),
+                                action: SnackBarAction(
+                                  label: 'View Planner',
+                                  onPressed: () => router.go('/planner'),
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            if (!mounted) return;
+                            messenger.showSnackBar(
+                              SnackBar(content: Text('Failed to save: $e')),
+                            );
+                          }
+                        },
                       );
-                    }
-                  },
-                );
-              }),
-              const SizedBox(height: 8),
-            ],
-          ),
+                    }),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
         );
       },
     );

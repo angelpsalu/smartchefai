@@ -5,6 +5,7 @@ import '../../app/theme/theme.dart';
 import '../../models/models.dart';
 import '../../providers/app_providers.dart';
 import '../../shared/widgets/widgets.dart';
+import '../../utils/meal_classifier.dart';
 
 class PlannerScreen extends StatefulWidget {
   const PlannerScreen({super.key});
@@ -97,9 +98,17 @@ class _MealPlanTab extends StatelessWidget {
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
   ];
 
+  static const Map<String, IconData> _slotIcons = {
+    'breakfast': Icons.free_breakfast,
+    'lunch': Icons.lunch_dining,
+    'dinner': Icons.dinner_dining,
+    'snack': Icons.coffee,
+  };
+
   Future<void> _showRecipePickerSheet(
     BuildContext context,
     String day,
+    String slot,
     MealPlanProvider mealPlanProvider,
   ) async {
     final allRecipes = context.read<RecipeProvider>().recipes;
@@ -113,6 +122,10 @@ class _MealPlanTab extends StatelessWidget {
       return;
     }
 
+    // Sort recipes: suggested for this slot first
+    final sortedRecipes = MealClassifier.sortedForSlot(allRecipes, slot);
+    final suggestedCount = MealClassifier.suggestedCount(allRecipes, slot);
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -124,8 +137,8 @@ class _MealPlanTab extends StatelessWidget {
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
             final filtered = query.isEmpty
-                ? allRecipes
-                : allRecipes
+                ? sortedRecipes
+                : sortedRecipes
                     .where((r) => r.name.toLowerCase().contains(query.toLowerCase()))
                     .toList();
 
@@ -150,7 +163,7 @@ class _MealPlanTab extends StatelessWidget {
                     Padding(
                       padding: AppSpacing.paddingHorizontalMd,
                       child: Text(
-                        'Add recipe to $day',
+                        'Add ${slot[0].toUpperCase()}${slot.substring(1)} · $day',
                         style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -186,41 +199,63 @@ class _MealPlanTab extends StatelessWidget {
                           ? const Center(child: Text('No recipes found'))
                           : ListView.builder(
                               controller: scrollCtrl,
-                              itemCount: filtered.length,
+                              itemCount: filtered.length + (query.isEmpty && suggestedCount > 0 && slot != 'dinner' ? 2 : 0),
                               itemBuilder: (_, i) {
+                                // Section headers for suggested/all
+                                if (query.isEmpty && suggestedCount > 0 && slot != 'dinner') {
+                                  if (i == 0) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.md,
+                                        vertical: AppSpacing.xs,
+                                      ),
+                                      child: Text(
+                                        'Suggested for ${slot[0].toUpperCase()}${slot.substring(1)}',
+                                        style: Theme.of(ctx).textTheme.labelLarge?.copyWith(
+                                          color: AppColors.primaryOrange,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  if (i == suggestedCount + 1) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.md,
+                                        vertical: AppSpacing.xs,
+                                      ),
+                                      child: Text(
+                                        'All Recipes',
+                                        style: Theme.of(ctx).textTheme.labelLarge?.copyWith(
+                                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  final recipeIndex = i <= suggestedCount ? i - 1 : i - 2;
+                                  if (recipeIndex < 0 || recipeIndex >= filtered.length) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  final recipe = filtered[recipeIndex];
+                                  return _RecipePickerTile(
+                                    recipe: recipe,
+                                    onTap: () async {
+                                      Navigator.of(sheetCtx).pop();
+                                      await mealPlanProvider.assignRecipe(
+                                        day.toLowerCase(), slot, recipe,
+                                      );
+                                    },
+                                  );
+                                }
+
                                 final recipe = filtered[i];
-                                return ListTile(
-                                  leading: ClipRRect(
-                                    borderRadius: AppSpacing.borderRadiusSm,
-                                    child: CachedNetworkImage(
-                                      imageUrl: recipe.imageUrl,
-                                      width: 48,
-                                      height: 48,
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => Container(
-                                        width: 48,
-                                        height: 48,
-                                        color: AppColors.primaryOrange
-                                            .withValues(alpha: 0.15),
-                                      ),
-                                      errorWidget: (_, __, ___) => Container(
-                                        width: 48,
-                                        height: 48,
-                                        color: AppColors.primaryOrange
-                                            .withValues(alpha: 0.15),
-                                        child: const Icon(Icons.restaurant),
-                                      ),
-                                    ),
-                                  ),
-                                  title: Text(recipe.name),
-                                  subtitle: Text(
-                                    '${recipe.prepTime + recipe.cookTime} min · ${recipe.difficulty}',
-                                  ),
+                                return _RecipePickerTile(
+                                  recipe: recipe,
                                   onTap: () async {
                                     Navigator.of(sheetCtx).pop();
                                     await mealPlanProvider.assignRecipe(
-                                      day.toLowerCase(),
-                                      recipe,
+                                      day.toLowerCase(), slot, recipe,
                                     );
                                   },
                                 );
@@ -264,8 +299,10 @@ class _MealPlanTab extends StatelessWidget {
         }
 
         final plan = provider.mealPlan;
-        final plannedIds = plan?.days.values.whereType<String>().toList() ?? [];
-        final hasPlanned = plannedIds.isNotEmpty;
+        // Check if any slot across any day has a recipe
+        final hasPlanned = plan?.days.values.any(
+          (slots) => slots.values.any((id) => id != null),
+        ) ?? false;
 
         return Column(
           children: [
@@ -293,73 +330,206 @@ class _MealPlanTab extends StatelessWidget {
                 ),
               ),
             Expanded(
-              child: ListView.separated(
-                      padding: AppSpacing.paddingMd,
-                      itemCount: 7,
-                      separatorBuilder: (_, __) => const Gap.sm(),
-                      itemBuilder: (context, index) {
-                        final day = _dayLabels[index];
-                        final recipeId = plan?.days[day.toLowerCase()];
-                        final hasRecipe = recipeId != null;
-                        final recipeName = hasRecipe
-                            ? (provider.assignedRecipes[recipeId]?.name ?? recipeId)
-                            : null;
+              child: ListView.builder(
+                padding: AppSpacing.paddingMd,
+                itemCount: 7,
+                itemBuilder: (context, index) {
+                  final day = _dayLabels[index];
+                  final dayKey = day.toLowerCase();
+                  final daySlots = plan?.days[dayKey] ?? {};
+                  final filledSlots = daySlots.values.where((v) => v != null).length;
 
-                        return Card(
-                          child: ListTile(
-                            onTap: () => _showRecipePickerSheet(
-                              context,
-                              day,
-                              provider,
-                            ),
-                            leading: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: hasRecipe
-                                    ? AppColors.primaryOrange
-                                        .withValues(alpha: 0.15)
-                                    : colorScheme.surfaceContainerHighest,
-                                borderRadius: AppSpacing.borderRadiusMd,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  day.substring(0, 3),
-                                  style: textTheme.labelMedium?.copyWith(
-                                    color: hasRecipe
-                                        ? AppColors.primaryOrange
-                                        : colorScheme.onSurfaceVariant,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              hasRecipe ? recipeName! : 'Tap to add a recipe',
-                              style: textTheme.bodyMedium?.copyWith(
-                                color: hasRecipe
-                                    ? colorScheme.onSurface
-                                    : colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            trailing: hasRecipe
-                                ? IconButton(
-                                    icon: const Icon(Icons.close, size: 18),
-                                    onPressed: () =>
-                                        provider.removeRecipe(day.toLowerCase()),
-                                  )
-                                : Icon(
-                                    Icons.add_circle_outline,
-                                    color: colorScheme.primary,
-                                  ),
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        dividerColor: Colors.transparent,
+                      ),
+                      child: ExpansionTile(
+                        leading: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: filledSlots > 0
+                                ? AppColors.primaryOrange.withValues(alpha: 0.15)
+                                : colorScheme.surfaceContainerHighest,
+                            borderRadius: AppSpacing.borderRadiusMd,
                           ),
-                        );
-                      },
+                          child: Center(
+                            child: Text(
+                              day.substring(0, 3),
+                              style: textTheme.labelLarge?.copyWith(
+                                color: filledSlots > 0
+                                    ? AppColors.primaryOrange
+                                    : colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          day,
+                          style: textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          filledSlots > 0
+                              ? '$filledSlots meal${filledSlots > 1 ? 's' : ''} planned'
+                              : 'No meals planned',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        children: [
+                          for (final slot in MealPlan.mealSlots)
+                            _MealSlotTile(
+                              slot: slot,
+                              icon: _slotIcons[slot] ?? Icons.restaurant,
+                              recipeId: daySlots[slot],
+                              recipeName: daySlots[slot] != null
+                                  ? provider.assignedRecipes[daySlots[slot]]?.name
+                                  : null,
+                              recipeImage: daySlots[slot] != null
+                                  ? provider.assignedRecipes[daySlots[slot]]?.imageUrl
+                                  : null,
+                              onAdd: () => _showRecipePickerSheet(
+                                context, day, slot, provider,
+                              ),
+                              onRemove: daySlots[slot] != null
+                                  ? () => provider.removeRecipe(dayKey, slot)
+                                  : null,
+                            ),
+                        ],
+                      ),
                     ),
+                  );
+                },
+              ),
             ),
           ],
         );
       },
+    );
+  }
+}
+
+class _MealSlotTile extends StatelessWidget {
+  final String slot;
+  final IconData icon;
+  final String? recipeId;
+  final String? recipeName;
+  final String? recipeImage;
+  final VoidCallback onAdd;
+  final VoidCallback? onRemove;
+
+  const _MealSlotTile({
+    required this.slot,
+    required this.icon,
+    this.recipeId,
+    this.recipeName,
+    this.recipeImage,
+    required this.onAdd,
+    this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final hasRecipe = recipeId != null;
+    final label = '${slot[0].toUpperCase()}${slot.substring(1)}';
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 2,
+      ),
+      leading: hasRecipe && recipeImage != null
+          ? ClipRRect(
+              borderRadius: AppSpacing.borderRadiusSm,
+              child: CachedNetworkImage(
+                imageUrl: recipeImage!,
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => Container(
+                  width: 40,
+                  height: 40,
+                  color: AppColors.primaryOrange.withValues(alpha: 0.15),
+                  child: Icon(icon, size: 20),
+                ),
+              ),
+            )
+          : Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: AppSpacing.borderRadiusSm,
+              ),
+              child: Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
+            ),
+      title: Text(
+        hasRecipe ? recipeName ?? recipeId! : label,
+        style: textTheme.bodyMedium?.copyWith(
+          color: hasRecipe ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+          fontWeight: hasRecipe ? FontWeight.w500 : FontWeight.w400,
+        ),
+      ),
+      subtitle: hasRecipe
+          ? null
+          : Text(
+              'Tap to add $label',
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
+            ),
+      trailing: hasRecipe
+          ? IconButton(
+              icon: const Icon(Icons.close, size: 18),
+              onPressed: onRemove,
+            )
+          : Icon(Icons.add_circle_outline, color: colorScheme.primary, size: 20),
+      onTap: onAdd,
+    );
+  }
+}
+
+class _RecipePickerTile extends StatelessWidget {
+  final Recipe recipe;
+  final VoidCallback onTap;
+
+  const _RecipePickerTile({required this.recipe, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: ClipRRect(
+        borderRadius: AppSpacing.borderRadiusSm,
+        child: CachedNetworkImage(
+          imageUrl: recipe.imageUrl,
+          width: 48,
+          height: 48,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(
+            width: 48,
+            height: 48,
+            color: AppColors.primaryOrange.withValues(alpha: 0.15),
+          ),
+          errorWidget: (_, __, ___) => Container(
+            width: 48,
+            height: 48,
+            color: AppColors.primaryOrange.withValues(alpha: 0.15),
+            child: const Icon(Icons.restaurant),
+          ),
+        ),
+      ),
+      title: Text(recipe.name),
+      subtitle: Text(
+        '${recipe.prepTime + recipe.cookTime} min · ${recipe.difficulty}',
+      ),
+      onTap: onTap,
     );
   }
 }
@@ -383,7 +553,7 @@ class _GroceryTabState extends State<_GroceryTab> {
             name: widget.controller.text,
             quantity: 1.0,
             unit: '',
-            category: 'other',
+            category: 'Other',
             checked: false,
             recipes: [],
           ),
@@ -398,6 +568,22 @@ class _GroceryTabState extends State<_GroceryTab> {
         : item.quantity.toStringAsFixed(1);
     return '$qty ${item.unit}';
   }
+
+  static const _categoryOrder = [
+    'Produce', 'Dairy', 'Meat & Seafood', 'Bakery', 'Spices & Herbs', 'Pantry', 'Other', 'meal-plan', 'other',
+  ];
+
+  static const Map<String, IconData> _categoryIcons = {
+    'Produce': Icons.eco,
+    'Dairy': Icons.egg_alt,
+    'Meat & Seafood': Icons.set_meal,
+    'Bakery': Icons.bakery_dining,
+    'Spices & Herbs': Icons.grass,
+    'Pantry': Icons.kitchen,
+    'Other': Icons.shopping_bag,
+    'meal-plan': Icons.calendar_month,
+    'other': Icons.shopping_bag,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -449,7 +635,7 @@ class _GroceryTabState extends State<_GroceryTab> {
           ),
         ),
 
-        // Items List
+        // Items List grouped by category
         Expanded(
           child: Consumer<GroceryListProvider>(
             builder: (context, provider, child) {
@@ -466,25 +652,69 @@ class _GroceryTabState extends State<_GroceryTab> {
               final uncheckedItems = items.where((i) => !i.checked).toList();
               final checkedItems = items.where((i) => i.checked).toList();
 
+              // Group unchecked items by category
+              final grouped = <String, List<GroceryItem>>{};
+              for (final item in uncheckedItems) {
+                final cat = item.category.isEmpty ? 'Other' : item.category;
+                grouped.putIfAbsent(cat, () => []).add(item);
+              }
+
+              // Sort categories
+              final sortedCategories = grouped.keys.toList()
+                ..sort((a, b) {
+                  final ai = _categoryOrder.indexOf(a);
+                  final bi = _categoryOrder.indexOf(b);
+                  return (ai == -1 ? 99 : ai).compareTo(bi == -1 ? 99 : bi);
+                });
+
               return ListView(
                 padding: AppSpacing.paddingMd,
                 children: [
-                  if (uncheckedItems.isNotEmpty) ...[
-                    Text(
-                      'To Buy (${uncheckedItems.length})',
-                      style: textTheme.titleSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                  // Grouped unchecked items
+                  for (final category in sortedCategories) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.sm,
+                        bottom: AppSpacing.xs,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _categoryIcons[category] ?? Icons.shopping_bag,
+                            size: 18,
+                            color: AppColors.primaryOrange,
+                          ),
+                          const HGap.sm(),
+                          Text(
+                            category,
+                            style: textTheme.titleSmall?.copyWith(
+                              color: AppColors.primaryOrange,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const HGap.sm(),
+                          Text(
+                            '(${grouped[category]!.length})',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const Gap.sm(),
-                    ...uncheckedItems.map((item) => GroceryItemTile(
+                    ...grouped[category]!.map((item) => GroceryItemTile(
                           name: item.name,
                           quantity: _formatQuantity(item),
                           isChecked: item.checked,
                           onChanged: (_) => provider.toggleItem(item.name),
                           onDelete: () => provider.removeItem(item.name),
+                          subtitle: item.recipes.isNotEmpty
+                              ? 'From: ${item.recipes.join(", ")}'
+                              : null,
                         )),
                   ],
+
+                  // Completed section
                   if (checkedItems.isNotEmpty) ...[
                     const Gap.lg(),
                     Row(

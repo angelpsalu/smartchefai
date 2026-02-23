@@ -499,13 +499,18 @@ class AppUser {
 /// Meal plan for a single week, stored as one Firestore doc per user
 class MealPlan {
   final String userId;
-  // Keys: 'monday'…'sunday'. Values: recipeId (null = empty slot)
-  final Map<String, String?> days;
+  /// Keys: 'monday'…'sunday'. Values: Map of slot → recipeId
+  /// e.g. {'monday': {'breakfast': 'local-001', 'lunch': null, ...}}
+  final Map<String, Map<String, String?>> days;
   final DateTime weekStart;
   final DateTime updatedAt;
 
   static const List<String> dayNames = [
     'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  ];
+
+  static const List<String> mealSlots = [
+    'breakfast', 'lunch', 'dinner', 'snack',
   ];
 
   const MealPlan({
@@ -517,7 +522,7 @@ class MealPlan {
 
   MealPlan copyWith({
     String? userId,
-    Map<String, String?>? days,
+    Map<String, Map<String, String?>>? days,
     DateTime? weekStart,
     DateTime? updatedAt,
   }) {
@@ -531,11 +536,13 @@ class MealPlan {
 
   factory MealPlan.empty(String userId) {
     final now = DateTime.now();
-    // Find Monday of this week
     final monday = now.subtract(Duration(days: now.weekday - 1));
     return MealPlan(
       userId: userId,
-      days: {for (final d in dayNames) d: null},
+      days: {
+        for (final d in dayNames)
+          d: {for (final s in mealSlots) s: null},
+      },
       weekStart: DateTime(monday.year, monday.month, monday.day),
       updatedAt: now,
     );
@@ -543,11 +550,30 @@ class MealPlan {
 
   factory MealPlan.fromFirestore(Map<String, dynamic> data) {
     final rawDays = data['days'] as Map<String, dynamic>? ?? {};
+    final days = <String, Map<String, String?>>{};
+
+    for (final d in dayNames) {
+      final dayData = rawDays[d];
+      if (dayData is Map) {
+        // New multi-slot format
+        days[d] = {
+          for (final s in mealSlots)
+            s: (dayData[s] as String?),
+        };
+      } else if (dayData is String) {
+        // Legacy single-recipe format → migrate to dinner slot
+        days[d] = {
+          for (final s in mealSlots)
+            s: s == 'dinner' ? dayData : null,
+        };
+      } else {
+        days[d] = {for (final s in mealSlots) s: null};
+      }
+    }
+
     return MealPlan(
       userId: data['user_id'] as String? ?? '',
-      days: {
-        for (final d in dayNames) d: rawDays[d] as String?,
-      },
+      days: days,
       weekStart: (data['week_start'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updated_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -557,7 +583,10 @@ class MealPlan {
     'user_id': userId,
     'days': {
       for (final entry in days.entries)
-        if (entry.value != null) entry.key: entry.value,
+        entry.key: {
+          for (final slot in entry.value.entries)
+            if (slot.value != null) slot.key: slot.value,
+        },
     },
     'week_start': Timestamp.fromDate(weekStart),
     'updated_at': FieldValue.serverTimestamp(),
