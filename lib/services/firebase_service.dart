@@ -85,15 +85,19 @@ class FirebaseService {
            error.type == DioExceptionType.connectionError;
   }
   
-  /// Retry request with exponential backoff
+  /// Retry request with exponential backoff (up to 3 attempts).
   Future<Response> _retryRequest(RequestOptions options, [int retryCount = 0]) async {
     const maxRetries = 3;
     if (retryCount >= maxRetries) {
       throw DioException(requestOptions: options);
     }
-    
+
     await Future.delayed(Duration(milliseconds: 500 * (retryCount + 1)));
-    return _dio.fetch(options);
+    try {
+      return await _dio.fetch(options);
+    } catch (_) {
+      return _retryRequest(options, retryCount + 1);
+    }
   }
   
   /// Check if cache is valid
@@ -575,52 +579,36 @@ class FirebaseService {
     return results.take(limit).toList();
   }
 
-  /// Search recipes by ingredients
-  Future<List<Recipe>> searchByIngredients(List<String> ingredients, {int limit = 50}) async {
-    final results = <Recipe>[];
+  /// Search recipes by ingredients using strict local matching.
+  ///
+  /// Tier 1 (all N ingredients match) appears before Tier 2
+  /// (>= ceil(N/2) ingredients match). Sorted descending by match count.
+  /// Runs offline against [_cachedRecipes] — no API calls.
+  Future<List<({Recipe recipe, int matchCount})>> searchByIngredients(
+    List<String> ingredients,
+  ) async {
+    if (ingredients.isEmpty) return [];
 
-    if (ingredients.isNotEmpty) {
-      try {
-        final response = await _dio.get(
-          '$_mealDbBaseUrl/filter.php',
-          queryParameters: {'i': ingredients.first},
-        );
-
-        final meals = response.data['meals'] as List?;
-        if (meals != null) {
-          for (final meal in meals.take(limit)) {
-            try {
-              final detailResponse = await _dio.get(
-                '$_mealDbBaseUrl/lookup.php',
-                queryParameters: {'i': meal['idMeal']},
-              );
-              final detailMeals = detailResponse.data['meals'] as List?;
-              if (detailMeals != null && detailMeals.isNotEmpty) {
-                results.add(_mealDbDetailToRecipe(detailMeals.first));
-              }
-            } catch (e) {
-              results.add(_mealDbToRecipe(meal, 'Mixed'));
-            }
-          }
-        }
-      } catch (e) {
-        // Continue with cache
-      }
+    // Ensure cache is loaded.
+    if (_cachedRecipes.isEmpty) {
+      await getAllRecipes();
     }
 
-    // Search local cache
-    if (results.length < limit) {
-      final ingredientLower = ingredients.map((i) => i.toLowerCase()).toList();
-      final localMatches = _cachedRecipes.where((r) =>
-          r.ingredients.any((i) => ingredientLower.any((ing) => i.toLowerCase().contains(ing)))).toList();
+    final n = ingredients.length;
+    final threshold = (n / 2).ceil();
+    final lower = ingredients.map((i) => i.toLowerCase()).toList();
 
-      for (final recipe in localMatches) {
-        if (!results.any((r) => r.id == recipe.id) && results.length < limit) {
-          results.add(recipe);
-        }
+    final results = <({Recipe recipe, int matchCount})>[];
+    for (final recipe in _cachedRecipes) {
+      final count = lower
+          .where((term) =>
+              recipe.ingredients.any((i) => i.toLowerCase().contains(term)))
+          .length;
+      if (count >= threshold) {
+        results.add((recipe: recipe, matchCount: count));
       }
     }
-
+    results.sort((a, b) => b.matchCount.compareTo(a.matchCount));
     return results;
   }
 
