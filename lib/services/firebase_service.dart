@@ -85,7 +85,7 @@ class FirebaseService {
            error.type == DioExceptionType.connectionError;
   }
   
-  /// Retry request with exponential backoff (up to 3 attempts).
+  /// Retry request with exponential backoff
   Future<Response> _retryRequest(RequestOptions options, [int retryCount = 0]) async {
     const maxRetries = 3;
     if (retryCount >= maxRetries) {
@@ -93,11 +93,7 @@ class FirebaseService {
     }
 
     await Future.delayed(Duration(milliseconds: 500 * (retryCount + 1)));
-    try {
-      return await _dio.fetch(options);
-    } catch (_) {
-      return _retryRequest(options, retryCount + 1);
-    }
+    return _dio.fetch(options);
   }
   
   /// Check if cache is valid

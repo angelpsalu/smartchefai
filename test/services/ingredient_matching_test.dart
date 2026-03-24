@@ -51,7 +51,6 @@ Recipe makeRecipe(String id, List<String> ingredients) => Recipe(
 void main() {
   final chickenRice = makeRecipe('r1', ['500g chicken breast', '2 cups rice', '1 onion']);
   final chickenOnly = makeRecipe('r2', ['600g chicken thighs', '2 garlic cloves']);
-  final riceOnly = makeRecipe('r3', ['1 cup rice', '200ml coconut milk']);
   final beef = makeRecipe('r4', ['500g beef mince', '1 onion', '2 tomatoes']);
 
   group('filterByIngredients', () {
