@@ -55,6 +55,7 @@ class VoiceSearchService {
     required void Function(String words) onResult,
     void Function(String message)? onError,
     void Function()? onDone,
+    stt.ListenMode listenMode = stt.ListenMode.search,
   }) async {
     // Store callbacks so the engine's error/status handlers can reach them.
     _onError = onError;
@@ -83,11 +84,11 @@ class VoiceSearchService {
         }
       },
       listenFor: const Duration(seconds: 60),
-      pauseFor: const Duration(seconds: 3),
+      pauseFor: const Duration(seconds: 5),
       listenOptions: stt.SpeechListenOptions(
         partialResults: true,
         cancelOnError: true,
-        listenMode: stt.ListenMode.search,
+        listenMode: listenMode,
       ),
     );
   }

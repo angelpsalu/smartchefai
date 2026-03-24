@@ -110,13 +110,8 @@ class _ScanScreenState extends State<ScanScreen> {
         _hasSearched = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Detected ${parsed.length} ingredient${parsed.length == 1 ? '' : 's'}'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      // Auto-trigger recipe search for voice input
+      _searchRecipes();
     }
   }
 

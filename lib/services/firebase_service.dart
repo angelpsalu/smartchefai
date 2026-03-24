@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smartchefai/constants/firestore_constants.dart';
+import '../utils/food_keywords.dart';
 import 'package:smartchefai/models/models.dart';
 
 /// Firebase Service - Direct Firestore integration
@@ -115,49 +116,6 @@ class FirebaseService {
   static const String _visionApiBaseUrl =
       'https://vision.googleapis.com/v1/images:annotate';
 
-  // Allowlist approach: only labels whose lowercase description contains one of
-  // these food-related keywords are kept. Everything else is dropped.
-  static const Set<String> _foodKeywords = {
-    // Generic food categories
-    'food', 'vegetable', 'fruit', 'ingredient', 'produce', 'grocery',
-    'cuisine', 'dish', 'meal', 'recipe', 'cooking', 'spice', 'herb',
-    'meat', 'fish', 'seafood', 'dairy', 'grain', 'nut', 'legume',
-    'staple food', 'whole food', 'superfood', 'natural food',
-    // Vegetables
-    'tomato', 'carrot', 'broccoli', 'onion', 'garlic', 'pepper',
-    'cucumber', 'celery', 'spinach', 'lettuce', 'cabbage', 'cauliflower',
-    'potato', 'corn', 'pea', 'zucchini', 'eggplant', 'asparagus',
-    'kale', 'radish', 'beet', 'mushroom', 'artichoke', 'leek',
-    'scallion', 'shallot', 'fennel', 'pumpkin', 'squash', 'bok choy',
-    'arugula', 'watercress', 'endive', 'chili', 'jalapeño', 'ginger',
-    // Fruits
-    'apple', 'banana', 'orange', 'lemon', 'lime', 'strawberry',
-    'blueberry', 'raspberry', 'grape', 'watermelon', 'mango',
-    'pineapple', 'avocado', 'peach', 'pear', 'cherry', 'plum',
-    'kiwi', 'papaya', 'coconut', 'pomegranate', 'fig', 'apricot',
-    'grapefruit', 'melon', 'berry', 'citrus',
-    // Proteins
-    'chicken', 'beef', 'pork', 'lamb', 'turkey', 'duck', 'salmon',
-    'tuna', 'shrimp', 'crab', 'lobster', 'egg', 'tofu', 'tempeh',
-    'sausage', 'bacon', 'ham', 'poultry', 'prawn',
-    // Dairy
-    'cheese', 'milk', 'butter', 'cream', 'yogurt', 'mozzarella',
-    'cheddar', 'parmesan', 'feta', 'ricotta',
-    // Grains & Starches
-    'rice', 'pasta', 'bread', 'noodle', 'flour', 'oat', 'wheat',
-    'barley', 'quinoa', 'couscous', 'tortilla', 'cereal',
-    // Herbs & Spices
-    'basil', 'oregano', 'cilantro', 'parsley', 'mint', 'thyme',
-    'rosemary', 'sage', 'dill', 'turmeric', 'cumin', 'paprika',
-    'cinnamon', 'coriander', 'cardamom', 'clove', 'nutmeg',
-    // Legumes & Nuts
-    'bean', 'lentil', 'chickpea', 'peanut', 'almond', 'walnut',
-    'cashew', 'pecan', 'hazelnut', 'pistachio',
-    // Condiments & Others
-    'olive', 'oil', 'vinegar', 'sauce', 'soup', 'salad', 'honey',
-    'jam', 'chocolate', 'sugar', 'salt', 'stock', 'broth',
-  };
-
   /// Analyze an image for food ingredients using Google Cloud Vision.
   ///
   /// Returns detected ingredients sorted by confidence descending.
@@ -228,7 +186,7 @@ class FirebaseService {
         .where((l) => (l['score'] as num? ?? 0).toDouble() >= _minVisionConfidence)
         .where((l) {
           final desc = (l['description'] as String? ?? '').toLowerCase();
-          return _foodKeywords.any((keyword) => desc.contains(keyword));
+          return kFoodKeywords.any((keyword) => desc.contains(keyword));
         })
         .map((l) => DetectedIngredient(
               name: l['description'] as String? ?? '',

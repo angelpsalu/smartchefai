@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../app/theme/theme.dart';
 import '../../services/voice_search_service.dart';
 import '../../utils/ingredient_parser.dart';
@@ -144,6 +145,9 @@ class _VoiceOverlayPageState extends State<_VoiceOverlayPage>
     if (!_micPulse.isAnimating) _micPulse.repeat(reverse: true);
 
     await widget.service.startListening(
+      listenMode: widget.mode == VoiceOverlayMode.ingredientInput
+          ? stt.ListenMode.dictation
+          : stt.ListenMode.search,
       onPartialResult: (words) {
         if (!mounted) return;
         setState(() {
