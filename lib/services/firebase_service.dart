@@ -487,23 +487,6 @@ class FirebaseService {
     return tags;
   }
 
-  Recipe _mealDbToRecipe(Map<String, dynamic> meal, String category) {
-    return Recipe(
-      id: meal['idMeal'] ?? '',
-      name: meal['strMeal'] ?? '',
-      ingredients: [],
-      steps: [],
-      prepTime: 15,
-      cookTime: 30,
-      difficulty: 'medium',
-      cuisine: category,
-      dietaryTags: category == 'Vegetarian' ? ['vegetarian'] : [],
-      nutrition: Nutrition(calories: 350, protein: '25g', carbs: '30g', fat: '15g', fiber: '5g'),
-      servings: 4,
-      imageUrl: meal['strMealThumb'] ?? '',
-    );
-  }
-
   /// Get single recipe by ID
   Future<Recipe?> getRecipe(String recipeId) async {
     // Check cache first
