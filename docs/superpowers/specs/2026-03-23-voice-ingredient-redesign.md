@@ -20,7 +20,7 @@ Both flows share a single bottom-sheet overlay with no visual distinction. The i
 ## Goals
 
 - Full-screen voice overlay with polished state transitions and mode-specific visuals
-- Strict ingredient matching: only return recipes containing ALL spoken ingredients
+- Ingredient matching that prioritises exact matches (ALL ingredients present) and surfaces partial matches (majority of ingredients present) below, sorted by match count descending
 - "X of Y ingredients" match badge on result cards
 - Offline-first: ingredient matching runs against local recipe cache only
 
@@ -39,35 +39,41 @@ Both flows share a single bottom-sheet overlay with no visual distinction. The i
 
 ### 1. Voice Overlay — Full-Screen Redesign
 
-**Presentation:** Replace `showModalBottomSheet` with `showGeneralDialog`. Entrance: 300ms slide-up + fade. Exit: 200ms fade-down. Non-dismissible by tapping outside.
+**Presentation:** Replace `showModalBottomSheet` with `showGeneralDialog` (`barrierDismissible: false`). Wrap the dialog content in `PopScope(canPop: false, onPopInvokedWithResult: (didPop, _) { if (!didPop) _cancel(); })` — Android back gesture triggers `_cancel()` (same as tapping the Cancel button), returning `null`. Entrance: 300ms slide-up + fade. Exit: 200ms fade-down.
 
 **Background:** `Color(0xFF0D0D0D)` at 95% opacity — immersive dark, content faintly visible behind.
 
 **Layout (top to bottom):**
 ```
-[X] Cancel                          ← top-right, always visible
+[X] Cancel                          ← top-right IconButton, always visible
 Status title                        ← "Listening…" / "Got it!" / error
 Sub-hint text                       ← mode-specific, fades when words arrive
       ◉ ◯ ◯ ◯                      ← large ripple rings (200px mic button)
 "chicken, rice and onions"          ← partial words, large bold text
 [Chip] [Chip] [Chip]               ← ingredient mode only, real-time
-[ Done ]   [ Try Again ]           ← shown after result state
+[ Done ]   [ Try Again ]           ← shown after result/timeout state
 ```
 
-**State machine:**
+**State machine — 4 states with explicit triggers:**
 
-| State | Title | Waves | Buttons |
-|---|---|---|---|
-| `listening` | Listening… | animated | — |
-| `result` | Got it! | fade out (400ms) | Done (primary) + Try Again |
-| `timeout` | Didn't catch that | stopped | Try Again + Cancel |
-| `error` | Mic unavailable | stopped | Cancel only |
+| State | Trigger | Title | Waves | Buttons |
+|---|---|---|---|---|
+| `listening` | `startListening()` called | Listening… | animated | — |
+| `result` | `onResult` fires with non-empty words | Got it! | fade out (400ms) | Done (primary) + Try Again |
+| `timeout` | `onDone` fires and `_partialWords` is empty (silence with no words captured) | Didn't catch that | stopped | Try Again + Cancel |
+| `error` | `onError` fires (permanent mic error) | Mic unavailable | stopped | Cancel only |
+
+"Try Again" calls `_startListening()` which clears `_partialWords` to `''` before restarting — no stale words shown on retry.
+
+When the overlay closes:
+- Done / Search → `Navigator.of(context).pop(_partialWords)` returns the spoken string
+- Cancel / error Cancel → `Navigator.of(context).pop(null)` returns null
 
 **Animation changes from current:**
 - Mic button: 80px → 96px
 - Ring max radii: 64/80/96px → 80/112/144px
 - Result state: rings fade out with 400ms opacity animation (not hard-stop)
-- Chips (ingredient mode): each chip enters with `ScaleTransition` + `FadeTransition`, 150ms stagger
+- Chips (ingredient mode): animate in with `ScaleTransition` + `FadeTransition`; only **newly added chips** animate (diff against previous chip list on each partial result) — already-displayed chips do not re-animate
 
 ---
 
@@ -86,32 +92,36 @@ enum VoiceOverlayMode { recipeSearch, ingredientInput }
 | Hint text | "Say a recipe name…" | "Say your ingredients, e.g. chicken, rice, onions" |
 | Accent color | `AppColors.primaryOrange` | `AppColors.info` (blue) |
 | Done button label | "Search" | "Use These Ingredients" |
-| Real-time chips | no | yes — `IngredientParser.parse(partialWords)` on each partial result callback |
+| Real-time chips | no | yes — `IngredientParser.parse(partialWords)` on each partial result callback; diff against previous list to animate only new chips |
 | Return value | raw `String?` | raw `String?` (parsing happens in `_onVoiceInput` after close) |
 
 **Call site changes:**
 - `search_screen.dart` — no change (default `recipeSearch`)
-- `scan_screen.dart` — adds `mode: VoiceOverlayMode.ingredientInput`
+- `scan_screen.dart` — adds `mode: VoiceOverlayMode.ingredientInput`; remove `_isListeningIngredients` boolean and the early-return cancel path (`if (_isListeningIngredients) { await _voiceService.cancel(); return; }`). The `_voiceService.initialize()` call in `initState` and `_voiceService.dispose()` call in `dispose` remain — the service is still passed to the overlay.
 
 ---
 
 ### 3. Strict Ingredient Matching
 
-**Algorithm:** Local-only. Drop all TheMealDB API calls from `searchByIngredients`. Run against `_cachedRecipes`.
+**Algorithm:** Local-only. Drop all TheMealDB API calls from `searchByIngredients`. Filter `_cachedRecipes`.
 
-A recipe passes if **every** user ingredient has at least one match in `recipe.ingredients` (case-insensitive substring):
+Before filtering, ensure the cache is populated using the same lazy-loading guard already used in `searchRecipes` — i.e., if `_cachedRecipes.isEmpty`, call `getAllRecipes()` first.
+
+A recipe's match count = number of user ingredients for which any `recipe.ingredients` string contains the user term (case-insensitive substring):
 
 ```
-for each userIngredient:
-  recipe.ingredients.any((i) => i.toLowerCase().contains(userIngredient.toLowerCase()))
-
-→ recipe included only if ALL user ingredients match
+matchCount(recipe, userIngredients) =
+  userIngredients.where((term) =>
+    recipe.ingredients.any((i) => i.toLowerCase().contains(term.toLowerCase()))
+  ).length
 ```
 
-**Tiered results (sorted by match count descending):**
-- **Tier 1** — all N ingredients match → shown first
-- **Tier 2** — at least `ceil(N/2)` ingredients match (majority) → shown below with muted badge
-- Fewer matches → excluded entirely
+**Tiered inclusion and sorting:**
+- **Tier 1** — `matchCount == N` (all ingredients match) → included, sorted first
+- **Tier 2** — `matchCount >= ceil(N / 2)` and `matchCount < N` (majority match) → included, shown below Tier 1 with muted badge
+- `matchCount < ceil(N / 2)` → excluded entirely
+
+Results list sorted by `matchCount` descending within both tiers.
 
 **Return type change:**
 
@@ -127,45 +137,69 @@ Future<List<({Recipe recipe, int matchCount})>> searchByIngredients(
 
 Uses Dart 3 anonymous record — no new model file needed.
 
-**Cache guarantee:** `searchByIngredients` calls `_ensureCacheLoaded()` before filtering to guarantee `_cachedRecipes` is populated (same pattern as `searchRecipes`).
+**Note:** `scan_screen.dart` already calls `FirebaseService().searchByIngredients()` directly (bypassing `RecipeProvider`) to avoid overwriting the shared `_recipes` list used by the home screen. This pattern is preserved.
 
 ---
 
 ### 4. Scan Screen Results
 
-**Type update:**
+**State variable update:**
 ```dart
 // Before
 List<Recipe> _scanRecipes = [];
 
 // After
 List<({Recipe recipe, int matchCount})> _scanRecipes = [];
+int _totalRequested = 0;  // assigned inside _searchRecipes() immediately before the await call
+bool _hasSearched = false;
 ```
+
+`_totalRequested` is set inside `_searchRecipes()` as the first line (before the async call), not at detection time — this reflects the actual list after any chip removals.
 
 **Layout:** Replace `SizedBox(height: 220)` horizontal `ListView` with a vertical `ListView` inside the existing `SingleChildScrollView`. Full-width cards.
 
 **Match badge:** `Stack` wrapper around each `RecipeCard` with a positioned pill badge (no changes to `RecipeCard` itself):
-- Full match (matchCount == totalRequested): orange pill, `"All X matched"`
-- Partial match: `colorScheme.surfaceContainerHighest` pill with muted text, `"X of Y"`
+- Full match (`matchCount == _totalRequested`): orange pill, `"All X matched"` (e.g. "All 3 matched")
+- Partial match: `colorScheme.surfaceContainerHighest` background with muted text, `"X of Y"` (e.g. "2 of 3")
 
-**Results header:**
-```dart
-// e.g.: "4 exact · 2 partial" or "6 recipes found" if all exact
+**Results header** (three cases):
+```
+exactCount > 0 && partialCount > 0  →  "${exactCount} exact · ${partialCount} partial"
+exactCount > 0 && partialCount == 0 →  "${exactCount} recipe${exactCount == 1 ? '' : 's'} found"
+exactCount == 0 && partialCount > 0 →  "${partialCount} partial match${partialCount == 1 ? '' : 'es'}"
 ```
 
-**Empty state:** `EmptyState` widget with `Icons.search_off`, title "No recipes found", subtitle "Try removing an ingredient or scanning again."
+**Empty state:** `EmptyState` widget only rendered when `_hasSearched == true` AND `_scanRecipes.isEmpty`. Not shown before any search has run. `_hasSearched` is set to `true` after the await completes in `_searchRecipes()` and reset to `false` alongside `_scanRecipes` in the "Scan Again / Try Again" clear action.
 
 ---
 
 ### 5. Provider Update
 
-`RecipeProvider.searchByIngredients` updates its internal `_recipes` list using only the `recipe` field from each record. The `matchCount` is surfaced directly to `scan_screen` via the return value — not stored in provider state (it's scan-screen-local data).
+`RecipeProvider.searchByIngredients` calls the service and receives the new record list. It extracts only the `recipe` field to update `_recipes`:
 
 ```dart
 Future<List<({Recipe recipe, int matchCount})>> searchByIngredients(
   List<String> ingredients,
-) async { ... }
+) async {
+  _isLoading = true;
+  _error = null;
+  notifyListeners();
+  try {
+    final results = await _firebaseService.searchByIngredients(ingredients);
+    _recipes = results.map((r) => r.recipe).toList();
+    _isLoading = false;
+    notifyListeners();
+    return results;
+  } catch (e) {
+    _error = e.toString();
+    _isLoading = false;
+    notifyListeners();
+    rethrow;
+  }
+}
 ```
+
+Note: this method is not called by `scan_screen.dart` (which uses the service directly), but is kept for any future callers. Its public return type changes to `Future<List<({Recipe recipe, int matchCount})>>` — any caller outside scan_screen must be updated to handle the new type.
 
 ---
 
@@ -173,10 +207,10 @@ Future<List<({Recipe recipe, int matchCount})>> searchByIngredients(
 
 | File | Nature of change |
 |---|---|
-| `lib/shared/widgets/voice_search_overlay.dart` | Full rewrite |
-| `lib/services/firebase_service.dart` | Rewrite `searchByIngredients` method |
-| `lib/features/scan/scan_screen.dart` | Mode param, result type, vertical list, match badge |
-| `lib/providers/firebase_providers.dart` | Update `searchByIngredients` return type |
+| `lib/shared/widgets/voice_search_overlay.dart` | Full rewrite: full-screen modal, 4-state machine, mode enum, real-time chips in ingredient mode |
+| `lib/services/firebase_service.dart` | Rewrite `searchByIngredients`: drop API calls, local tiered match, return records |
+| `lib/features/scan/scan_screen.dart` | Mode param, remove `_isListeningIngredients` + its cancel path, update result type, add `_totalRequested`/`_hasSearched`, vertical list, match badge, reset `_hasSearched` on clear |
+| `lib/providers/firebase_providers.dart` | Update `searchByIngredients` return type + extract recipes from records |
 | `lib/features/search/search_screen.dart` | No change |
 | `lib/services/voice_search_service.dart` | No change |
 | `lib/utils/ingredient_parser.dart` | No change |
