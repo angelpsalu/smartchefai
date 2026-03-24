@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Microphone permission — required for speech_to_text voice recognition -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Internet — already used by Firebase/API calls, explicit declaration for clarity -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="smartchefai"
         android:name="${applicationName}"

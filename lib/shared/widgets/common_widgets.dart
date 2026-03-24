@@ -13,6 +13,8 @@ class SmartSearchBar extends StatelessWidget {
   final bool readOnly;
   final bool autofocus;
 
+  final bool isListening;
+
   const SmartSearchBar({
     super.key,
     this.controller,
@@ -24,6 +26,7 @@ class SmartSearchBar extends StatelessWidget {
     this.onChanged,
     this.readOnly = false,
     this.autofocus = false,
+    this.isListening = false,
   });
 
   @override
@@ -68,9 +71,10 @@ class SmartSearchBar extends StatelessWidget {
           ),
           if (onVoiceTap != null)
             _ActionButton(
-              icon: Icons.mic_rounded,
+              icon: isListening ? Icons.mic_off_rounded : Icons.mic_rounded,
               onTap: onVoiceTap!,
-              tooltip: 'Voice search',
+              tooltip: isListening ? 'Stop listening' : 'Voice search',
+              isActive: isListening,
             ),
           if (onCameraTap != null)
             _ActionButton(
@@ -89,16 +93,19 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final String tooltip;
+  final bool isActive;
 
   const _ActionButton({
     required this.icon,
     required this.onTap,
     required this.tooltip,
+    this.isActive = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final iconColor = isActive ? AppColors.primaryOrange : colorScheme.primary;
 
     return Tooltip(
       message: tooltip,
@@ -107,11 +114,18 @@ class _ActionButton extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: AppSpacing.borderRadiusSm,
-          child: Padding(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             padding: AppSpacing.paddingSm,
+            decoration: isActive
+                ? BoxDecoration(
+                    color: AppColors.primaryOrange.withValues(alpha: 0.12),
+                    borderRadius: AppSpacing.borderRadiusSm,
+                  )
+                : null,
             child: Icon(
               icon,
-              color: colorScheme.primary,
+              color: iconColor,
               size: 22,
             ),
           ),

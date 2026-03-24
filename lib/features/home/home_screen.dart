@@ -17,6 +17,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   DateTime? _lastBackPress;
   String? _selectedCategory;
+  int _displayCount = 5; // Initial: show 5 recipes
+  static const int _loadMoreCount = 6; // Load 6 more on each "See More"
 
   @override
   void initState() {
@@ -62,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
         body: SafeArea(
           child: RefreshIndicator(
             onRefresh: () async {
+              setState(() => _displayCount = 5); // Reset pagination
               await context.read<RecipeProvider>().loadRecipes();
             },
             child: CustomScrollView(
@@ -129,6 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // Popular Recipes Grid
               _buildRecipeGrid(context),
+
+              // See More Button
+              _buildSeeMoreButton(context),
 
               // Bottom padding
               const SliverToBoxAdapter(child: Gap.xxxl()),
@@ -228,7 +234,10 @@ class _HomeScreenState extends State<HomeScreen> {
           actionText: _selectedCategory != null ? 'Clear' : null,
           onActionTap: _selectedCategory != null
               ? () {
-                  setState(() => _selectedCategory = null);
+                  setState(() {
+                    _selectedCategory = null;
+                    _displayCount = 5; // Reset pagination
+                  });
                   context.read<RecipeProvider>().loadRecipes();
                 }
               : null,
@@ -249,10 +258,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 isSelected: isSelected,
                 onTap: () {
                   if (isSelected) {
-                    setState(() => _selectedCategory = null);
+                    setState(() {
+                      _selectedCategory = null;
+                      _displayCount = 5; // Reset pagination
+                    });
                     context.read<RecipeProvider>().loadRecipes();
                   } else {
-                    setState(() => _selectedCategory = cat.name);
+                    setState(() {
+                      _selectedCategory = cat.name;
+                      _displayCount = 5; // Reset pagination
+                    });
                     context.read<RecipeProvider>().searchRecipes(cat.name);
                   }
                 },
@@ -348,6 +363,9 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    // Show only _displayCount recipes (pagination)
+    final displayedRecipes = recipes.take(_displayCount).toList();
+
     return SliverPadding(
       padding: AppSpacing.paddingHorizontalMd,
       sliver: SliverGrid(
@@ -359,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            final recipe = recipes[index];
+            final recipe = displayedRecipes[index];
             return RecipeCard(
               id: recipe.id,
               title: recipe.name,
@@ -374,11 +392,59 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             );
           },
-          childCount: recipes.length,
+          childCount: displayedRecipes.length,
         ),
       ),
     );
   }
+
+  Widget _buildSeeMoreButton(BuildContext context) {
+    final recipes = context.watch<RecipeProvider>().recipes;
+    
+    // Only show button if there are more recipes to display
+    if (_displayCount >= recipes.length) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.lg,
+        ),
+        child: Center(
+          child: OutlinedButton.icon(
+            onPressed: _loadMoreRecipes,
+            icon: const Icon(Icons.expand_more),
+            label: Text(
+              'See More',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
+              ),
+              side: BorderSide(
+                color: AppColors.primaryOrange,
+                width: 1.5,
+              ),
+              foregroundColor: AppColors.primaryOrange,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _loadMoreRecipes() {
+    setState(() {
+      _displayCount += _loadMoreCount;
+    });
+  }
+
   Widget _buildMealPlanCard(BuildContext context) {
     final provider = context.watch<MealPlanProvider>();
     final assignedCount = provider.mealPlan?.days.values

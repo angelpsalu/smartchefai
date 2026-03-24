@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(bash \"C:/Users/Martin/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/scripts/start-server.sh\" --project-dir \"E:/coding/smartchefai\")"
+    ]
+  }
+}

@@ -21,12 +21,13 @@ class _GroceryListScreenState extends State<GroceryListScreen> {
   }
 
   void _addItem() {
-    if (_textController.text.isEmpty) return;
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
 
     final provider = context.read<GroceryListProvider>();
     provider.addItem(
       GroceryItem(
-        name: _textController.text,
+        name: text,
         quantity: 1.0,
         unit: '',
         category: 'other',
