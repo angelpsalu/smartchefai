@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../app/theme/theme.dart';
@@ -71,9 +73,15 @@ class _VoiceOverlayPageState extends State<_VoiceOverlayPage>
   _VoiceState _voiceState = _VoiceState.listening;
   String _partialWords = '';
 
+  // Accumulated text across multiple listening sessions (ingredient mode).
+  String _accumulatedWords = '';
+
   // Ingredient chips (ingredientInput mode only)
   List<String> _chips = [];
-  Set<String> _newChips = {}; // chips that should animate this render pass
+  Set<String> _newChips = {};
+
+  // Controls the ingredient listening loop. Set to false to exit.
+  bool _keepListening = false;
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
 
@@ -125,39 +133,90 @@ class _VoiceOverlayPageState extends State<_VoiceOverlayPage>
     );
   }
 
-  Future<void> _startListening() async {
+  // ── Listening ────────────────────────────────────────────────────────────────
+
+  void _startListening() {
     setState(() {
       _voiceState = _VoiceState.listening;
       _partialWords = '';
+      _accumulatedWords = '';
       _chips = [];
       _newChips = {};
     });
+    _resetAnimations();
 
-    // Reset ring fade and restart animations.
-    _ringFade.value = 1.0;
-    if (!_ring1.isAnimating) _ring1.repeat();
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted && !_ring2.isAnimating) _ring2.repeat();
-    });
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      if (mounted && !_ring3.isAnimating) _ring3.repeat();
-    });
-    if (!_micPulse.isAnimating) _micPulse.repeat(reverse: true);
+    if (widget.mode == VoiceOverlayMode.ingredientInput) {
+      _keepListening = true;
+      _runIngredientLoop();
+    } else {
+      _runSingleSession();
+    }
+  }
 
+  /// Ingredient mode: keep restarting sessions until _keepListening = false.
+  /// Uses a Completer per session so the loop awaits outside the callback
+  /// chain — no race conditions with speech_to_text's internal _signalDone.
+  Future<void> _runIngredientLoop() async {
+    while (_keepListening && mounted) {
+      final done = Completer<void>();
+
+      await widget.service.startListening(
+        listenMode: stt.ListenMode.dictation,
+        onPartialResult: (words) {
+          if (!mounted || !_keepListening) return;
+          setState(() {
+            _partialWords = words;
+            final combined = _accumulatedWords.isEmpty
+                ? words
+                : '$_accumulatedWords, $words';
+            final parsed = IngredientParser.parse(combined);
+            _newChips = Set<String>.from(parsed)
+                .difference(Set<String>.from(_chips));
+            _chips = parsed;
+          });
+        },
+        onResult: (words) {
+          if (!mounted || !_keepListening) return;
+          _accumulatedWords = _accumulatedWords.isEmpty
+              ? words
+              : '$_accumulatedWords, $words';
+          setState(() {
+            final parsed = IngredientParser.parse(_accumulatedWords);
+            _newChips = Set<String>.from(parsed)
+                .difference(Set<String>.from(_chips));
+            _chips = parsed;
+          });
+          // Session will end; onDone completes the loop iteration.
+        },
+        onError: (msg) {
+          if (!mounted) return;
+          _keepListening = false;
+          setState(() => _voiceState = _VoiceState.error);
+          _stopAnimations();
+          if (!done.isCompleted) done.complete();
+        },
+        onDone: () {
+          if (!done.isCompleted) done.complete();
+        },
+      );
+
+      // Wait for this session to fully end before starting the next.
+      await done.future;
+
+      // Brief pause lets the speech engine fully release before restart.
+      if (_keepListening && mounted) {
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+    }
+  }
+
+  /// Recipe search mode: single session, transitions to result/timeout/error.
+  Future<void> _runSingleSession() async {
     await widget.service.startListening(
-      listenMode: widget.mode == VoiceOverlayMode.ingredientInput
-          ? stt.ListenMode.dictation
-          : stt.ListenMode.search,
+      listenMode: stt.ListenMode.search,
       onPartialResult: (words) {
         if (!mounted) return;
-        setState(() {
-          _partialWords = words;
-          if (widget.mode == VoiceOverlayMode.ingredientInput) {
-            final parsed = IngredientParser.parse(words);
-            _newChips = Set<String>.from(parsed).difference(Set<String>.from(_chips));
-            _chips = parsed;
-          }
-        });
+        setState(() => _partialWords = words);
       },
       onResult: (words) {
         if (!mounted) return;
@@ -174,13 +233,11 @@ class _VoiceOverlayPageState extends State<_VoiceOverlayPage>
       },
       onDone: () {
         if (!mounted) return;
-        // onResult fires before onDone for a successful capture.
-        // If we're still in listening state here, it means silence timeout.
         if (_voiceState == _VoiceState.listening) {
           setState(() {
-            _voiceState = _partialWords.isEmpty
-                ? _VoiceState.timeout
-                : _VoiceState.result;
+            _voiceState = _partialWords.isNotEmpty
+                ? _VoiceState.result
+                : _VoiceState.timeout;
           });
           _stopAnimations();
         }
@@ -188,20 +245,39 @@ class _VoiceOverlayPageState extends State<_VoiceOverlayPage>
     );
   }
 
+  void _resetAnimations() {
+    _ringFade.value = 1.0;
+    if (!_ring1.isAnimating) _ring1.repeat();
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted && !_ring2.isAnimating) _ring2.repeat();
+    });
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted && !_ring3.isAnimating) _ring3.repeat();
+    });
+    if (!_micPulse.isAnimating) _micPulse.repeat(reverse: true);
+  }
+
   void _stopAnimations() {
     _ring1.stop();
     _ring2.stop();
     _ring3.stop();
     _micPulse.stop();
-    _ringFade.forward(); // 400ms fade-out
+    _ringFade.forward();
   }
 
   Future<void> _confirm() async {
+    _keepListening = false;
     await widget.service.stopListening();
-    if (mounted) Navigator.of(context).pop(_partialWords);
+    if (!mounted) return;
+    final result = widget.mode == VoiceOverlayMode.ingredientInput &&
+            _accumulatedWords.isNotEmpty
+        ? _accumulatedWords
+        : _partialWords;
+    Navigator.of(context).pop(result);
   }
 
   Future<void> _cancel() async {
+    _keepListening = false;
     await widget.service.cancel();
     if (mounted) Navigator.of(context).pop(null);
   }
@@ -452,6 +528,22 @@ class _VoiceOverlayPageState extends State<_VoiceOverlayPage>
   Widget _buildButtons(TextTheme textTheme) {
     switch (_voiceState) {
       case _VoiceState.listening:
+        // In ingredient mode, always show a "Done" button so the user
+        // controls when to stop — listening never stops on its own.
+        if (widget.mode == VoiceOverlayMode.ingredientInput) {
+          return FilledButton.icon(
+            onPressed: _chips.isNotEmpty ? _confirm : null,
+            icon: const Icon(Icons.check_rounded, size: 20),
+            label: Text(_doneLabel),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, 52),
+              backgroundColor: _accentColor,
+              disabledBackgroundColor: _accentColor.withValues(alpha: 0.3),
+              textStyle: textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          );
+        }
         return const SizedBox.shrink();
 
       case _VoiceState.result:

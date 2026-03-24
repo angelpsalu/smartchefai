@@ -468,36 +468,39 @@ class _ScanScreenState extends State<ScanScreen> {
                 separatorBuilder: (_, __) => const Gap.md(),
                 itemBuilder: (context, index) {
                   final match = _scanRecipes[index];
-                  return Stack(
-                    children: [
-                      RecipeCard(
-                        id: match.recipe.id,
-                        title: match.recipe.name,
-                        imageUrl: match.recipe.imageUrl,
-                        cookTime:
-                            '${match.recipe.prepTime + match.recipe.cookTime} min',
-                        difficulty: match.recipe.difficulty,
-                        rating: match.recipe.rating,
-                        isFavorite: context
-                            .watch<RecipeProvider>()
-                            .isFavorite(match.recipe.id),
-                        onTap: () => context.push(
-                          '/recipe/${match.recipe.id}',
-                          extra: match.recipe,
+                  return SizedBox(
+                    height: 200,
+                    child: Stack(
+                      children: [
+                        RecipeCard(
+                          id: match.recipe.id,
+                          title: match.recipe.name,
+                          imageUrl: match.recipe.imageUrl,
+                          cookTime:
+                              '${match.recipe.prepTime + match.recipe.cookTime} min',
+                          difficulty: match.recipe.difficulty,
+                          rating: match.recipe.rating,
+                          isFavorite: context
+                              .watch<RecipeProvider>()
+                              .isFavorite(match.recipe.id),
+                          onTap: () => context.push(
+                            '/recipe/${match.recipe.id}',
+                            extra: match.recipe,
+                          ),
+                          onFavoriteTap: () => context
+                              .read<RecipeProvider>()
+                              .toggleFavorite(match.recipe.id),
                         ),
-                        onFavoriteTap: () => context
-                            .read<RecipeProvider>()
-                            .toggleFavorite(match.recipe.id),
-                      ),
-                      Positioned(
-                        top: AppSpacing.sm,
-                        right: AppSpacing.sm,
-                        child: _MatchBadge(
-                          matchCount: match.matchCount,
-                          totalRequested: _totalRequested,
+                        Positioned(
+                          top: AppSpacing.sm,
+                          right: AppSpacing.sm,
+                          child: _MatchBadge(
+                            matchCount: match.matchCount,
+                            totalRequested: _totalRequested,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 },
               ),
