@@ -189,15 +189,21 @@ class _SearchScreenState extends State<SearchScreen> {
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
-            children: _categories
-                .map((cat) => ActionChip(
-                      label: Text(cat),
-                      onPressed: () {
-                        setState(() => _selectedCategory = cat);
-                        _performSearch(cat);
-                      },
-                    ))
-                .toList(),
+            children: _categories.map((cat) {
+              final colorScheme = Theme.of(context).colorScheme;
+              return ActionChip(
+                label: Text(cat),
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                side: BorderSide(color: colorScheme.outlineVariant, width: 1),
+                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                onPressed: () {
+                  setState(() => _selectedCategory = cat);
+                  _performSearch(cat);
+                },
+              );
+            }).toList(),
           ),
         ],
       );

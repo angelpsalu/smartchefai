@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 import 'firebase_options.dart';
 import 'app/constants.dart';
@@ -21,7 +22,12 @@ void main() async {
   
   // Initialize Firebase Service
   await FirebaseService().initialize();
-  
+
+  // Wait for Firebase Auth to restore persisted login from local storage.
+  // Without this, currentUser is null on startup even when the user is logged
+  // in, so GoRouter's redirect always sends them to /get-started.
+  await firebase_auth.FirebaseAuth.instance.authStateChanges().first;
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

@@ -44,6 +44,12 @@ class _ScanScreenState extends State<ScanScreen> {
           _selectedImage = image;
           _isProcessing = true;
           _inputSource = source == ImageSource.camera ? 'camera' : 'gallery';
+          // Reset previous search state so stale "No recipes found" doesn't
+          // flash when the user switches from voice → camera/gallery.
+          _detectedIngredients = [];
+          _scanRecipes = [];
+          _hasSearched = false;
+          _totalRequested = 0;
         });
 
         try {
@@ -335,6 +341,8 @@ class _ScanScreenState extends State<ScanScreen> {
                             _selectedImage = null;
                             _detectedIngredients = [];
                             _scanRecipes = [];
+                            _hasSearched = false;
+                            _totalRequested = 0;
                           });
                         },
                         icon: Container(

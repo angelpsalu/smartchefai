@@ -197,10 +197,15 @@ class _CategoryChip extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       child: Material(
         color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest,
-        borderRadius: AppSpacing.borderRadiusFull,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppSpacing.borderRadiusFull,
+          side: isSelected
+              ? BorderSide.none
+              : BorderSide(color: colorScheme.outlineVariant, width: 1),
+        ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          borderRadius: AppSpacing.borderRadiusFull,
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
@@ -211,7 +216,7 @@ class _CategoryChip extends StatelessWidget {
               style: textTheme.labelLarge?.copyWith(
                 color: isSelected
                     ? colorScheme.onPrimary
-                    : colorScheme.onSurfaceVariant,
+                    : colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),

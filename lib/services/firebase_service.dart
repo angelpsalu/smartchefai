@@ -531,8 +531,12 @@ class FirebaseService {
       await getAllRecipes();
     }
 
-    final n = ingredients.length;
-    final threshold = (n / 2).ceil();
+    // Threshold = 1: show any recipe that has at least one ingredient.
+    // Sort by matchCount descending so best matches appear first.
+    // Using 50% was too harsh when Vision API returns generic labels
+    // (Food, Ingredient, Produce…) that inflate n but never appear in
+    // recipe ingredient lists.
+    const threshold = 1;
     final lower = ingredients.map((i) => i.toLowerCase()).toList();
 
     final results = <({Recipe recipe, int matchCount})>[];
