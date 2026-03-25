@@ -2,7 +2,7 @@
 
 > **AI-Powered Recipe Recommender**
 > Architecture: Firebase + Flutter | Targets: Android + Web
-> Last updated: 2026-02-23
+> Last updated: 2026-02-20
 
 For deep technical details see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 For feature planning see [`ROADMAP.md`](ROADMAP.md).
@@ -34,7 +34,6 @@ lib/
 ├── main.dart                     # App entry, Firebase init, MultiProvider
 ├── firebase_options.dart         # Firebase config (Android + Web real, iOS placeholder)
 ├── app/
-│   ├── constants.dart            # PrefKeys, AppUrls, AppMeta — centralized strings
 │   ├── routes.dart               # GoRouter with ShellRoute + auth redirect
 │   └── theme/
 │       ├── app_colors.dart       # Color constants (AppColors)
@@ -50,21 +49,13 @@ lib/
 │   ├── grocery/grocery_list_screen.dart
 │   ├── profile/profile_screen.dart
 │   ├── scan/scan_screen.dart
-│   ├── planner/planner_screen.dart       # Meal plan + grocery tabs
-│   ├── meal_plan/meal_plan_screen.dart   # Redirects to /planner
 │   ├── onboarding/onboarding_screen.dart
 │   └── dietary_preferences/dietary_preferences_screen.dart
 ├── shared/widgets/               # Reusable widgets (widgets.dart barrel export)
-│   ├── nutrition_goals_card.dart  # Daily nutrition progress rings
-│   └── ...
-├── utils/
-│   └── meal_classifier.dart      # Keyword-based recipe → meal slot classification
 ├── models/models.dart            # All data models (barrel export)
 ├── providers/
 │   ├── firebase_providers.dart   # RecipeProvider, UserProvider, GroceryListProvider
-│   ├── meal_plan_provider.dart   # MealPlanProvider (multi-slot per day)
-│   ├── nutrition_provider.dart   # NutritionProvider (daily intake tracking)
-│   └── app_providers.dart        # Re-exports all providers
+│   └── app_providers.dart        # Re-exports firebase_providers.dart
 └── services/
     └── firebase_service.dart     # Singleton: Firestore + Auth + TheMealDB fallback
 ```
@@ -155,54 +146,17 @@ SizedBox(height: 16)
 color: Color(0xFFFF6B35)
 ```
 
-### 8. Constants — No Hardcoded Strings
-
-```dart
-// ✅ Use PrefKeys from lib/app/constants.dart
-prefs.getBool(PrefKeys.darkMode)
-prefs.setString(PrefKeys.selectedLanguage, language)
-
-// ✅ Use AppUrls for external links
-_launchUrl(AppUrls.helpAndFaq)
-AppUrls.recipeShareUrl(recipe.id)
-
-// ✅ Use AppMeta for app-level values
-AppMeta.appName        // 'SmartChef AI'
-AppMeta.version        // '1.0.0'
-AppMeta.defaultLanguage
-
-// ❌ Scattered magic strings
-prefs.getBool('dark_mode')
-'https://smartchefai.web.app/help'
-```
-
-### 9. Error Handling in Providers
-
-```dart
-// ✅ Log non-critical errors for debugging
-} catch (e) {
-  debugPrint('Failed to sync favorites: $e');
-}
-
-// ❌ Swallowed errors make debugging impossible
-} catch (e) {
-  // Continue
-}
-```
-
 ---
 
 ## State Management
 
-Five providers. All extend `ChangeNotifier`. Registered in `main.dart`.
+Three providers. All extend `ChangeNotifier`. Registered in `main.dart`.
 
 | Provider | What it owns |
 |----------|-------------|
 | `RecipeProvider` | `_recipes`, `_favoriteIds`, loading/error state, search results |
 | `UserProvider` | Auth state, `AppUser` profile, theme mode, recent searches |
 | `GroceryListProvider` | Grocery items, local + Firebase sync |
-| `MealPlanProvider` | Multi-slot meal plans (4 slots/day), grocery generation |
-| `NutritionProvider` | Daily intake tracking, nutrition goals |
 
 ```dart
 // Reading without subscribing
@@ -214,16 +168,6 @@ final recipes = context.watch<RecipeProvider>().recipes;
 // Fine-grained subscription
 final isLoading = context.select<RecipeProvider, bool>((p) => p.isLoading);
 ```
-
----
-
-## Meal Planner Architecture
-
-- **MealPlan model**: `days: Map<String, Map<String, String?>>` — day → slot → recipeId
-- **Meal slots**: `breakfast`, `lunch`, `dinner`, `snack` (defined in `MealPlan.mealSlots`)
-- **MealClassifier** (`lib/utils/meal_classifier.dart`): keyword-based classification, `sortedForSlot()` puts suggestions first
-- **Backward compat**: `fromFirestore` migrates legacy `String` (single recipe/day) → dinner slot
-- **Grocery generation**: `MealPlanProvider.generateGroceryItems()` iterates all slots, auto-categorizes ingredients
 
 ---
 
@@ -273,22 +217,10 @@ Location: `lib/models/models.dart`
 | `Nutrition` | Calories (int), protein, carbs, fat, fiber (Strings like "25g") |
 | `AppUser` | Firebase user with Firestore profile data |
 | `GroceryList` | List of GroceryItems with Firestore sync |
-| `GroceryItem` | Immutable grocery item with `copyWith`, category field, recipes list |
-| `MealPlan` | Multi-slot daily meal plan (`Map<String, Map<String, String?>>`) |
-| `NutritionGoals` | Daily macro targets (calories, protein, carbs, fat) |
+| `GroceryItem` | Immutable grocery item with `copyWith` |
 | `DetectedIngredient` | Scan result with confidence score |
 
 All models: `const` constructor, named params, `copyWith()`, `fromJson()`, `toJson()`.
-
----
-
-## Recipe Loading
-
-Two-phase strategy for instant UX:
-1. **Phase 1**: Load 100 recipes from local JSON (`data/recipes.json`) — instant
-2. **Phase 2**: Try Firestore in background (5s timeout) — merges any cloud additions
-
-Search limit: 50 results. All recipes shown on home page (no clamp).
 
 ---
 
@@ -296,10 +228,15 @@ Search limit: 50 results. All recipes shown on home page (no clamp).
 
 1. Create screen in `lib/features/{name}/{name}_screen.dart`
 2. Add route to `lib/app/routes.dart`
-3. If needs state: add methods to existing provider or create new `ChangeNotifier` and register in `main.dart`
+3. If needs state: add methods to existing provider or create new `ChangeNotifier` in `firebase_providers.dart` and register in `main.dart`
 4. If needs new Firestore collection: add CRUD methods to `FirebaseService`, update `firestore.rules`
 5. Add reusable widgets to `lib/shared/widgets/` and export via `widgets.dart`
-6. Add any new string constants to `lib/app/constants.dart`
+
+---
+
+## Open Bugs
+
+See [`BUGS.md`](BUGS.md) for the full list. No open bugs currently.
 
 ---
 

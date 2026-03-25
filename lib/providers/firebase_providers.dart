@@ -124,15 +124,10 @@ class RecipeProvider extends ChangeNotifier {
       }
     } else {
       _favoriteIds.add(recipeId);
-      
-      // Find recipe and add to favorites
-      Recipe? recipe;
-      try {
-        recipe = _recipes.firstWhere((r) => r.id == recipeId);
-      } catch (e) {
-        recipe = _currentRecipe;
-      }
-      
+
+      // Find recipe and add to favorites list
+      final index = _recipes.indexWhere((r) => r.id == recipeId);
+      final recipe = index != -1 ? _recipes[index] : _currentRecipe;
       if (recipe != null && !_favorites.any((r) => r.id == recipeId)) {
         _favorites.add(recipe);
       }
@@ -154,17 +149,24 @@ class RecipeProvider extends ChangeNotifier {
     return _favoriteIds.contains(recipeId);
   }
 
-  /// Search recipes by ingredients
-  Future<List<Recipe>> searchByIngredients(List<String> ingredients) async {
+  /// Search recipes by ingredients.
+  ///
+  /// Returns records with match counts. Updates [_recipes] with the matched
+  /// recipes for any future provider consumers (scan_screen uses the service
+  /// directly and ignores this).
+  Future<List<({Recipe recipe, int matchCount})>> searchByIngredients(
+    List<String> ingredients,
+  ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _recipes = await _firebaseService.searchByIngredients(ingredients);
+      final results = await _firebaseService.searchByIngredients(ingredients);
+      _recipes = results.map((r) => r.recipe).toList();
       _isLoading = false;
       notifyListeners();
-      return _recipes;
+      return results;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;

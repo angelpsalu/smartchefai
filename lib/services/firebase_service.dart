@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smartchefai/constants/firestore_constants.dart';
+import '../utils/food_keywords.dart';
 import 'package:smartchefai/models/models.dart';
 
 /// Firebase Service - Direct Firestore integration
@@ -91,7 +92,7 @@ class FirebaseService {
     if (retryCount >= maxRetries) {
       throw DioException(requestOptions: options);
     }
-    
+
     await Future.delayed(Duration(milliseconds: 500 * (retryCount + 1)));
     return _dio.fetch(options);
   }
@@ -114,49 +115,6 @@ class FirebaseService {
 
   static const String _visionApiBaseUrl =
       'https://vision.googleapis.com/v1/images:annotate';
-
-  // Allowlist approach: only labels whose lowercase description contains one of
-  // these food-related keywords are kept. Everything else is dropped.
-  static const Set<String> _foodKeywords = {
-    // Generic food categories
-    'food', 'vegetable', 'fruit', 'ingredient', 'produce', 'grocery',
-    'cuisine', 'dish', 'meal', 'recipe', 'cooking', 'spice', 'herb',
-    'meat', 'fish', 'seafood', 'dairy', 'grain', 'nut', 'legume',
-    'staple food', 'whole food', 'superfood', 'natural food',
-    // Vegetables
-    'tomato', 'carrot', 'broccoli', 'onion', 'garlic', 'pepper',
-    'cucumber', 'celery', 'spinach', 'lettuce', 'cabbage', 'cauliflower',
-    'potato', 'corn', 'pea', 'zucchini', 'eggplant', 'asparagus',
-    'kale', 'radish', 'beet', 'mushroom', 'artichoke', 'leek',
-    'scallion', 'shallot', 'fennel', 'pumpkin', 'squash', 'bok choy',
-    'arugula', 'watercress', 'endive', 'chili', 'jalapeño', 'ginger',
-    // Fruits
-    'apple', 'banana', 'orange', 'lemon', 'lime', 'strawberry',
-    'blueberry', 'raspberry', 'grape', 'watermelon', 'mango',
-    'pineapple', 'avocado', 'peach', 'pear', 'cherry', 'plum',
-    'kiwi', 'papaya', 'coconut', 'pomegranate', 'fig', 'apricot',
-    'grapefruit', 'melon', 'berry', 'citrus',
-    // Proteins
-    'chicken', 'beef', 'pork', 'lamb', 'turkey', 'duck', 'salmon',
-    'tuna', 'shrimp', 'crab', 'lobster', 'egg', 'tofu', 'tempeh',
-    'sausage', 'bacon', 'ham', 'poultry', 'prawn',
-    // Dairy
-    'cheese', 'milk', 'butter', 'cream', 'yogurt', 'mozzarella',
-    'cheddar', 'parmesan', 'feta', 'ricotta',
-    // Grains & Starches
-    'rice', 'pasta', 'bread', 'noodle', 'flour', 'oat', 'wheat',
-    'barley', 'quinoa', 'couscous', 'tortilla', 'cereal',
-    // Herbs & Spices
-    'basil', 'oregano', 'cilantro', 'parsley', 'mint', 'thyme',
-    'rosemary', 'sage', 'dill', 'turmeric', 'cumin', 'paprika',
-    'cinnamon', 'coriander', 'cardamom', 'clove', 'nutmeg',
-    // Legumes & Nuts
-    'bean', 'lentil', 'chickpea', 'peanut', 'almond', 'walnut',
-    'cashew', 'pecan', 'hazelnut', 'pistachio',
-    // Condiments & Others
-    'olive', 'oil', 'vinegar', 'sauce', 'soup', 'salad', 'honey',
-    'jam', 'chocolate', 'sugar', 'salt', 'stock', 'broth',
-  };
 
   /// Analyze an image for food ingredients using Google Cloud Vision.
   ///
@@ -228,7 +186,7 @@ class FirebaseService {
         .where((l) => (l['score'] as num? ?? 0).toDouble() >= _minVisionConfidence)
         .where((l) {
           final desc = (l['description'] as String? ?? '').toLowerCase();
-          return _foodKeywords.any((keyword) => desc.contains(keyword));
+          return kFoodKeywords.any((keyword) => desc.contains(keyword));
         })
         .map((l) => DetectedIngredient(
               name: l['description'] as String? ?? '',
@@ -487,23 +445,6 @@ class FirebaseService {
     return tags;
   }
 
-  Recipe _mealDbToRecipe(Map<String, dynamic> meal, String category) {
-    return Recipe(
-      id: meal['idMeal'] ?? '',
-      name: meal['strMeal'] ?? '',
-      ingredients: [],
-      steps: [],
-      prepTime: 15,
-      cookTime: 30,
-      difficulty: 'medium',
-      cuisine: category,
-      dietaryTags: category == 'Vegetarian' ? ['vegetarian'] : [],
-      nutrition: Nutrition(calories: 350, protein: '25g', carbs: '30g', fat: '15g', fiber: '5g'),
-      servings: 4,
-      imageUrl: meal['strMealThumb'] ?? '',
-    );
-  }
-
   /// Get single recipe by ID
   Future<Recipe?> getRecipe(String recipeId) async {
     // Check cache first
@@ -575,52 +516,40 @@ class FirebaseService {
     return results.take(limit).toList();
   }
 
-  /// Search recipes by ingredients
-  Future<List<Recipe>> searchByIngredients(List<String> ingredients, {int limit = 50}) async {
-    final results = <Recipe>[];
+  /// Search recipes by ingredients using strict local matching.
+  ///
+  /// Tier 1 (all N ingredients match) appears before Tier 2
+  /// (>= ceil(N/2) ingredients match). Sorted descending by match count.
+  /// Runs offline against [_cachedRecipes] — no API calls.
+  Future<List<({Recipe recipe, int matchCount})>> searchByIngredients(
+    List<String> ingredients,
+  ) async {
+    if (ingredients.isEmpty) return [];
 
-    if (ingredients.isNotEmpty) {
-      try {
-        final response = await _dio.get(
-          '$_mealDbBaseUrl/filter.php',
-          queryParameters: {'i': ingredients.first},
-        );
-
-        final meals = response.data['meals'] as List?;
-        if (meals != null) {
-          for (final meal in meals.take(limit)) {
-            try {
-              final detailResponse = await _dio.get(
-                '$_mealDbBaseUrl/lookup.php',
-                queryParameters: {'i': meal['idMeal']},
-              );
-              final detailMeals = detailResponse.data['meals'] as List?;
-              if (detailMeals != null && detailMeals.isNotEmpty) {
-                results.add(_mealDbDetailToRecipe(detailMeals.first));
-              }
-            } catch (e) {
-              results.add(_mealDbToRecipe(meal, 'Mixed'));
-            }
-          }
-        }
-      } catch (e) {
-        // Continue with cache
-      }
+    // Ensure cache is loaded.
+    if (_cachedRecipes.isEmpty) {
+      await getAllRecipes();
     }
 
-    // Search local cache
-    if (results.length < limit) {
-      final ingredientLower = ingredients.map((i) => i.toLowerCase()).toList();
-      final localMatches = _cachedRecipes.where((r) =>
-          r.ingredients.any((i) => ingredientLower.any((ing) => i.toLowerCase().contains(ing)))).toList();
+    // Threshold = 1: show any recipe that has at least one ingredient.
+    // Sort by matchCount descending so best matches appear first.
+    // Using 50% was too harsh when Vision API returns generic labels
+    // (Food, Ingredient, Produce…) that inflate n but never appear in
+    // recipe ingredient lists.
+    const threshold = 1;
+    final lower = ingredients.map((i) => i.toLowerCase()).toList();
 
-      for (final recipe in localMatches) {
-        if (!results.any((r) => r.id == recipe.id) && results.length < limit) {
-          results.add(recipe);
-        }
+    final results = <({Recipe recipe, int matchCount})>[];
+    for (final recipe in _cachedRecipes) {
+      final count = lower
+          .where((term) =>
+              recipe.ingredients.any((i) => i.toLowerCase().contains(term)))
+          .length;
+      if (count >= threshold) {
+        results.add((recipe: recipe, matchCount: count));
       }
     }
-
+    results.sort((a, b) => b.matchCount.compareTo(a.matchCount));
     return results;
   }
 

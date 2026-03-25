@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../../app/theme/theme.dart';
 import '../../constants/firestore_constants.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../providers/app_providers.dart';
+import '../../services/voice_search_service.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -18,8 +18,13 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
   String? _selectedCategory;
+
+  /// Whether the voice overlay is currently open (drives mic button state).
   bool _isListening = false;
-  final stt.SpeechToText _speech = stt.SpeechToText();
+
+  /// Centralized voice service — shared between this screen and the overlay.
+  final VoiceSearchService _voiceService = VoiceSearchService();
+
   Timer? _debounceTimer;
 
   final List<String> _categories = [
@@ -36,48 +41,44 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    _initSpeech();
+    // Pre-warm the speech engine so the first tap is instant.
+    _voiceService.initialize();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<UserProvider>().loadRecentSearches();
     });
   }
 
-  Future<void> _initSpeech() async {
-    await _speech.initialize();
-  }
+  // ─── Voice ──────────────────────────────────────────────────────────────────
 
-  Future<void> _startListening() async {
-    if (!_speech.isAvailable) return;
+  Future<void> _onVoiceTap() async {
+    if (_isListening) {
+      // User tapped mic while overlay is open — cancel.
+      await _voiceService.cancel();
+      return;
+    }
 
     setState(() => _isListening = true);
-    
-    await _speech.listen(
-      onResult: (result) {
-        if (result.finalResult) {
-          setState(() {
-            _searchController.text = result.recognizedWords;
-            _isListening = false;
-          });
-          _performSearch(result.recognizedWords);
-        }
-      },
-      listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 3),
+
+    final result = await showVoiceSearchOverlay(
+      context: context,
+      service: _voiceService,
     );
+
+    if (!mounted) return;
+    setState(() => _isListening = false);
+
+    if (result != null && result.isNotEmpty) {
+      _searchController.text = result;
+      _performSearch(result);
+    }
   }
 
-  Future<void> _stopListening() async {
-    await _speech.stop();
-    setState(() => _isListening = false);
-  }
+  // ─── Search ─────────────────────────────────────────────────────────────────
 
   void _performSearch(String query) {
     if (query.isEmpty) return;
 
-    // Cancel previous timer
     _debounceTimer?.cancel();
-
-    // Start new timer for debouncing
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       context.read<RecipeProvider>().searchRecipes(query);
@@ -85,26 +86,25 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  // ─── Lifecycle ───────────────────────────────────────────────────────────────
+
   @override
   void dispose() {
     _searchController.dispose();
-    _speech.stop();
+    _voiceService.dispose();
     _debounceTimer?.cancel();
     super.dispose();
   }
 
+  // ─── Build ───────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
-      appBar: const SmartChefAppBar(
-        title: 'Search',
-      ),
+      appBar: const SmartChefAppBar(title: 'Search'),
       body: Column(
         children: [
-          // Search Bar
+          // Search Bar — mic button reflects listening state
           Padding(
             padding: AppSpacing.paddingMd,
             child: SmartSearchBar(
@@ -113,40 +113,13 @@ class _SearchScreenState extends State<SearchScreen> {
               hintText: 'Search by name, ingredient, or cuisine...',
               onSubmitted: _performSearch,
               onChanged: (value) {
-                if (value.length > 2) {
-                  _performSearch(value);
-                }
+                if (value.length > 2) _performSearch(value);
               },
-              onVoiceTap: _isListening ? _stopListening : _startListening,
+              onVoiceTap: _onVoiceTap,
               onCameraTap: () => context.push('/scan'),
+              isListening: _isListening,
             ),
           ),
-
-          // Voice Listening Indicator
-          if (_isListening)
-            Container(
-              padding: AppSpacing.paddingSm,
-              margin: AppSpacing.paddingHorizontalMd,
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: AppSpacing.borderRadiusMd,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.mic,
-                    color: colorScheme.primary,
-                  ),
-                  const HGap.sm(),
-                  Text(
-                    'Listening... Say ingredient or recipe name',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
           // Category Chips
           const Gap.md(),
@@ -166,9 +139,7 @@ class _SearchScreenState extends State<SearchScreen> {
           const Gap.md(),
 
           // Results
-          Expanded(
-            child: _buildSearchResults(context),
-          ),
+          Expanded(child: _buildSearchResults(context)),
         ],
       ),
     );
@@ -181,7 +152,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Show recent searches if no search query
+    // Show recent searches if no query
     if (_searchController.text.isEmpty && _selectedCategory == null) {
       final recentSearches = context.watch<UserProvider>().recentSearches;
       return ListView(
@@ -189,9 +160,7 @@ class _SearchScreenState extends State<SearchScreen> {
         children: [
           Text(
             'Recent Searches',
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const Gap.md(),
           ...recentSearches.map((search) => ListTile(
@@ -214,23 +183,27 @@ class _SearchScreenState extends State<SearchScreen> {
           const Gap.xl(),
           Text(
             'Popular Categories',
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const Gap.md(),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
-            children: _categories
-                .map((cat) => ActionChip(
-                      label: Text(cat),
-                      onPressed: () {
-                        setState(() => _selectedCategory = cat);
-                        _performSearch(cat);
-                      },
-                    ))
-                .toList(),
+            children: _categories.map((cat) {
+              final colorScheme = Theme.of(context).colorScheme;
+              return ActionChip(
+                label: Text(cat),
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                side: BorderSide(color: colorScheme.outlineVariant, width: 1),
+                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                onPressed: () {
+                  setState(() => _selectedCategory = cat);
+                  _performSearch(cat);
+                },
+              );
+            }).toList(),
           ),
         ],
       );
